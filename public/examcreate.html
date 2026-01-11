@@ -4,80 +4,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Advanced Quiz System - Teacher & Student</title>
-
-
+  <title>Create Exam - Advanced Quiz System</title>
   <!-- KaTeX CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-
   <!-- KaTeX JS -->
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.
+9/dist/katex.min.js"></script>
   <!-- KaTeX auto-render extension -->
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-
-
   <!-- pdfmake-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="script.js"></script>
   <!-- exam.js -->
   <script src="exam.js"></script>
-
   <!--tailwind css -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!--Bootstrap CSS -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-
   <!-- Custom CSS -->
   <link rel="stylesheet" href="styles.css">
-
-
 </head>
 
 <body>
-
-  <div class="floating-elements"></div>
-
-  <!-- Landing Page -->
-  <div id="landingPage" class="landing-container">
-    <h1 class="landing-title">🎓 Advanced Quiz System</h1>
-    <p class="landing-subtitle">Modern Learning Platform with Mathematical Support</p>
-
-    <div class="role-selection">
-      <div class="role-card teacher-card" onclick="goToStudentLogRegPage()">
-        <span class="role-icon">👩‍🏫</span>
-        <h2 class="role-title">Teacher Dashboard</h2>
-        <p class="role-description">Create and manage comprehensive quizzes with mathematical equations</p>
-        <ul class="role-features">
-          <li>Add mathematical equations & symbols</li>
-          <li>Create unlimited questions</li>
-          <li>Preview quiz before publishing</li>
-          <li>Export quiz data</li>
-          <li>Real-time question management</li>
-        </ul>
-      </div>
-
-      <div class="role-card student-card" onclick="goToStudentLogRegPage()">
-        <span class="role-icon">🎓</span>
-        <h2 class="role-title">Student Dashboard</h2>
-        <p class="role-description">Take interactive quizzes with full mathematical equation support</p>
-        <ul class="role-features">
-          <li>Interactive quiz interface</li>
-          <li>Mathematical equation rendering</li>
-          <li>Real-time scoring</li>
-          <li>Progress tracking</li>
-          <li>Detailed results analysis</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
   <!-- Teacher Dashboard -->
   <div id="teacherDashboard" class="dashboard teacher-dashboard hidden">
     <div class="dashboard-header">
-      <button class="back-btn" onclick="TeacherDash()">← Back</button>
+      <button class="back-btn" onclick="showLandingPage()">← Back</button>
       <h1 class="dashboard-title">👩‍🏫 Teacher Dashboard</h1>
       <p class="dashboard-subtitle">Create amazing quizzes with mathematical equations</p>
     </div>
@@ -211,13 +164,13 @@
       <!--Teacher Create & Assign Exam Section-->
       <!-- Stylish Header -->
       <div style="
-              background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-              padding: 30px;
-              border-radius: 22px;
-              margin-bottom: 35px;
-              color: white;
-              box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
-          ">
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            padding: 30px;
+            border-radius: 22px;
+            margin-bottom: 35px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        ">
         <h2
           style="font-size: 30px; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 12px;">
           📚 Create New Exam
@@ -228,13 +181,13 @@
 
       <!-- Main Exam Creation Card -->
       <div style="
-              background: white;
-              padding: 35px;
-              border-radius: 20px;
-              box-shadow: 0 25px 70px rgba(0,0,0,0.07);
-              border: 1px solid #ececec;
-              margin-bottom: 45px;
-          ">
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.07);
+            border: 1px solid #ececec;
+            margin-bottom: 45px;
+        ">
 
         <!-- Step 1 -->
         <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
@@ -390,9 +343,9 @@
             </div>
 
             <div id="studentsContainer" style="
-                          height: 300px; border:1px solid #d1d5db;
-                          border-radius:12px; padding:10px; overflow-y:auto; background:#f9fafb;
-                      ">
+                        height: 300px; border:1px solid #d1d5db;
+                        border-radius:12px; padding:10px; overflow-y:auto; background:#f9fafb;
+                    ">
               <div style="text-align:center; padding:40px; color:#9ca3af;">Loading students...</div>
             </div>
 
@@ -416,9 +369,9 @@
             </div>
 
             <div id="questionsContainer" style="
-                          height: 300px; border:1px solid #d1d5db;
-                          border-radius:12px; padding:10px; overflow-y:auto; background:#f9fafb;
-                      ">
+                        height: 300px; border:1px solid #d1d5db;
+                        border-radius:12px; padding:10px; overflow-y:auto; background:#f9fafb;
+                    ">
               <div style="text-align:center; padding:40px; color:#9ca3af;">Loading questions...</div>
             </div>
 
@@ -439,11 +392,11 @@
         </h3>
 
         <button onclick="createAndAssignExam()" style="
-                  width:100%; padding:18px; border:none; border-radius:14px;
-                  background: linear-gradient(135deg,#3b82f6,#1d4ed8);
-                  color:white; font-size:16px; font-weight:600;
-                  cursor:pointer; transition:0.3s; display:flex; justify-content:center; gap:12px;
-              "
+                width:100%; padding:18px; border:none; border-radius:14px;
+                background: linear-gradient(135deg,#3b82f6,#1d4ed8);
+                color:white; font-size:16px; font-weight:600;
+                cursor:pointer; transition:0.3s; display:flex; justify-content:center; gap:12px;
+            "
           onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(59,130,246,0.35)'"
           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
           📤 Create Exam & Assign
@@ -457,9 +410,9 @@
 
       <!-- Created Exams List -->
       <div style="
-              background:white; padding:30px; border-radius:20px;
-              border:1px solid #ececec; box-shadow:0 20px 60px rgba(0,0,0,0.06);
-          ">
+            background:white; padding:30px; border-radius:20px;
+            border:1px solid #ececec; box-shadow:0 20px 60px rgba(0,0,0,0.06);
+        ">
         <h3 style="font-size:22px; font-weight:700; color:#374151; margin-bottom:20px; display:flex; gap:10px;">
           📝 Created Exams
         </h3>
@@ -520,98 +473,6 @@
     </div>
   </div>
   </div>
-
-  <!-- Student Dashboard -->
-  <div id="studentDashboard" class="dashboard student-dashboard hidden">
-    <div class="dashboard-header">
-      <button class="back-btn" onclick="showLandingPage()">← Back</button>
-      <h1 class="dashboard-title">🎓 Student Dashboard</h1>
-      <p class="dashboard-subtitle">Take interactive quizzes with mathematical support</p>
-    </div>
-
-    <div class="quiz-selector" <h2 style="color: white; margin-bottom: 20px; font-size: 2rem; font-weight: 700;">📋
-      Available Quizzes</h2>
-      <div class="quiz-cards" id="quizCards">
-        <div class="quiz-card" onclick="startStudentQuiz('teacher-quiz')">
-          <h3 class="quiz-card-title">📊 Teacher Created Quiz</h3>
-          <div class="quiz-card-info">
-            <span>📝 <span id="availableQuestions">0</span> Questions</span>
-            <span id="examTime">⏱️</span>
-          </div>
-          <p class="quiz-card-description">
-            Take the quiz created by your teacher with full mathematical equation support.
-          </p>
-          <div class="action-buttons">
-            <button class="btn btn-student">Start Quiz</button>
-          </div>
-        </div>
-
-        <div class="quiz-card" onclick="startStudentQuiz('sample-quiz')">
-          <h3 class="quiz-card-title">🧮 Sample Math Quiz</h3>
-          <div class="quiz-card-info">
-            <span>📝 5 Questions</span>
-            <span>⏱️ 30s per question</span>
-          </div>
-          <p class="quiz-card-description">
-            Try our sample mathematics quiz with various equation types and symbols.
-          </p>
-          <div class="action-buttons">
-            <button class="btn btn-student">Start Quiz</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Quiz Interface -->
-  <div id="quizContainer" class="quiz-container hidden">
-    <div id="previewMode" class="preview-mode hidden">
-      🔍 PREVIEW MODE - This is how students will see the quiz
-    </div>
-
-    <div class="quiz-header">
-      <h1 class="quiz-title">🏆 Quiz Time</h1>
-      <div class="progress-section">
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-        <div class="progress-text" id="progressText">Question 1 of 1</div>
-      </div>
-    </div>
-
-    <div id="quizContent">
-      <div class="question-section">
-        <div class="question-text" id="currentQuestion">Your question will appear here</div>
-        <div class="choices-container" id="choicesContainer">
-          <button class="choice-option" onclick="selectAnswer(0)">Choice A</button>
-          <button class="choice-option" onclick="selectAnswer(1)">Choice B</button>
-          <button class="choice-option" onclick="selectAnswer(2)">Choice C</button>
-          <button class="choice-option" onclick="selectAnswer(3)">Choice D</button>
-        </div>
-      </div>
-
-      <div class="quiz-controls">
-        <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()">⬅️ Previous</button>
-        <div class="score-display" id="scoreDisplay">Score: 0/0</div>
-        <div class="timer-display" id="timerDisplay">Time: 30s</div>
-        <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next ➡️</button>
-      </div>
-    </div>
-
-    <div id="resultsSection" class="results-section hidden">
-      <h2 style="color: var(--text-dark); margin-bottom: 20px; font-size: 2.5rem; font-weight: 800;">
-        🎉 Quiz Completed!
-      </h2>
-      <div class="final-score" id="finalScore">0/0</div>
-      <div class="result-message" id="resultMessage">Great job completing the quiz!</div>
-      <div id="detailedResults" style="margin: 20px 0;"></div>
-      <div class="action-buttons">
-        <button class="btn btn-success" onclick="restartQuiz()">🔄 Take Again</button>
-        <button class="btn btn-primary" onclick="backToDashboard()">📊 Back to Dashboard</button>
-      </div>
-    </div>
-  </div>
-
 </body>
 
 </html>

@@ -46,6 +46,7 @@ router.post("/api/assigned-questions", async (req, res) => {
 // GET: All students (for frontend selection)
 router.get("/api/students", async (req, res) => {
   try {
+    
     const students = await Auth.find({ role: "student" }, { _id: 1, name: 1, email: 1 });
     res.json(students);
   } catch (err) {

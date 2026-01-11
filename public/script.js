@@ -947,6 +947,10 @@ function goToStudentLogRegPage() {
   console.log("Redirecting to student login/registration page...");
 }
 
+function TeacherDash(){
+  window.location.href = "/teacherdash.html";
+}
+
     // Initialize app
 window.addEventListener('load', function () {
   const showstudent = localStorage.getItem('showstudent');
@@ -955,7 +959,8 @@ window.addEventListener('load', function () {
       this.window.location.href = "/index.html"; // ✅ এই ফাংশন already hideAllSections() + remove('hidden') handle করে
         localStorage.removeItem('showstudent'); // reset
     } else if (showteacher === 'true') {
-        showTeacherDashboard();
+      showTeacherDashboard();
+      
         localStorage.removeItem('showteacher'); // reset
     } else {
         showLandingPage(); // landing page দেখানোর জন্য
