@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Analytics Dashboard</title>
+
+  <!-- KaTeX CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+  <!-- KaTeX JS -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+  <!-- KaTeX auto-render extension -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- pdfmake-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!--tailwind css -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!--Bootstrap CSS -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/teacherdas.css">
+</head>
+
+<body>
+
+  <div class="floating-elements"></div>
+
+  <!-- Teacher Dashboard -->
+  <div id="teacherDashboard" class="dashboard teacher-dashboard">
+    <div class="dashboard-header">
+      <button class="back-btn" onclick="showLandingPage()">← Logout</button>
+      <h1 class="dashboard-title">👨‍🏫 Teacher Analytics Dashboard</h1>
+      <p class="dashboard-subtitle">Monitor student performance and manage exams</p>
+    </div>
+
+    <div class="teacher-panel">
+      <!-- Tab Navigation -->
+      <div class="tab-navigation">
+        <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+        <button class="tab-btn" onclick="switchTab('results')">📋 Student Results</button>
+        <button class="tab-btn" onclick="switchTab('exams')">📚 Exams</button>
+        <button class="tab-btn" onclick="switchTab('analytics')">📈 Analytics</button>
+        <button class="tab-btn" onclick="switchTab('students')">👥 Students</button>
+      </div>
+
+      <!-- Dashboard Tab -->
+      <div id="dashboardTab" class="tab-content">
+        <div class="section-title">
+          📊 Performance Overview
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number" style="color: #667eea;" id="totalStudents">0</div>
+            <div class="stat-label">Total Students</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" style="color: #10b981;" id="totalExams">0</div>
+            <div class="stat-label">Exams Conducted</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" style="color: #f59e0b;" id="avgScore">0%</div>
+            <div class="stat-label">Average Score</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" style="color: #ef4444;" id="pendingExams">0</div>
+            <div class="stat-label">Pending Exams</div>
+          </div>
+        </div>
+
+        <!-- Performance Chart -->
+        <div class="chart-container">
+          <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">📈 Overall Performance Trend</h3>
+          <canvas id="performanceChart" height="100"></canvas>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="section-title" style="margin-top: 40px;">
+          ⚡ Recent Activity
+        </div>
+        <div id="recentActivity" style="background: #f8fafc; padding: 20px; border-radius: 12px; min-height: 100px;">
+          <p style="text-align: center; color: #64748b; font-style: italic;">Loading recent activity...</p>
+        </div>
+      </div>
+
+      <!-- Student Results Tab -->
+      <div id="resultsTab" class="tab-content hidden">
+        <div class="section-title">
+          📋 All Student Results
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <select class="filter-select" id="filterExam" onchange="filterResults()">
+              <option value="">All Exams</option>
+            </select>
+            <select class="filter-select" id="filterClass" onchange="filterResults()">
+              <option value="">All Classes</option>
+              <option value="10">Class 10</option>
+              <option value="11">Class 11</option>
+              <option value="12">Class 12</option>
+            </select>
+            <select class="filter-select" id="filterGrade" onchange="filterResults()">
+              <option value="">All Grades</option>
+              <option value="A">A Grade</option>
+              <option value="B">B Grade</option>
+              <option value="C">C Grade</option>
+              <option value="D">D Grade</option>
+              <option value="F">F Grade</option>
+            </select>
+            <input type="text" class="filter-select" id="searchStudent" placeholder="Search student..."
+              onkeyup="filterResults()" style="flex-grow: 1;">
+          </div>
+        </div>
+
+        <!-- Results Table -->
+        <div style="overflow-x: auto;">
+          <table class="results-table" id="resultsTable">
+            <thead>
+              <tr>
+                <th onclick="sortTable('student')">Student Name ▾</th>
+                <th onclick="sortTable('exam')">Exam</th>
+                <th onclick="sortTable('score')">Score</th>
+                <th onclick="sortTable('percentage')">Percentage</th>
+                <th onclick="sortTable('grade')">Grade</th>
+                <th onclick="sortTable('date')">Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody">
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">
+                  Loading student results...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+          <div style="color: #64748b; font-size: 0.9rem;">
+            Showing <span id="startCount">1</span>-<span id="endCount">10</span> of <span id="totalCount">0</span>
+            results
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn" onclick="prevPage()" id="prevBtn" disabled>← Previous</button>
+            <button class="btn" onclick="nextPage()" id="nextBtn" disabled>Next →</button>
+          </div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="export-section">
+          <h3 style="font-weight: 600; margin-bottom: 15px; color: #1a202c;">📥 Export Results</h3>
+          <div class="action-buttons">
+            <button class="btn btn-primary" onclick="exportToPDF()">📄 Export to PDF</button>
+            <button class="btn btn-success" onclick="exportToExcel()">📊 Export to Excel</button>
+            <button class="btn btn-info" onclick="printResults()">🖨️ Print Results</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exams Tab -->
+      <div id="examsTab" class="tab-content hidden">
+        <div class="section-title">
+          📚 Exam Management
+        </div>
+
+        <!-- Exam Creation Options -->
+        <div class="form-section">
+          <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">➕ Create New Exam</h3>
+          <p style="color: #64748b; margin-bottom: 30px; line-height: 1.6;">
+            Choose how you want to create your exam. You can either manually create questions or use OCR technology to
+            scan
+            questions from physical papers.
+          </p>
+
+          <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 30px;">
+
+            <!-- Manual Exam Creation Card -->
+            <div
+              style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 2px solid #e2e8f0; text-align: center; transition: all 0.3s;">
+              <div style="font-size: 3.5rem; margin-bottom: 20px;">✍️</div>
+              <h4 style="font-size: 1.5rem; font-weight: 700; color: #1a202c; margin-bottom: 15px;">
+                Manual Exam Creation
+              </h4>
+              <p style="color: #64748b; margin-bottom: 25px; line-height: 1.6;">
+                Manually create and customize each question with full control over content, marks, and difficulty level.
+              </p>
+              <ul style="text-align: left; color: #4a5568; margin-bottom: 30px; padding-left: 20px;">
+                <li style="margin-bottom: 10px;">Create questions one by one</li>
+                <li style="margin-bottom: 10px;">Add images and formulas</li>
+                <li style="margin-bottom: 10px;">Set time limits per question</li>
+                <li>Preview before publishing</li>
+              </ul>
+              <button class="btn btn-teacher" onclick="goToManualExamCreation()" style="width: 100%; padding: 15px;">
+                📝 Create Manually
+              </button>
+            </div>
+
+            <!-- OCR Exam Creation Card -->
+            <div
+              style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 2px solid #e2e8f0; text-align: center; transition: all 0.3s;">
+              <div style="font-size: 3.5rem; margin-bottom: 20px;">📸</div>
+              <h4 style="font-size: 1.5rem; font-weight: 700; color: #1a202c; margin-bottom: 15px;">
+                OCR Exam Creation
+              </h4>
+              <p style="color: #64748b; margin-bottom: 25px; line-height: 1.6;">
+                Scan physical question papers using OCR technology to automatically extract and digitize questions.
+              </p>
+              <ul style="text-align: left; color: #4a5568; margin-bottom: 30px; padding-left: 20px;">
+                <li style="margin-bottom: 10px;">Upload scanned question papers</li>
+                <li style="margin-bottom: 10px;">Automatic text recognition</li>
+                <li style="margin-bottom: 10px;">Edit extracted content</li>
+                <li>Save time and effort</li>
+              </ul>
+              <button class="btn btn-primary" onclick="showOCRSystem()" style="width: 100%; padding: 15px;">
+                📷 Create with OCR
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <style>
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+      </style>
+      <script>
+        function goToManualExamCreation() {
+          // This would redirect to the manual exam creation page
+          // For now, we'll simulate by showing a form
+          alert('Redirecting to manual exam creation page...');
+          window.location.href = '/html/index.html';
+        }
+        function showOCRSystem() {
+          // This would redirect to the OCR exam creation page
+          // For now, we'll simulate by showing a form
+          alert('Redirecting to OCR exam creation page...');
+          window.location.href = '/html/ocrsystem.html';
+        }
+      </script>
+
+
+      <!-- Analytics Tab -->
+      <div id="analyticsTab" class="tab-content hidden">
+        <div class="section-title">
+          📈 Detailed Analytics
+        </div>
+
+        <!-- Analytics Charts -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+          <div class="chart-container">
+            <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">📊 Grade Distribution</h3>
+            <canvas id="gradeChart" height="200"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">📈 Score Distribution</h3>
+            <canvas id="scoreChart" height="200"></canvas>
+          </div>
+        </div>
+
+        <!-- Performance by Exam -->
+        <div class="chart-container" style="margin-top: 20px;">
+          <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">📊 Performance by Exam</h3>
+          <canvas id="examChart" height="100"></canvas>
+        </div>
+
+        <!-- Top Performers -->
+        <div style="margin-top: 30px;">
+          <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">🏆 Top Performers</h3>
+          <div id="topPerformers"
+            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+            <!-- Top performers will be loaded here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Students Tab -->
+      <div id="studentsTab" class="tab-content hidden">
+        <div class="section-title">
+          👥 Student Management
+        </div>
+
+        <!-- Add Student Form -->
+        <div class="form-section">
+          <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">➕ Add New Student</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" class="form-input" id="studentName" placeholder="Enter student name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" id="studentEmail" placeholder="student@example.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Class</label>
+              <select class="form-input" id="studentClass">
+                <option value="">Select Class</option>
+                <option value="10">Class 10</option>
+                <option value="11">Class 11</option>
+                <option value="12">Class 12</option>
+              </select>
+            </div>
+          </div>
+          <div class="action-buttons">
+            <button class="btn btn-teacher" onclick="addStudent()">👤 Add Student</button>
+            <button class="btn" onclick="clearStudentForm()">🗑️ Clear</button>
+          </div>
+        </div>
+
+        <!-- Students List -->
+        <div style="margin-top: 40px;">
+          <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">📋 All Students</h3>
+          <div style="overflow-x: auto;">
+            <table class="results-table">
+              <thead>
+                <tr>
+                  <th>Student ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Class</th>
+                  <th>Exams Taken</th>
+                  <th>Avg. Score</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="studentsList">
+                <!-- Students will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/teacherdas.js"></script>
+</body>
+
+</html>

@@ -943,12 +943,12 @@ function autoWrapMath(text) {
 
 //login and registration page redirect function
 function goToStudentLogRegPage() {
-  window.location.href = "/authentication.html";
+  window.location.href = "/html/authentication.html";
   console.log("Redirecting to student login/registration page...");
 }
 
 function TeacherDash(){
-  window.location.href = "/teacherdash.html";
+  window.location.href = "/html/teacherdash.html";
 }
 
     // Initialize app
@@ -956,7 +956,7 @@ window.addEventListener('load', function () {
   const showstudent = localStorage.getItem('showstudent');
   const showteacher= localStorage.getItem('showteacher');
     if (showstudent === 'true') {
-      this.window.location.href = "/index.html"; // ✅ এই ফাংশন already hideAllSections() + remove('hidden') handle করে
+      this.window.location.href = "/html/index.html"; // ✅ এই ফাংশন already hideAllSections() + remove('hidden') handle করে
         localStorage.removeItem('showstudent'); // reset
     } else if (showteacher === 'true') {
       showTeacherDashboard();
