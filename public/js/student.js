@@ -962,7 +962,7 @@ function remainingTime(duration) {
 
         // Show landing page
         function showLandingPage() {
-            window.location.href = "/index.html";
+            window.location.href = "/html/index.html";
         }
 
         // Utility functions
