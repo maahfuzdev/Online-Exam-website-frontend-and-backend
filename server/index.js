@@ -3,9 +3,10 @@ const app = express();
 const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
+require('dotenv').config({path:'./server/.env'});
 
 // Database connection
-mongoose.connect("mongodb://localhost:27017/online_exam_database")
+mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log("✅ MongoDB Connected"))
     .catch(err => console.log(err));
 
@@ -57,7 +58,7 @@ app.use('/assignments', assignmentRouter);
 
 
 // Start server
-const PORT = 3000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
