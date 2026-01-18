@@ -170,10 +170,10 @@ document.querySelectorAll('#questionInput, #choice1, #choice2, #choice3, #choice
 
 
   function updateQuestionPreview() {
-  const inputs = document.querySelectorAll('#questionInput,#choice1,#choice2,#choice3,#choice4');
+  const inputdata = document.querySelectorAll('#questionInput,#choice1,#choice2,#choice3,#choice4');
   const outputs = document.querySelectorAll('#questionPreview,#choice1Preview,#choice2Preview,#choice3Preview,#choice4Preview');
 
-    inputs.forEach((inp, index) => {
+    inputdata.forEach((inp, index) => {
       const value = inp.value;
       const out = outputs[index];
 
