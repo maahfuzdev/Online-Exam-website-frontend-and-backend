@@ -225,9 +225,23 @@
       }
     }
 
-    .password-strength {
-      margin-top: 8px;
-      font-size: 0.9rem;
+    .password-container {
+      position: relative;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: var(--text-light);
+      font-size: 1.2rem;
+      transition: color 0.3s ease;
+    }
+
+    .toggle-password:hover {
+      color: var(--text-dark);
     }
 
     .strength-weak {
@@ -321,7 +335,10 @@
 
       <div class="form-group">
         <label class="form-label">Password</label>
-        <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password">
+        <div class="password-container">
+          <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password">
+          <span class="toggle-password" onclick="togglePassword('loginPassword')">👁️</span>
+        </div>
       </div>
 
       <button class="btn btn-primary" onclick="signIn()" id="signInBtn">
@@ -348,14 +365,20 @@
 
       <div class="form-group">
         <label class="form-label">Password</label>
-        <input type="password" id="registerPassword" class="form-input" placeholder="Create a password"
-          oninput="checkPasswordStrength()">
+        <div class="password-container">
+          <input type="password" id="registerPassword" class="form-input" placeholder="Create a password"
+            oninput="checkPasswordStrength()">
+          <span class="toggle-password" onclick="togglePassword('registerPassword')">👁️</span>
+        </div>
         <div id="passwordStrength" class="password-strength"></div>
       </div>
 
       <div class="form-group">
         <label class="form-label">Confirm Password</label>
-        <input type="password" id="confirmPassword" class="form-input" placeholder="Confirm your password">
+        <div class="password-container">
+          <input type="password" id="confirmPassword" class="form-input" placeholder="Confirm your password">
+          <span class="toggle-password" onclick="togglePassword('confirmPassword')">👁️</span>
+        </div>
       </div>
 
       <button class="btn btn-secondary" onclick="signUp()" id="signUpBtn">
@@ -601,6 +624,15 @@
       } else {
         strengthDiv.innerHTML = "<span class='strength-strong'>Strong ✓</span>";
       }
+    }
+
+    // Toggle Password Visibility
+    function togglePassword(inputId) {
+      const input = document.getElementById(inputId);
+      const icon = input.nextElementSibling;
+      const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+      input.setAttribute('type', type);
+      icon.textContent = type === 'password' ? '👁️' : '🙈';
     }
 
     // UI Helper Functions

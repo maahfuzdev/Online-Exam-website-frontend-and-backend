@@ -253,7 +253,7 @@ function addQuestion(event) {
     .then(data => {
         // MongoDB success
         question._id = data.question._id;
-        //quizQuestions.push(question);
+        quizQuestions.push(question);
         updateTeacherStats();
         updateQuestionsList();
         clearForm();
@@ -533,47 +533,143 @@ updateDBStatus();
 
       startQuiz('teacher-quiz', true);
     }
-// Export quiz as PDF
-   async function exportQuizPDF() {
+// Export quiz as PDF with proper math rendering
+async function exportQuizPDF() {
   if (quizQuestions.length === 0) {
     alert('⚠️ No questions to export!');
     return;
   }
 
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+  // Show loading message
+  const originalButton = document.querySelector('button[onclick="exportQuizPDF()"]');
+  if (originalButton) {
+    originalButton.innerHTML = '⏳ Generating PDF...';
+    originalButton.disabled = true;
+  }
 
-  let y = 20; // vertical position
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
 
-  doc.setFontSize(16);
-  doc.text("Exam Question Paper", 20, y);
-  y += 10;
+    // Create temporary HTML content with rendered math
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.top = '-9999px';
+    tempContainer.style.width = '800px';
+    tempContainer.style.fontFamily = 'Arial, sans-serif';
+    tempContainer.style.fontSize = '14px';
+    tempContainer.style.lineHeight = '1.4';
+    tempContainer.style.padding = '20px';
+    tempContainer.style.backgroundColor = 'white';
+    document.body.appendChild(tempContainer);
 
-  doc.setFontSize(12);
+    // Add title
+    const title = document.createElement('h1');
+    title.textContent = 'Exam Question Paper';
+    title.style.fontSize = '20px';
+    title.style.fontWeight = 'bold';
+    title.style.marginBottom = '20px';
+    title.style.textAlign = 'center';
+    tempContainer.appendChild(title);
 
-  quizQuestions.forEach((q, index) => {
-    // Question title
-    doc.text(`${index + 1}. ${q.question}`, 20, y);
-    y += 8;
+    // Add questions
+    for (let i = 0; i < quizQuestions.length; i++) {
+      const q = quizQuestions[i];
 
-    // Choices
-    const choices = ["A", "B", "C", "D"];
-    q.choices.forEach((opt, i) => {
-      doc.text(`   ${choices[i]}. ${opt}`, 25, y);
-      y += 7;
+      const questionDiv = document.createElement('div');
+      questionDiv.style.marginBottom = '15px';
+
+      // Question text
+      const questionP = document.createElement('p');
+      questionP.style.fontWeight = 'bold';
+      questionP.style.marginBottom = '8px';
+      questionP.innerHTML = `${i + 1}. ${autoWrapMath(q.question)}`;
+      questionDiv.appendChild(questionP);
+
+      // Render math in question
+      renderMathInElement(questionP, {
+        delimiters: [
+          {left: "\\(", right: "\\)", display: false},
+          {left: "\\[", right: "\\]", display: true},
+          {left: "$", right: "$", display: false}
+        ],
+        throwOnError: false
+      });
+
+      // Choices
+      const choices = ["A", "B", "C", "D"];
+      for (let j = 0; j < q.choices.length; j++) {
+        const choiceP = document.createElement('p');
+        choiceP.style.marginLeft = '20px';
+        choiceP.style.marginBottom = '4px';
+        choiceP.innerHTML = `${choices[j]}. ${autoWrapMath(q.choices[j])}`;
+        questionDiv.appendChild(choiceP);
+
+        // Render math in choice
+        renderMathInElement(choiceP, {
+          delimiters: [
+            {left: "\\(", right: "\\)", display: false},
+            {left: "\\[", right: "\\]", display: true},
+            {left: "$", right: "$", display: false}
+          ],
+          throwOnError: false
+        });
+      }
+
+      tempContainer.appendChild(questionDiv);
+    }
+
+    // Wait for math rendering to complete
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Capture as image
+    const canvas = await html2canvas(tempContainer, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      width: 800,
+      height: tempContainer.offsetHeight
     });
 
-    y += 5; // extra gap after each question
+    // Clean up
+    document.body.removeChild(tempContainer);
 
-    // Auto new page if needed
-    if (y > 270) {
+    // Add image to PDF
+    const imgData = canvas.toDataURL('image/png');
+    const imgWidth = 210; // A4 width in mm
+    const pageHeight = 297; // A4 height in mm
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    // Add first page
+    doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    // Add additional pages if needed
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
       doc.addPage();
-      y = 20;
+      doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
     }
-  });
 
-  // Download
-  doc.save("exam_questions.pdf");
+    // Download
+    doc.save("exam_questions.pdf");
+
+  } catch (error) {
+    console.error('PDF export error:', error);
+    alert('❌ Error generating PDF. Please try again.');
+  } finally {
+    // Reset button
+    if (originalButton) {
+      originalButton.innerHTML = '📥 Download Exam PDF';
+      originalButton.disabled = false;
+    }
+  }
 }
 
     // Student functions

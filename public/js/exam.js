@@ -1,6 +1,7 @@
 // Global variables for exams
 let students = [];
 let exams = [];
+let quizQuestions = [];
 let selectedStudents = new Set();
 let selectedQuestions = new Set();
 
@@ -31,7 +32,24 @@ async function loadStudents() {
 // Load questions for exam creation
 async function loadExamQuestions() {
     try {
-        // Use your existing quizQuestions or fetch from MongoDB
+        // Get teacher ID from localStorage
+        const teacherId = localStorage.getItem('userId');
+        if (!teacherId) {
+            console.error("No teacher ID found in localStorage");
+            showMessage("Please log in as a teacher first", "error");
+            return;
+        }
+
+        // Fetch questions from API
+        const response = await fetch(`http://localhost:3000/api/questions/${teacherId}`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch questions: ${response.status}`);
+        }
+
+        const questions = await response.json();
+        console.log("Fetched questions:", questions);
+        quizQuestions = questions;
+
         renderQuestionsList();
         updateQuestionsCount();
     } catch (error) {
