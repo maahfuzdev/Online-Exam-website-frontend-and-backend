@@ -24,7 +24,8 @@
 function init() {
       
       updateTeacherStats();
-      updateStudentStats();
+  updateStudentStats();
+  setupInputFocusEvents();
 
       // Add event listeners for real-time preview
   document.getElementById('questionInput').addEventListener('input', updateQuestionPreview);
@@ -70,7 +71,33 @@ function init() {
     
 
 
-let activeInputId = "questionInput"; // default হলো questionInput
+
+let activeInputId = 'questionInput';
+
+function setupInputFocusEvents() {
+    const inputs = [  // ভ্যারিয়েবলের নাম 'inputs' করুন
+        'questionInput',
+        'choice1',
+        'choice2', 
+        'choice3',
+        'choice4',
+        'examTitle',
+        'marksPerQuestion',
+        'totalTime',
+        'startTime',
+        'endTime'
+    ];
+    
+    inputs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('focus', () => {
+                activeInputId = id;
+                console.log(`Active input: ${activeInputId}`);
+            });
+        }
+    });
+}
 
 // সব input এ onfocus event লাগাই
 document.querySelectorAll("input, textarea").forEach(el => {
@@ -80,30 +107,64 @@ document.querySelectorAll("input, textarea").forEach(el => {
   
 });
 
-    function insertMathSymbol(mathCode) {
-      const activeInput = document.getElementById(activeInputId);
-      const start = activeInput.selectionStart;
-      const end = activeInput.selectionEnd;
-      const text = activeInput.value;
+function insertMathSymbol(mathCode) {
+    // প্রথমে activeInputId অনুযায়ী খুঁজুন
+    let activeInput = document.getElementById(activeInputId);
+    
+    // যদি না পাওয়া যায়, তাহলে questionInput-এ ফিরে যান
+    if (!activeInput) {
+        console.warn(`Element with id "${activeInputId}" not found, falling back to questionInput`);
+        activeInputId = 'questionInput';
+        activeInput = document.getElementById(activeInputId);
+        
+        if (!activeInput) {
+            alert('Error: Could not find any input field!');
+            return;
+        }
+    }
+    
+    // কার্সর পজিশন পান
+    const start = activeInput.selectionStart;
+    const end = activeInput.selectionEnd;
+    const text = activeInput.value;
 
-      const before = text.substring(0, start);
-      const after = text.substring(end, text.length);
+    const before = text.substring(0, start);
+    const after = text.substring(end, text.length);
 
-      activeInput.value = before + mathCode + after;
+    // নতুন টেক্সট ইনসার্ট করুন
+    activeInput.value = before + mathCode + after;
 
-      // Position cursor
-      const newPos = start + mathCode.length;
-      activeInput.setSelectionRange(newPos, newPos);
-      activeInput.focus();
+    // কার্সর পজিশন আপডেট করুন
+    const newPos = start + mathCode.length;
+    activeInput.setSelectionRange(newPos, newPos);
+    activeInput.focus();
 
-      updateQuestionPreview();
+    // Preview আপডেট করুন
+    if (['questionInput', 'choice1', 'choice2', 'choice3', 'choice4'].includes(activeInputId)) {
+        updateQuestionPreview();
+    }
 }
 
-// সব input-এ live preview চালু
-document.querySelectorAll('#questionInput, #choice1, #choice2, #choice3, #choice4')
-  .forEach(el => el.addEventListener("input", updateQuestionPreview));
+// Helper function to insert text at cursor position
+function insertMathAtCursor(element, mathCode) {
+    const start = element.selectionStart;
+    const end = element.selectionEnd;
+    const text = element.value;
 
-// সব input-এ live preview চালু
+    const before = text.substring(0, start);
+    const after = text.substring(end, text.length);
+
+    element.value = before + mathCode + after;
+
+    // Position cursor
+    const newPos = start + mathCode.length;
+    element.setSelectionRange(newPos, newPos);
+    element.focus();
+}
+
+
+
+//সব input-এ live preview চালু
 document.querySelectorAll('#questionInput, #choice1, #choice2, #choice3, #choice4')
   .forEach(el => el.addEventListener("input", updateQuestionPreview));
 
@@ -135,6 +196,10 @@ document.querySelectorAll('#questionInput, #choice1, #choice2, #choice3, #choice
 
     });
 }
+
+
+
+
 
 
     

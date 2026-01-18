@@ -1,7 +1,7 @@
 // Global variables for exams
 let students = [];
 let exams = [];
-let quizQuestions = [];
+// let quizQuestions = [];
 let selectedStudents = new Set();
 let selectedQuestions = new Set();
 
