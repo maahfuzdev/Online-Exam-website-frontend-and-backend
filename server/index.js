@@ -3,10 +3,9 @@ const app = express();
 const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
-require('dotenv').config({path:'./server/.env'});
-
+ require('dotenv').config({path:'./server/.env'});
 // Database connection
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect('mongodb+srv://maahfuz_db_user:BALcnkm9XnmieqSs@cluster0.in2mhyy.mongodb.net/online_exam_database?retryWrites=true&w=majority')
     .then(() => console.log("✅ MongoDB Connected"))
     .catch(err => console.log(err));
 
@@ -58,7 +57,7 @@ app.use('/assignments', assignmentRouter);
 
 
 // Start server
-const PORT = process.env.PORT;
+const PORT = process.env.PORT||3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

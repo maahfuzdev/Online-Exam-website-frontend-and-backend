@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDF থেকে প্রশ্ন তৈরি করুন</title>
+  <title>Create Questions from PDF</title>
   <!-- PDF.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>
@@ -14,452 +14,17 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
-      min-height: 100vh;
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .container {
-      max-width: 1000px;
-      width: 100%;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      overflow: hidden;
-    }
-
-    .header {
-      background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
-      color: white;
-      padding: 30px 40px;
-      text-align: center;
-    }
-
-    .header h1 {
-      font-size: 2.2rem;
-      margin-bottom: 10px;
-      background: linear-gradient(135deg, #fff 0%, #bbdefb 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .main-content {
-      padding: 30px;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .form-section {
-      background: #f8fafc;
-      border-radius: 15px;
-      padding: 25px;
-      margin-bottom: 25px;
-      border: 2px solid #e2e8f0;
-    }
-
-    .section-title {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #1a202c;
-      margin-bottom: 25px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn {
-      padding: 12px 25px;
-      border: none;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(66, 133, 244, 0.3);
-    }
-
-    .btn-secondary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-
-    .btn-success {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: white;
-    }
-
-    .btn-warning {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: white;
-    }
-
-    .form-input {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #e2e8f0;
-      border-radius: 10px;
-      font-size: 1rem;
-      transition: all 0.3s;
-    }
-
-    .form-input:focus {
-      outline: none;
-      border-color: #4285f4;
-      box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-label {
-      display: block;
-      font-weight: 600;
-      color: #4a5568;
-      margin-bottom: 8px;
-    }
-
-    .upload-area {
-      border: 3px dashed #cbd5e0;
-      border-radius: 15px;
-      padding: 40px;
-      text-align: center;
-      background: #f8fafc;
-      transition: all 0.3s;
-      cursor: pointer;
-      min-height: 200px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .upload-area:hover {
-      border-color: #4285f4;
-      background: #f0f9ff;
-    }
-
-    .upload-icon {
-      font-size: 3rem;
-      color: #4285f4;
-      margin-bottom: 15px;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    .loading-spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid #f3f3f3;
-      border-top: 5px solid #4285f4;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-
-    .question-item {
-      padding: 15px;
-      margin-bottom: 12px;
-      border: 2px solid #e2e8f0;
-      border-radius: 10px;
-      background: white;
-      transition: all 0.3s;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      margin-top: 25px;
-      flex-wrap: wrap;
-    }
-
-    .preview-box {
-      background: white;
-      border-radius: 10px;
-      padding: 15px;
-      border: 2px solid #e2e8f0;
-      margin-top: 15px;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    .step-indicator {
-      display: flex;
-      justify-content: space-between;
-      margin: 25px 0;
-      position: relative;
-    }
-
-    .step-indicator::before {
-      content: '';
-      position: absolute;
-      top: 15px;
-      left: 10%;
-      right: 10%;
-      height: 3px;
-      background: #e2e8f0;
-      z-index: 1;
-    }
-
-    .step {
-      text-align: center;
-      z-index: 2;
-      position: relative;
-      flex: 1;
-    }
-
-    .step-circle {
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
-      background: #e2e8f0;
-      color: #64748b;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 8px;
-      font-weight: bold;
-      font-size: 1.1rem;
-      transition: all 0.3s;
-    }
-
-    .step.active .step-circle {
-      background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
-      color: white;
-      transform: scale(1.1);
-    }
-
-    .step.completed .step-circle {
-      background: #10b981;
-      color: white;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 15px;
-    }
-
-    .file-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-      background: white;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      border: 2px solid #e2e8f0;
-    }
-
-    .mcq-option {
-      padding: 8px 12px;
-      margin: 6px 0;
-      background: #f8fafc;
-      border-radius: 8px;
-      border-left: 4px solid #4285f4;
-    }
-
-    .mcq-option.correct {
-      background: #d1fae5;
-      border-left-color: #10b981;
-    }
-
-    .success-message {
-      text-align: center;
-      padding: 40px;
-    }
-
-    .success-icon {
-      font-size: 4rem;
-      color: #10b981;
-      margin-bottom: 15px;
-    }
-
-    .export-options {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      margin-top: 25px;
-      flex-wrap: wrap;
-    }
-
-    .question-counter {
-      background: #4285f4;
-      color: white;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      display: inline-block;
-      margin-right: 8px;
-    }
-
-    .marks-badge {
-      background: #10b981;
-      color: white;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      display: inline-block;
-      margin-right: 8px;
-    }
-
-    .progress-container {
-      background: #e2e8f0;
-      height: 8px;
-      border-radius: 4px;
-      margin: 15px 0;
-      overflow: hidden;
-    }
-
-    .progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #4285f4 0%, #34a853 100%);
-      border-radius: 4px;
-      transition: width 0.5s ease;
-      width: 0%;
-    }
-
-    .exam-preview {
-      background: white;
-      border: 2px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 20px;
-      margin-top: 15px;
-      font-family: 'Times New Roman', serif;
-    }
-
-    .preview-header {
-      text-align: center;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #1a202c;
-      padding-bottom: 15px;
-    }
-
-    .preview-question {
-      margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 1px dashed #e2e8f0;
-    }
-
-    .language-selector {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 15px;
-      flex-wrap: wrap;
-    }
-
-    .lang-btn {
-      padding: 8px 15px;
-      border: 2px solid #e2e8f0;
-      border-radius: 20px;
-      background: white;
-      cursor: pointer;
-      transition: all 0.3s;
-      min-width: 70px;
-      font-size: 0.9rem;
-    }
-
-    .lang-btn.active {
-      background: #4285f4;
-      color: white;
-      border-color: #4285f4;
-    }
-
-    .ai-response-box {
-      background: #f0f9ff;
-      border: 2px solid #0ea5e9;
-      border-radius: 10px;
-      padding: 15px;
-      margin-top: 15px;
-      font-family: monospace;
-      max-height: 250px;
-      overflow-y: auto;
-      font-size: 0.9rem;
-    }
-
-    .count-control {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .count-control button {
-      padding: 8px 15px;
-      background: #e2e8f0;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .count-control input {
-      width: 80px;
-      text-align: center;
-    }
-
-    .info-box {
-      background: #e8f0fe;
-      border: 2px solid #4285f4;
-      border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 15px;
-      font-size: 0.9rem;
-      color: #1a237e;
-    }
-
-    .error-message {
-      background: #fee;
-      border: 2px solid #f00;
-      border-radius: 10px;
-      padding: 15px;
-      margin: 15px 0;
-      color: #c00;
-    }
-  </style>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/ocr.css">
+  <!-- Custom JS -->
+  <script defer src="/js/ocr.js"></script>
 </head>
 
 <body>
   <div class="container">
     <div class="header">
-      <h1><i class="fas fa-robot"></i> PDF থেকে MCQ প্রশ্ন তৈরি করুন</h1>
-      <p>PDF আপলোড করুন → AI প্রশ্ন তৈরি করবে → এক্সাম পেপার ডাউনলোড করুন</p>
+      <h1><i class="fas fa-robot"></i> Create Questions from PDF</h1>
+      <p>Upload PDF → AI generates questions → Download Exam Paper</p>
     </div>
 
     <div class="main-content">
@@ -467,39 +32,39 @@
       <div class="step-indicator">
         <div class="step active" id="step1">
           <div class="step-circle">1</div>
-          <div style="font-weight: 600;">PDF আপলোড</div>
+          <div style="font-weight: 600;">Upload PDF</div>
         </div>
         <div class="step" id="step2">
           <div class="step-circle">2</div>
-          <div style="font-weight: 600;">কনফিগার</div>
+          <div style="font-weight: 600;">Configure</div>
         </div>
         <div class="step" id="step3">
           <div class="step-circle">3</div>
-          <div style="font-weight: 600;">AI প্রসেসিং</div>
+          <div style="font-weight: 600;">AI Processing</div>
         </div>
         <div class="step" id="step4">
           <div class="step-circle">4</div>
-          <div style="font-weight: 600;">ডাউনলোড</div>
+          <div style="font-weight: 600;">Download</div>
         </div>
       </div>
 
       <!-- Step 1: Upload PDF -->
       <div id="step1Section" class="form-section">
-        <div class="section-title"><i class="fas fa-file-pdf"></i> ধাপ ১: আপনার PDF ফাইল আপলোড করুন</div>
+        <div class="section-title"><i class="fas fa-file-pdf"></i> Step 1: Upload Your PDF File</div>
 
         <div class="info-box">
           <i class="fas fa-info-circle"></i>
-          <strong>একটি PDF ফাইল আপলোড করুন (বই, নোটস, সিলেবাস)</strong><br>
-          AI আপনার PDF পড়ে স্বয়ংক্রিয়ভাবে প্রশ্ন তৈরি করবে।
+          <strong>Upload a PDF file (book, notes, syllabus)</strong><br>
+          AI will read your PDF and automatically create questions.
         </div>
 
         <div class="form-group">
           <div class="upload-area" id="uploadArea">
             <div class="upload-icon">📚</div>
-            <h3 style="margin-bottom: 10px;">PDF ফাইল আপলোড করুন</h3>
+            <h3 style="margin-bottom: 10px;">Upload PDF File</h3>
             <p style="color: #64748b; text-align: center; max-width: 350px; margin: 0 auto; font-size: 0.9rem;">
-              আপনার PDF বই বা নোটস এখানে আপলোড করুন<br>
-              সর্বোচ্চ সাইজ: 10MB
+              Upload your PDF book or notes here<br>
+              Maximum size: 10MB
             </p>
           </div>
           <input type="file" id="pdfInput" accept=".pdf" style="display: none;" onchange="handlePDFUpload(event)">
@@ -521,25 +86,32 @@
 
         <div class="action-buttons">
           <button class="btn btn-primary" onclick="goToStep(2)" id="nextStep1Btn" disabled>
-            পরবর্তী <i class="fas fa-arrow-right"></i>
+            Next <i class="fas fa-arrow-right"></i>
           </button>
         </div>
       </div>
 
       <!-- Step 2: Configuration -->
       <div id="step2Section" class="form-section hidden">
-        <div class="section-title"><i class="fas fa-cog"></i> ধাপ ২: আপনার এক্সাম কনফিগার করুন</div>
+        <div class="section-title"><i class="fas fa-cog"></i> Step 2: Configure Your Exam</div>
 
         <div class="info-box">
           <i class="fas fa-check-circle"></i>
-          <strong>Gemini AI 1.5 Flash Model ব্যবহার করা হচ্ছে</strong><br>
-          নতুন API endpoint যা এখন কাজ করে!
+          <strong>Intelligent Question Generation</strong><br>
+          Creates meaningful questions from PDF content with smart fallback
+        </div>
+
+        <div id="detectedTopics" class="hidden">
+          <label class="form-label">🎯 Detected Topics from PDF</label>
+          <div style="background: #f0f9ff; padding: 12px; border-radius: 10px; margin-bottom: 15px;">
+            <div id="topicsList"></div>
+          </div>
         </div>
 
         <div class="grid-2">
           <div>
             <div class="form-group">
-              <label class="form-label">🎯 প্রশ্নের সংখ্যা</label>
+              <label class="form-label">🎯 Number of Questions</label>
               <div class="count-control">
                 <button onclick="adjustQuestionCount(-5)" style="padding: 10px 15px;">
                   <i class="fas fa-minus"></i> 5
@@ -553,7 +125,7 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">📊 প্রশ্নের ধরণ</label>
+              <label class="form-label">📊 Question Type</label>
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 <button class="lang-btn active" onclick="selectType('mcq')">
                   MCQ
@@ -567,23 +139,23 @@
 
           <div>
             <div class="form-group">
-              <label class="form-label">🌐 প্রশ্নের ভাষা</label>
+              <label class="form-label">🌐 Question Language</label>
               <div class="language-selector">
                 <button class="lang-btn active" onclick="selectLanguage('English')">
                   English
                 </button>
                 <button class="lang-btn" onclick="selectLanguage('Bengali')">
-                  বাংলা
+                  Bengali
                 </button>
                 <button class="lang-btn" onclick="selectLanguage('Hindi')">
-                  हिंदी
+                  Hindi
                 </button>
               </div>
             </div>
 
             <div class="form-group">
-              <label class="form-label">📝 এক্সাম টাইটেল</label>
-              <input type="text" id="examTitle" class="form-input" placeholder="উদাহরণ: ক্লাস ১০ গণিত ফাইনাল এক্সাম">
+              <label class="form-label">📝 Exam Title</label>
+              <input type="text" id="examTitle" class="form-input" placeholder="Example: Class 10 Math Final Exam">
             </div>
           </div>
         </div>
@@ -591,7 +163,7 @@
         <!-- Extracted Text Preview -->
         <div id="extractedTextPreview" class="hidden">
           <div class="form-group">
-            <label class="form-label">📄 PDF থেকে পড়া টেক্সট (প্রথম 500 অক্ষর)</label>
+            <label class="form-label">📄 Extracted Text from PDF (First 500 characters)</label>
             <div
               style="background: #f8fafc; padding: 12px; border-radius: 10px; max-height: 150px; overflow-y: auto; font-size: 0.9rem;">
               <p id="extractedText" style="white-space: pre-wrap; font-family: monospace;"></p>
@@ -601,22 +173,22 @@
 
         <div class="action-buttons">
           <button class="btn" onclick="goToStep(1)">
-            <i class="fas fa-arrow-left"></i> পেছনে
+            <i class="fas fa-arrow-left"></i> Back
           </button>
           <button class="btn btn-primary" onclick="startAIProcessing()" id="processBtn">
-            <i class="fas fa-robot"></i> AI দিয়ে প্রশ্ন তৈরি করুন
+            <i class="fas fa-robot"></i> Generate Questions
           </button>
         </div>
       </div>
 
       <!-- Step 3: AI Processing -->
       <div id="step3Section" class="form-section hidden">
-        <div class="section-title"><i class="fas fa-brain"></i> ধাপ ৩: AI প্রশ্ন তৈরি করছে</div>
+        <div class="section-title"><i class="fas fa-brain"></i> Step 3: Generating Questions</div>
 
         <div style="text-align: center; padding: 25px;">
           <div class="loading-spinner"></div>
           <h3 style="margin: 15px 0; color: #1a202c;" id="processingStatus">
-            AI আপনার PDF পড়ছে...
+            Analyzing PDF content...
           </h3>
 
           <div class="progress-container">
@@ -627,27 +199,32 @@
             <div id="processingSteps">
               <div style="margin: 8px 0; color: #4a5568;">
                 <i class="fas fa-spinner fa-spin" style="color: #4285f4;"></i>
-                PDF থেকে টেক্সট পড়া হচ্ছে...
+                Reading text from PDF...
               </div>
               <div style="margin: 8px 0; color: #4a5568;">
                 <i class="far fa-circle"></i>
-                Gemini AI দিয়ে এনালাইসিস...
+                Analyzing content...
               </div>
               <div style="margin: 8px 0; color: #4a5568;">
                 <i class="far fa-circle"></i>
-                প্রশ্ন তৈরি করা হচ্ছে...
+                Creating questions...
               </div>
               <div style="margin: 8px 0; color: #4a5568;">
                 <i class="far fa-circle"></i>
-                এক্সাম ফরমেট করা হচ্ছে...
+                Formatting exam...
               </div>
             </div>
           </div>
 
+          <div id="fallbackMode" class="fallback-mode hidden">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Using Intelligent Mode:</strong> Generating questions from PDF content...
+          </div>
+
           <div id="aiResponsePreview" class="hidden">
-            <label class="form-label">🤖 AI রেসপন্স</label>
+            <label class="form-label">🤖 AI Response</label>
             <div class="ai-response-box" id="aiResponseText">
-              AI রেসপন্স দেখানো হবে...
+              AI response will appear here...
             </div>
           </div>
 
@@ -659,36 +236,36 @@
 
         <div class="action-buttons">
           <button class="btn" onclick="goToStep(2)">
-            <i class="fas fa-arrow-left"></i> পেছনে
+            <i class="fas fa-arrow-left"></i> Back
           </button>
           <button class="btn btn-primary" onclick="goToStep(4)" id="nextStep3Btn" disabled>
-            প্রশ্ন দেখুন <i class="fas fa-arrow-right"></i>
+            View Questions <i class="fas fa-arrow-right"></i>
           </button>
         </div>
       </div>
 
       <!-- Step 4: Download/View -->
       <div id="step4Section" class="form-section hidden">
-        <div class="section-title"><i class="fas fa-file-download"></i> ধাপ ৪: এক্সাম পেপার ডাউনলোড করুন</div>
+        <div class="section-title"><i class="fas fa-file-download"></i> Step 4: Download Exam Paper</div>
 
         <div class="form-group">
-          <label class="form-label">📊 তৈরি করা প্রশ্নের সারাংশ</label>
+          <label class="form-label">📊 Generated Questions Summary</label>
           <div style="background: #e8f0fe; padding: 15px; border-radius: 10px;">
             <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
               <div>
-                <div style="color: #64748b; font-size: 0.8rem;">মোট প্রশ্ন</div>
+                <div style="color: #64748b; font-size: 0.8rem;">Total Questions</div>
                 <div style="font-size: 1.8rem; font-weight: bold; color: #1a202c;" id="totalQuestionsCount">0</div>
               </div>
               <div>
-                <div style="color: #64748b; font-size: 0.8rem;">মোট মার্কস</div>
+                <div style="color: #64748b; font-size: 0.8rem;">Total Marks</div>
                 <div style="font-size: 1.8rem; font-weight: bold; color: #1a202c;" id="totalMarksCount">0</div>
               </div>
               <div>
-                <div style="color: #64748b; font-size: 0.8rem;">ভাষা</div>
+                <div style="color: #64748b; font-size: 0.8rem;">Language</div>
                 <div style="font-size: 1.2rem; font-weight: bold; color: #1a202c;" id="finalLanguage">English</div>
               </div>
               <div>
-                <div style="color: #64748b; font-size: 0.8rem;">প্রশ্ন ধরণ</div>
+                <div style="color: #64748b; font-size: 0.8rem;">Question Type</div>
                 <div style="font-size: 1.2rem; font-weight: bold; color: #1a202c;" id="finalType">MCQ</div>
               </div>
             </div>
@@ -697,7 +274,7 @@
 
         <!-- Questions Preview -->
         <div class="form-group">
-          <label class="form-label">👁️ প্রশ্ন প্রিভিউ</label>
+          <label class="form-label">👁️ Questions Preview</label>
           <div class="preview-box" id="questionsPreview">
             <!-- Questions will be loaded here -->
           </div>
@@ -705,11 +282,11 @@
 
         <!-- Exam Preview -->
         <div class="form-group">
-          <label class="form-label">📝 এক্সাম পেপার প্রিভিউ</label>
+          <label class="form-label">📝 Exam Paper Preview</label>
           <div class="exam-preview" id="examPreview">
             <div class="preview-header">
               <h2 id="previewExamTitle">Exam Title</h2>
-              <p id="previewExamDetails">তারিখ: 2024-01-01 | সময়: ৩ ঘন্টা | মোট মার্কস: 100</p>
+              <p id="previewExamDetails">Date: 2024-01-01 | Time: 3 Hours | Total Marks: 100</p>
             </div>
             <div id="previewQuestions">
               <!-- Questions will be inserted here -->
@@ -719,827 +296,28 @@
 
         <div class="export-options">
           <button class="btn btn-success" onclick="downloadPDF()">
-            <i class="fas fa-file-pdf"></i> PDF ডাউনলোড
+            <i class="fas fa-file-pdf"></i> Download PDF
           </button>
           <button class="btn btn-warning" onclick="downloadAnswerKey()">
-            <i class="fas fa-key"></i> উত্তরমালা
+            <i class="fas fa-key"></i> Answer Key
           </button>
           <button class="btn btn-primary" onclick="printExam()">
-            <i class="fas fa-print"></i> প্রিন্ট
+            <i class="fas fa-print"></i> Print
           </button>
         </div>
 
         <div class="action-buttons">
           <button class="btn" onclick="goToStep(3)">
-            <i class="fas fa-arrow-left"></i> পেছনে
+            <i class="fas fa-arrow-left"></i> Back
           </button>
           <button class="btn btn-secondary" onclick="createNewExam()">
-            <i class="fas fa-plus"></i> নতুন এক্সাম
+            <i class="fas fa-plus"></i> New Exam
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <script>
-    // Global variables
-    let pdfFile = null;
-    let extractedText = "";
-    let generatedQuestions = [];
-    let selectedLanguage = "English";
-    let selectedType = "mcq";
-    let isProcessing = false;
-
-    // Initialize event listeners when page loads
-    document.addEventListener('DOMContentLoaded', function () {
-      // Setup upload area click event
-      const uploadArea = document.getElementById('uploadArea');
-      const pdfInput = document.getElementById('pdfInput');
-
-      if (uploadArea && pdfInput) {
-        uploadArea.addEventListener('click', function () {
-          pdfInput.click();
-        });
-
-        // Add drag and drop functionality
-        uploadArea.addEventListener('dragover', function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.style.borderColor = '#4285f4';
-          this.style.background = '#f0f9ff';
-        });
-
-        uploadArea.addEventListener('dragleave', function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.style.borderColor = '#cbd5e0';
-          this.style.background = '#f8fafc';
-        });
-
-        uploadArea.addEventListener('drop', function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.style.borderColor = '#cbd5e0';
-          this.style.background = '#f8fafc';
-
-          const files = e.dataTransfer.files;
-          if (files.length > 0) {
-            handlePDFUpload({ target: { files: files } });
-          }
-        });
-      }
-    });
-
-    // Handle PDF upload
-    function handlePDFUpload(event) {
-      console.log("PDF upload triggered");
-
-      const file = event.target.files[0];
-      if (!file) {
-        console.log("No file selected");
-        return;
-      }
-
-      console.log("File selected:", file.name, file.type, file.size);
-
-      if (file.type !== 'application/pdf') {
-        alert('শুধুমাত্র PDF ফাইল আপলোড করুন।');
-        console.log("Not a PDF file:", file.type);
-        return;
-      }
-
-      if (file.size > 10 * 1024 * 1024) {
-        alert('PDF ফাইলের সাইজ 10MB এর কম হতে হবে।');
-        console.log("File too large:", file.size);
-        return;
-      }
-
-      pdfFile = file;
-      console.log("PDF file set:", pdfFile.name);
-
-      // Show file info
-      document.getElementById('pdfPreview').classList.remove('hidden');
-      document.getElementById('pdfName').textContent = file.name;
-      document.getElementById('pdfSize').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
-      document.getElementById('pdfPages').textContent = 'পৃষ্ঠা: প্রসেসিং...';
-
-      // Enable next button
-      document.getElementById('nextStep1Btn').disabled = false;
-
-      // Extract text from PDF
-      extractTextFromPDF(file);
-    }
-
-    // Improved PDF text extraction
-    async function extractTextFromPDF(file) {
-      try {
-        console.log("Starting PDF extraction...");
-
-        // Show loading state
-        document.getElementById('extractedText').textContent = "PDF পড়া হচ্ছে...";
-        document.getElementById('extractedTextPreview').classList.remove('hidden');
-
-        const arrayBuffer = await file.arrayBuffer();
-        console.log("PDF loaded to array buffer");
-
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        console.log("PDF document loaded, pages:", pdf.numPages);
-
-        document.getElementById('pdfPages').textContent = `পৃষ্ঠা: ${pdf.numPages}`;
-
-        let fullText = "";
-        const pageCount = Math.min(pdf.numPages, 5);
-
-        console.log(`Extracting text from first ${pageCount} pages...`);
-
-        for (let i = 1; i <= pageCount; i++) {
-          try {
-            console.log(`Processing page ${i}...`);
-            const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items.map(item => item.str).join(' ');
-            fullText += pageText + '\n\n';
-            console.log(`Page ${i} extracted: ${pageText.length} characters`);
-          } catch (pageError) {
-            console.error(`Error processing page ${i}:`, pageError);
-          }
-        }
-
-        extractedText = fullText;
-        console.log("Total extracted text length:", extractedText.length);
-
-        // Show preview of extracted text
-        const previewText = fullText.substring(0, 500) + (fullText.length > 500 ? '...' : '');
-        document.getElementById('extractedText').textContent = previewText;
-
-        alert('PDF সফলভাবে পড়া হয়েছে! এখন "AI দিয়ে প্রশ্ন তৈরি করুন" বাটনে ক্লিক করুন।');
-
-      } catch (error) {
-        console.error('PDF extraction error:', error);
-        alert('PDF পড়তে সমস্যা হয়েছে। দয়া করে অন্য একটি PDF চেষ্টা করুন।');
-        removePDF();
-      }
-    }
-
-    function removePDF() {
-      pdfFile = null;
-      extractedText = "";
-      document.getElementById('pdfPreview').classList.add('hidden');
-      document.getElementById('pdfInput').value = '';
-      document.getElementById('nextStep1Btn').disabled = true;
-      document.getElementById('extractedTextPreview').classList.add('hidden');
-      console.log("PDF removed");
-    }
-
-    // Step navigation
-    function goToStep(step) {
-      console.log(`Navigating to step ${step}`);
-
-      // Hide all sections
-      document.getElementById('step1Section').classList.add('hidden');
-      document.getElementById('step2Section').classList.add('hidden');
-      document.getElementById('step3Section').classList.add('hidden');
-      document.getElementById('step4Section').classList.add('hidden');
-
-      // Reset step indicators
-      document.querySelectorAll('.step').forEach(stepEl => {
-        stepEl.classList.remove('active', 'completed');
-      });
-
-      // Show target section
-      document.getElementById(`step${step}Section`).classList.remove('hidden');
-
-      // Update step indicators
-      for (let i = 1; i <= step; i++) {
-        document.getElementById(`step${i}`).classList.add(i === step ? 'active' : 'completed');
-      }
-
-      // Step-specific actions
-      if (step === 4 && generatedQuestions.length > 0) {
-        displayGeneratedQuestions();
-      }
-    }
-
-    // Configuration functions
-    function adjustQuestionCount(change) {
-      const input = document.getElementById('questionCount');
-      let value = parseInt(input.value) + change;
-      if (value < 5) value = 5;
-      if (value > 20) value = 20;
-      input.value = value;
-    }
-
-    function selectLanguage(lang) {
-      selectedLanguage = lang;
-      document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      event.target.classList.add('active');
-    }
-
-    function selectType(type) {
-      selectedType = type;
-      document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      event.target.classList.add('active');
-    }
-
-    // Main AI Processing Function - Only AI, no fallback
-    async function startAIProcessing() {
-      console.log("Starting AI processing...");
-
-      // Validate inputs
-      if (!pdfFile) {
-        alert('দয়া করে একটি PDF ফাইল আপলোড করুন।');
-        return;
-      }
-
-      if (!extractedText || extractedText.length < 100) {
-        alert('PDF থেকে যথেষ্ট টেক্সট পড়া যায়নি। অন্য একটি PDF চেষ্টা করুন।');
-        return;
-      }
-
-      const questionCount = parseInt(document.getElementById('questionCount').value);
-      const examTitle = document.getElementById('examTitle').value.trim() || 'তৈরি করা এক্সাম';
-
-      console.log(`Generating ${questionCount} questions in ${selectedLanguage}`);
-
-      // Go to processing step
-      goToStep(3);
-      isProcessing = true;
-
-      // Reset error message
-      document.getElementById('errorMessage').classList.add('hidden');
-      document.getElementById('nextStep3Btn').disabled = true;
-
-      // Update processing UI
-      updateProcessingUI('PDF পড়া হয়েছে...', 10);
-
-      try {
-        // Prepare text for AI
-        let textForAI = extractedText;
-        console.log("Original text length:", textForAI.length);
-
-        // Extract more text if needed
-        if (textForAI.length < 1000) {
-          alert('PDF থেকে খুব কম টেক্সট পড়া গেছে। অন্য একটি PDF চেষ্টা করুন।');
-          throw new Error('Insufficient text extracted');
-        }
-
-        updateProcessingUI('Gemini AI এ পাঠানো হচ্ছে...', 30);
-
-        // Call Gemini AI - Only AI, no fallback
-        const aiResponse = await callGeminiAI(textForAI, questionCount, selectedLanguage, selectedType);
-
-        updateProcessingUI('AI রেসপন্স প্রসেসিং...', 70);
-
-        // Parse AI response
-        generatedQuestions = parseAIResponse(aiResponse, questionCount);
-
-        if (generatedQuestions.length === 0) {
-          throw new Error('AI প্রশ্ন তৈরি করতে পারেনি। আবার চেষ্টা করুন।');
-        }
-
-        console.log(`AI generated ${generatedQuestions.length} questions`);
-
-        updateProcessingUI('প্রশ্ন তৈরি সম্পন্ন!', 100);
-
-        // Update UI
-        document.getElementById('nextStep3Btn').disabled = false;
-        document.getElementById('aiResponsePreview').classList.remove('hidden');
-        document.getElementById('aiResponseText').textContent = aiResponse.substring(0, 800) + (aiResponse.length > 800 ? '...' : '');
-
-        // Show success and go to next step
-        setTimeout(() => {
-          goToStep(4);
-        }, 1000);
-
-      } catch (error) {
-        console.error('AI Processing Error:', error);
-
-        // Show error message
-        document.getElementById('errorText').textContent = error.message || 'AI প্রশ্ন তৈরি করতে পারেনি। আবার চেষ্টা করুন।';
-        document.getElementById('errorMessage').classList.remove('hidden');
-        updateProcessingUI('ব্যর্থ হয়েছে', 0);
-
-      } finally {
-        isProcessing = false;
-      }
-    }
-
-    function updateProcessingUI(status, progress) {
-      document.getElementById('processingStatus').textContent = status;
-      document.getElementById('progressBar').style.width = progress + '%';
-
-      // Update steps
-      const steps = document.getElementById('processingSteps');
-      const stepItems = [
-        'PDF থেকে টেক্সট পড়া হচ্ছে...',
-        'Gemini AI দিয়ে এনালাইসিস...',
-        'প্রশ্ন তৈরি করা হচ্ছে...',
-        'এক্সাম ফরমেট করা হচ্ছে...'
-      ];
-
-      let html = '';
-      stepItems.forEach((step, index) => {
-        const stepProgress = (index + 1) * 25;
-        const isCompleted = progress >= stepProgress;
-        const isCurrent = progress >= (index * 25) && progress < stepProgress;
-
-        html += `
-          <div style="margin: 8px 0; color: ${isCompleted ? '#10b981' : '#4a5568'}">
-            <i class="fas fa-${isCompleted ? 'check-circle' : isCurrent ? 'spinner fa-spin' : 'circle'}" 
-               style="color: ${isCompleted ? '#10b981' : isCurrent ? '#4285f4' : '#e2e8f0'}"></i>
-            ${step}
-          </div>
-        `;
-      });
-
-      steps.innerHTML = html;
-    }
-
-    // Gemini AI Function - Only real API call
-    async function callGeminiAI(text, count, language, type) {
-      console.log("Calling Gemini AI API...");
-
-
-      const apiKey = "AIzaSyDL5feA_nROuBVPoY4GAfYhIgAfGrn2tUY";
-
-      const prompt = `
-        You are an expert teacher creating exam questions in ${language} language.
-        
-        Here is text content from a PDF:
-
-        ${text.substring(0, 30000)}
-
-        Create ${count} ${type === 'mcq' ? 'MCQ' : 'short answer'} questions based on this content.
-        
-        Requirements:
-        1. Questions should test understanding of the content
-        2. For MCQ: Provide 4 options (A, B, C, D) with one correct answer
-        3. Mark correct answers with (Correct) 
-        4. Assign marks between 1-5 for each question
-        5. Include difficulty level (Easy, Medium, Hard)
-        6. Make questions in ${language} language
-        7. Focus on key concepts and important information from the text
-
-        Format each question like this:
-        Q1. [Question text here]
-        ${type === 'mcq' ? 'A) [Option A]\nB) [Option B]\nC) [Option C]\nD) [Option D] (Correct)' : 'Answer: [Brief answer]'}
-        Marks: [Number] | Difficulty: [Level]
-
-        Now generate the questions based on the actual PDF content:
-      `;
-
-      // Try multiple endpoints
-      const endpoints = [
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
-      ];
-
-      let lastError = null;
-
-      for (const endpoint of endpoints) {
-        try {
-          const url = `${endpoint}?key=${apiKey}`;
-          console.log(`Trying endpoint: ${endpoint}`);
-
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{
-                  text: prompt
-                }]
-              }],
-              generationConfig: {
-                temperature: 0.7,
-                topK: 40,
-                topP: 0.95,
-                maxOutputTokens: 4096,
-              }
-            })
-          });
-
-          console.log("API Response status:", response.status);
-
-          if (response.ok) {
-            const data = await response.json();
-            console.log("API Success, got response");
-
-            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-              return data.candidates[0].content.parts[0].text;
-            } else {
-              throw new Error('Invalid API response format');
-            }
-          } else {
-            const errorData = await response.json();
-            lastError = errorData;
-            console.log(`Endpoint ${endpoint} failed:`, errorData);
-          }
-        } catch (error) {
-          lastError = error;
-          console.log(`Endpoint ${endpoint} error:`, error.message);
-        }
-      }
-
-      // If all API calls fail
-      throw new Error('AI API connection failed. Please try again later.');
-    }
-
-    // Parse AI Response
-    function parseAIResponse(response, expectedCount) {
-      console.log("Parsing AI response...");
-
-      const questions = [];
-
-      // If response is empty or invalid
-      if (!response || response.trim().length < 50) {
-        throw new Error('AI did not generate any questions');
-      }
-
-      const lines = response.split('\n');
-      let currentQuestion = null;
-      let questionNumber = 1;
-
-      for (const line of lines) {
-        const trimmedLine = line.trim();
-
-        // Detect new question
-        if (trimmedLine.match(/^Q\d+\./) || trimmedLine.match(/^\d+\./)) {
-          if (currentQuestion && currentQuestion.options.length >= 0) {
-            questions.push(currentQuestion);
-          }
-
-          currentQuestion = {
-            id: questionNumber++,
-            text: trimmedLine.replace(/^Q?\d+\.\s*/, ''),
-            options: [],
-            correctAnswer: '',
-            marks: 1,
-            difficulty: 'Medium',
-            type: selectedType
-          };
-        }
-        // Detect options A-D for MCQ
-        else if (selectedType === 'mcq' && trimmedLine.match(/^[A-D]\)/)) {
-          if (currentQuestion) {
-            const optionText = trimmedLine.replace(/^[A-D]\)\s*/, '');
-            const optionLetter = trimmedLine.charAt(0);
-            currentQuestion.options.push(optionText.replace('(Correct)', '').trim());
-
-            // Check if this is marked as correct
-            if (optionText.includes('(Correct)')) {
-              currentQuestion.correctAnswer = optionLetter;
-            }
-          }
-        }
-        // Detect answer for short answer
-        else if (selectedType === 'short' && trimmedLine.match(/^Answer:/i)) {
-          if (currentQuestion) {
-            currentQuestion.correctAnswer = trimmedLine.replace(/^Answer:\s*/i, '');
-          }
-        }
-        // Detect marks and difficulty
-        else if (trimmedLine.includes('Marks:') || trimmedLine.includes('Difficulty:')) {
-          if (currentQuestion) {
-            const marksMatch = trimmedLine.match(/Marks:\s*(\d+)/i);
-            if (marksMatch) {
-              currentQuestion.marks = parseInt(marksMatch[1]);
-            }
-
-            const diffMatch = trimmedLine.match(/Difficulty:\s*(\w+)/i);
-            if (diffMatch) {
-              currentQuestion.difficulty = diffMatch[1];
-            }
-          }
-        }
-      }
-
-      // Add the last question
-      if (currentQuestion) {
-        questions.push(currentQuestion);
-      }
-
-      // Validate questions
-      if (questions.length === 0) {
-        throw new Error('Could not parse any questions from AI response');
-      }
-
-      console.log(`Parsed ${questions.length} questions`);
-      return questions.slice(0, expectedCount);
-    }
-
-    function displayGeneratedQuestions() {
-      const container = document.getElementById('questionsPreview');
-      const totalMarks = generatedQuestions.reduce((sum, q) => sum + q.marks, 0);
-
-      // Update summary
-      document.getElementById('totalQuestionsCount').textContent = generatedQuestions.length;
-      document.getElementById('totalMarksCount').textContent = totalMarks;
-      document.getElementById('finalLanguage').textContent = selectedLanguage;
-      document.getElementById('finalType').textContent = selectedType === 'mcq' ? 'MCQ' : 'Short Answer';
-
-      // Display questions in preview
-      let html = '';
-      generatedQuestions.forEach((question, index) => {
-        const optionLetters = ['A', 'B', 'C', 'D'];
-
-        html += `
-          <div class="question-item">
-            <div style="margin-bottom: 12px;">
-              <span class="question-counter">Q${index + 1}</span>
-              <span class="marks-badge">${question.marks} মার্ক</span>
-              <span style="background: #f59e0b; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem;">
-                ${question.difficulty}
-              </span>
-            </div>
-            
-            <div style="font-weight: 600; margin-bottom: 12px; color: #1a202c;">
-              ${question.text}
-            </div>`;
-
-        if (question.type === 'mcq') {
-          html += `<div style="margin-top: 12px;">`;
-          question.options.forEach((option, optIndex) => {
-            const isCorrect = optionLetters[optIndex] === question.correctAnswer;
-            html += `
-              <div class="mcq-option ${isCorrect ? 'correct' : ''}">
-                <span style="font-weight: 600; margin-right: 8px;">
-                  ${optionLetters[optIndex]})
-                </span>
-                ${option}
-                ${isCorrect ?
-                '<span style="float: right; color: #10b981;"><i class="fas fa-check"></i> সঠিক</span>' : ''}
-              </div>
-            `;
-          });
-          html += `</div>`;
-        } else {
-          html += `
-            <div style="background: #f0f9ff; padding: 12px; border-radius: 8px; margin-top: 12px;">
-              <strong>উত্তর:</strong> ${question.correctAnswer}
-            </div>
-          `;
-        }
-
-        html += `</div>`;
-      });
-
-      container.innerHTML = html;
-
-      // Update exam preview
-      updateExamPreview();
-    }
-
-    function updateExamPreview() {
-      const title = document.getElementById('examTitle').value || 'তৈরি করা এক্সাম';
-      const totalMarks = generatedQuestions.reduce((sum, q) => sum + q.marks, 0);
-      const today = new Date().toLocaleDateString('bn-BD');
-
-      // Update preview header
-      document.getElementById('previewExamTitle').textContent = title;
-      document.getElementById('previewExamDetails').textContent =
-        `তারিখ: ${today} | সময়: ৩ ঘন্টা | মোট মার্কস: ${totalMarks} | ভাষা: ${selectedLanguage}`;
-
-      // Update preview questions
-      const previewContainer = document.getElementById('previewQuestions');
-      let html = '';
-
-      generatedQuestions.forEach((question, index) => {
-        html += `
-          <div class="preview-question">
-            <div style="margin-bottom: 8px; font-weight: bold;">
-              ${index + 1}. ${question.text} [${question.marks}]
-            </div>`;
-
-        if (question.type === 'mcq') {
-          html += `<div style="padding-left: 15px;">`;
-          question.options.forEach((option, optIndex) => {
-            html += `
-              <div style="margin: 4px 0;">
-                ${String.fromCharCode(65 + optIndex)}) ${option}
-              </div>
-            `;
-          });
-          html += `</div>`;
-        } else {
-          html += `
-            <div style="padding-left: 15px; color: #666;">
-              <em>Short Answer Question</em>
-            </div>
-          `;
-        }
-
-        html += `</div>`;
-      });
-
-      previewContainer.innerHTML = html;
-    }
-
-    // Export functions
-    function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      const title = document.getElementById('examTitle').value || 'তৈরি করা এক্সাম';
-      const totalMarks = generatedQuestions.reduce((sum, q) => sum + q.marks, 0);
-      const today = new Date().toLocaleDateString('bn-BD');
-
-      // Add header
-      doc.setFontSize(18);
-      doc.text(title, 105, 20, { align: 'center' });
-
-      doc.setFontSize(11);
-      doc.text(`তারিখ: ${today} | সময়: ৩ ঘন্টা | মোট মার্কস: ${totalMarks} | ভাষা: ${selectedLanguage}`,
-        105, 28, { align: 'center' });
-
-      // Add instructions
-      doc.setFontSize(10);
-      const instructions = [
-        "নির্দেশাবলী:",
-        "১. সব প্রশ্ন মনোযোগ সহকারে পড়ুন।",
-        "২. আপনার নাম ও রোল নম্বর স্পষ্টভাবে লিখুন।",
-        "৩. সব প্রশ্ন বাধ্যতামূলক।",
-        "৪. প্রতিটি প্রশ্নের জন্য নির্দিষ্ট মার্কস আছে।",
-        selectedType === 'mcq' ?
-          "৫. MCQ প্রশ্নের জন্য সঠিক অপশন বাছাই করুন।" :
-          "৫. সংক্ষিপ্ত উত্তর প্রশ্নের জন্য উত্তর লিখুন।",
-        "৬. কোনো ধরনের অসদুপায় অবলম্বন করা যাবে না।"
-      ];
-
-      let yPos = 40;
-      instructions.forEach(line => {
-        doc.text(line, 20, yPos);
-        yPos += 6;
-      });
-
-      yPos += 8;
-
-      // Add questions
-      doc.setFontSize(11);
-      generatedQuestions.forEach((question, index) => {
-        if (yPos > 270) {
-          doc.addPage();
-          yPos = 20;
-        }
-
-        const questionText = `${index + 1}. ${question.text} [${question.marks}]`;
-        const questionLines = doc.splitTextToSize(questionText, 170);
-        doc.text(questionLines, 20, yPos);
-        yPos += questionLines.length * 5;
-
-        if (question.type === 'mcq') {
-          question.options.forEach((option, optIndex) => {
-            const optionText = `   ${String.fromCharCode(65 + optIndex)}) ${option}`;
-            const optionLines = doc.splitTextToSize(optionText, 170);
-            doc.text(optionLines, 25, yPos);
-            yPos += optionLines.length * 4.5;
-          });
-        } else {
-          doc.text(`   উত্তর: _______________________`, 25, yPos);
-          yPos += 7;
-        }
-
-        yPos += 8;
-      });
-
-      // Footer
-      doc.setFontSize(9);
-      doc.text("এই প্রশ্নপত্র AI ব্যবহার করে তৈরি করা হয়েছে", 105, 280, { align: 'center' });
-
-      // Save PDF
-      doc.save(`এক্সাম_${Date.now()}.pdf`);
-    }
-
-    function downloadAnswerKey() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      const title = document.getElementById('examTitle').value || 'তৈরি করা এক্সাম';
-
-      // Add header
-      doc.setFontSize(18);
-      doc.text(`${title} - উত্তরমালা`, 105, 20, { align: 'center' });
-
-      let yPos = 35;
-
-      // Add answer key
-      doc.setFontSize(11);
-      generatedQuestions.forEach((question, index) => {
-        if (yPos > 270) {
-          doc.addPage();
-          yPos = 20;
-        }
-
-        const answerText = `${index + 1}. ${question.text}`;
-        const answerLines = doc.splitTextToSize(answerText, 170);
-        doc.text(answerLines, 20, yPos);
-        yPos += answerLines.length * 5;
-
-        if (question.type === 'mcq') {
-          const correctAnswer = `সঠিক উত্তর: ${question.correctAnswer}) ${question.options[question.correctAnswer.charCodeAt(0) - 65]}`;
-          doc.setFont(undefined, 'bold');
-          doc.text(correctAnswer, 25, yPos);
-        } else {
-          const correctAnswer = `সঠিক উত্তর: ${question.correctAnswer}`;
-          doc.setFont(undefined, 'bold');
-          doc.text(correctAnswer, 25, yPos);
-        }
-
-        doc.setFont(undefined, 'normal');
-        yPos += 7;
-
-        const details = `মার্কস: ${question.marks} | কঠিনতা: ${question.difficulty}`;
-        doc.text(details, 25, yPos);
-        yPos += 10;
-      });
-
-      // Footer
-      doc.setFontSize(9);
-      doc.text("উত্তরমালা AI ব্যবহার করে তৈরি করা হয়েছে", 105, 280, { align: 'center' });
-
-      // Save PDF
-      doc.save(`উত্তরমালা_${Date.now()}.pdf`);
-    }
-
-    function printExam() {
-      const printContent = document.getElementById('examPreview').innerHTML;
-      const originalContent = document.body.innerHTML;
-
-      document.body.innerHTML = `
-        <html>
-        <head>
-          <title>Print Exam</title>
-          <style>
-            body { 
-              font-family: 'Times New Roman', serif; 
-              margin: 30px;
-              font-size: 12pt;
-              direction: ${selectedLanguage === 'Bengali' ? 'rtl' : 'ltr'};
-            }
-            @media print {
-              body { margin: 20px; }
-              .no-print { display: none; }
-            }
-            .exam-header {
-              text-align: center;
-              border-bottom: 2px solid #000;
-              padding-bottom: 15px;
-              margin-bottom: 30px;
-            }
-            .question {
-              margin-bottom: 25px;
-              padding-bottom: 15px;
-              border-bottom: 1px dashed #ccc;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="exam-header">
-            <h1>${document.getElementById('examTitle').value || 'তৈরি করা এক্সাম'}</h1>
-            <p>${document.getElementById('previewExamDetails').textContent}</p>
-          </div>
-          ${printContent}
-          <div class="no-print" style="text-align: center; margin-top: 50px;">
-            <button onclick="window.print()" style="padding: 10px 20px; background: #4285f4; color: white; border: none; border-radius: 5px; cursor: pointer;">
-              <i class="fas fa-print"></i> প্রিন্ট করুন
-            </button>
-            <button onclick="window.location.reload()" style="padding: 10px 20px; background: #64748b; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
-              <i class="fas fa-times"></i> বন্ধ করুন
-            </button>
-          </div>
-        </body>
-        </html>
-      `;
-
-      window.print();
-      document.body.innerHTML = originalContent;
-    }
-
-    function createNewExam() {
-      // Reset all data
-      pdfFile = null;
-      extractedText = "";
-      generatedQuestions = [];
-
-      // Reset UI
-      document.getElementById('pdfPreview').classList.add('hidden');
-      document.getElementById('pdfInput').value = '';
-      document.getElementById('examTitle').value = '';
-      document.getElementById('questionCount').value = '10';
-      document.getElementById('extractedTextPreview').classList.add('hidden');
-      document.getElementById('aiResponsePreview').classList.add('hidden');
-      document.getElementById('errorMessage').classList.add('hidden');
-
-      // Go to step 1
-      goToStep(1);
-    }
-  </script>
 </body>
 
 </html>
