@@ -55,7 +55,7 @@ Include these as markdown in README:
 
 ```bash
 # 1. Clone repo
-git clone https://github.com/Mahfuz21-04050/Online-Exam-website-frontend-and-backend.git
+git clone https://github.com/maahfuzdev/Online-Exam-website-frontend-and-backend.git
 cd "online exam app backend and frontend"
 
 # 2. Setup backend
