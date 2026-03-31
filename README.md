@@ -7,7 +7,7 @@ This repository contains a professional, production-ready full-stack web applica
 ## 🌟 Showcase
 
 - Live demo: **<https://your-live-demo-url.com>** (replace with actual deploy URL)
-- Source code: `https://github.com/Mahfuz21-04050/Online-Exam-website-frontend-and-backend`
+- Source code: `https://github.com/maahfuzdev/Online-Exam-website-frontend-and-backend`
 
 > ⚠️ If the live demo is not available yet, explain in the interview / README that you are setting up with **Heroku/Vercel/AWS/GCP** deployment pipeline.
 
