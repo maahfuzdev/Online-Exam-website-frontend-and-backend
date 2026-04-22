@@ -23,7 +23,7 @@ This repository contains a professional, production-ready full-stack web applica
 Include these as markdown in README:
 
 ```md
-![Teacher Dashboard](public/screenshots/dashboard-teacher.png)
+![Teacher Dashboard](https://github.com/maahfuzdev/Online-Exam-website-frontend-and-backend/blob/main/Screenshot%202026-04-23%20032124.png)
 ![Student Exam](public/screenshots/student-exam.png)
 ``` 
 
