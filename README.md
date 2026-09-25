@@ -172,23 +172,49 @@ http://localhost:3000
 
 ## 📁 Project Structure
 
-```
-Online-Exam-website
-│
+
+
+Main project structure (excluding Git metadata):
+
+```bash
+online exam app backend and frontend/
+├── .github/
+│   └── appmod/
 ├── public/
-│   ├── html/
 │   ├── css/
-│   ├── js/
-│
+│   │   ├── ocr.css
+│   │   ├── student.css
+│   │   ├── styles.css
+│   │   └── teacherdas.css
+│   ├── html/
+│   │   ├── authentication.html
+│   │   ├── examresult.html
+│   │   ├── index.html
+│   │   ├── ocrsystem.html
+│   │   ├── studentdash.html
+│   │   └── teacherdash.html
+│   └── js/
+│       ├── exam.js
+│       ├── ocr.js
+│       ├── script.js
+│       ├── student.js
+│       └── teacherdas.js
 ├── server/
-│   ├── index.js
+│   ├── .env
+│   ├── .gitignore
+│   ├── AssignedQuestions.js
 │   ├── authentication.js
+│   ├── index.js
+│   ├── node_modules/
+│   ├── package-lock.json
+│   ├── package.json
 │   ├── question.js
 │   ├── Results.js
 │   ├── Submissions.js
-│   ├── AssignedQuestions.js
-│
-└── README.md
+│   └── README.md (if added later)
+├── README.md
+├── .dist/
+└── .git/
 ```
 
 ---
