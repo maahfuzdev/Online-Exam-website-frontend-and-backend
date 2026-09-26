@@ -39,7 +39,7 @@ async function loadStudentExams() {
   const studentId = localStorage.getItem("userId");
 
   const res = await fetch(
-    `http://localhost:3000/assignments/api/exams/student/${studentId}`
+    `/assignments/api/exams/student/${studentId}`
   );
 
   const examdata = await res.json();
@@ -72,7 +72,7 @@ async function loadStudentExams() {
       
 
   const res = await fetch(
-    `http://localhost:3000/assignments/api/exam/${examId}/student/${studentId}`
+    `/assignments/api/exam/${examId}/student/${studentId}`
   );
 
   const questionsData = await res.json();
@@ -98,7 +98,7 @@ async function fetchResult() {
     const studentId = localStorage.getItem("userId");
 
     const resResult = await fetch(
-      `http://localhost:3000/results/api/studentsResult/${studentId}`
+      `/results/api/studentsResult/${studentId}`
     );
  
 
@@ -258,7 +258,7 @@ async function renderPastExams() {
     if (AttendId.includes(exam.examId)) {
       const studentId1 = localStorage.getItem("userId");
       const res = await fetch(
-        `http://localhost:3000/results/api/studentsResult/${studentId1}/examID/${exam.examId}`
+        `/results/api/studentsResult/${studentId1}/examID/${exam.examId}`
       );
       const Atetendedresult = await res.json();
       Atetendedresult.data.forEach(result => {

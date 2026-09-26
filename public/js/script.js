@@ -302,7 +302,7 @@ function addQuestion(event) {
   // Try MongoDB first, fallback to localStorage
   
   const teacherId = localStorage.getItem('userId');
-    fetch("http://localhost:3000/api/questions", {
+    fetch("/api/questions", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -361,9 +361,9 @@ async function loadQuestionsFromDB() {
       // সম্পূর্ণ URL ব্যবহার করুন
       let response;
       if (role === 'student') {
-         response = await fetch(`http://localhost:3000/assignments/api/assigned-questions/${id}`);
+         response = await fetch(`/assignments/api/assigned-questions/${id}`);
       } else {
-         response = await fetch(`http://localhost:3000/api/questions/${id}`);
+         response = await fetch(`/api/questions/${id}`);
       }
       
         
