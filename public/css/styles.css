@@ -1024,6 +1024,17 @@
       font-size: 1.1em !important;
     }
 
+    #questionPreview,
+    #choice1Preview,
+    #choice2Preview,
+    #choice3Preview,
+    #choice4Preview,
+    .question-text,
+    .choice-option {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
     /* Loading Animation */
     .loading {
       display: inline-block;
@@ -1052,7 +1063,403 @@
       border-radius: 10px;
     }
 
-    /* assign questions section er option er styles */
+    /* Manual exam builder workflow */
+    #teacherDashboard.teacher-dashboard {
+      width: 100%;
+      max-width: none;
+      min-height: 100vh;
+      margin: 0;
+      padding: 30px 24px 60px;
+      background: #f3f7f5;
+      animation: none;
+    }
+
+    #teacherDashboard .dashboard-header {
+      text-align: left;
+      animation: none;
+    }
+
+    #teacherDashboard .dashboard-subtitle {
+      color: #71817c;
+      font-size: 13px;
+    }
+
+    #teacherDashboard .dashboard-title {
+      color: #193c35;
+      font-size: 27px;
+      letter-spacing: 0;
+      text-shadow: none;
+    }
+
+    #teacherDashboard .back-btn {
+      top: 26px;
+      left: 24px;
+      border: 1px solid #dce7e2;
+      border-radius: 7px;
+      color: #40554e;
+      box-shadow: none;
+    }
+
+    #teacherDashboard .dashboard-header {
+      max-width: 1080px;
+      margin: 0 auto 22px;
+      text-align: left;
+      animation: none;
+    }
+
+    #teacherDashboard .dashboard-title {
+      margin-bottom: 6px;
+      color: #193c35;
+      font-size: 28px;
+      letter-spacing: 0;
+      text-shadow: none;
+    }
+
+    #teacherDashboard .dashboard-subtitle {
+      color: #71817c;
+      font-size: 14px;
+    }
+
+    #teacherDashboard .back-btn {
+      position: static;
+      margin-bottom: 14px;
+      padding: 8px 13px;
+      border: 1px solid #dce7e2;
+      border-radius: 7px;
+      background: #fff;
+      color: #40554e;
+      font-size: 12px;
+      box-shadow: none;
+    }
+
+    #teacherDashboard .back-btn:hover {
+      transform: none;
+      box-shadow: none;
+      background: #f9fbfa;
+    }
+
+    #teacherDashboard .teacher-panel {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 28px;
+      border: 1px solid #e2ebe7;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 14px 40px rgba(28, 67, 56, .07);
+      animation: none;
+    }
+
+    .exam-workflow-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 23px;
+    }
+
+    .exam-workflow-heading h2 {
+      margin: 0 0 5px;
+      color: #1a3731;
+      font-size: 23px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .exam-workflow-heading p:not(.workflow-eyebrow) {
+      margin: 0;
+      color: #71817c;
+      font-size: 13px;
+    }
+
+    .workflow-eyebrow {
+      margin: 0 0 6px;
+      color: #0b826d;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.3px;
+    }
+
+    .workflow-summary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 11px;
+      border: 1px solid #e0eae5;
+      border-radius: 999px;
+      background: #f8fbf9;
+      color: #60716a;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .summary-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #d39b45;
+    }
+
+    .exam-stepper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 25px;
+      padding: 12px;
+      border: 1px solid #e5ede9;
+      border-radius: 8px;
+      background: #f9fbfa;
+    }
+
+    .exam-step {
+      display: flex;
+      flex: 1 1 0;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      padding: 8px 10px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: #7b8984;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .exam-step-number {
+      display: grid;
+      flex: 0 0 auto;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      border: 1px solid #d8e4df;
+      border-radius: 7px;
+      background: #fff;
+      color: #708079;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .exam-step strong,
+    .exam-step small { display: block; }
+    .exam-step strong { color: #64736e; font-size: 12px; }
+    .exam-step small { margin-top: 2px; color: #97a29e; font-size: 10px; }
+
+    .exam-step.active { background: #e8f4ef; }
+    .exam-step.active .exam-step-number,
+    .exam-step.completed .exam-step-number {
+      border-color: #0b826d;
+      background: #0b826d;
+      color: #fff;
+    }
+    .exam-step.active strong,
+    .exam-step.completed strong { color: #145b4e; }
+
+    .exam-step-connector {
+      flex: 0 0 26px;
+      height: 1px;
+      background: #dce6e1;
+    }
+
+    .exam-step-panel:not(.hidden) { animation: exam-panel-in 180ms ease-out both; }
+    @keyframes exam-panel-in {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #teacherDashboard .section-title {
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e5ece8;
+      color: #203b34;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    #examStep1 .form-section,
+    #examStep2 .form-section,
+    #examStep3 > div[style*="background: white"] {
+      margin: 0 0 17px;
+      padding: 22px;
+      border: 1px solid #e3ebe7;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 6px 20px rgba(25, 60, 53, .045);
+    }
+
+    #examStep1 .form-label {
+      margin-bottom: 8px;
+      color: #344a43;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    #teacherDashboard .form-input {
+      min-height: 42px;
+      padding: 10px 12px;
+      border: 1px solid #d9e4df;
+      border-radius: 6px;
+      background: #fff;
+      color: #263a34;
+      font-size: 13px;
+      box-shadow: none;
+    }
+
+    #teacherDashboard .form-input:focus {
+      border-color: #58a897;
+      box-shadow: 0 0 0 3px rgba(11, 130, 109, .1);
+    }
+
+    #teacherDashboard textarea.form-input { min-height: 104px; }
+
+    #teacherDashboard .math-toolbar {
+      margin-bottom: 10px;
+      padding: 11px;
+      border: 1px solid #e3ebe7;
+      border-radius: 7px;
+      background: #f8fbf9;
+    }
+
+    #teacherDashboard .math-toolbar-title {
+      margin-bottom: 8px;
+      color: #61716b;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    #teacherDashboard .math-buttons { gap: 5px; }
+    #teacherDashboard .math-btn {
+      min-width: 34px;
+      height: 31px;
+      border: 1px solid #dfe8e4;
+      border-radius: 5px;
+      background: #fff;
+      color: #35564c;
+      font-size: 11px;
+    }
+    #teacherDashboard .math-btn:hover { background: #eaf5f0; }
+
+    #teacherDashboard .choices-grid { gap: 10px; }
+    #teacherDashboard .choice-input { gap: 8px; }
+    #teacherDashboard .correct-marker { box-shadow: none; }
+
+    #teacherDashboard .stats-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0 0 16px;
+    }
+    #teacherDashboard .stat-card {
+      padding: 15px;
+      border: 1px solid #e3ebe7;
+      border-radius: 7px;
+      background: #fbfcfb;
+      text-align: left;
+      box-shadow: none;
+    }
+    #teacherDashboard .stat-number { font-size: 22px; }
+    #teacherDashboard .stat-label { color: #71817c; font-size: 11px; }
+
+    #teacherDashboard .action-buttons {
+      justify-content: flex-start;
+      gap: 8px;
+      margin-top: 15px;
+    }
+    #teacherDashboard .btn {
+      padding: 9px 13px;
+      border: 1px solid #dce6e1;
+      border-radius: 6px;
+      background: #fff;
+      color: #40574e;
+      font-size: 11px;
+      box-shadow: none;
+    }
+    #teacherDashboard .btn:hover { transform: translateY(-1px); box-shadow: none; }
+    #teacherDashboard .btn-success,
+    #teacherDashboard .btn-teacher { border-color: #0b826d; background: #0b826d; color: #fff; }
+    #teacherDashboard .btn-primary { border-color: #416f9f; background: #416f9f; color: #fff; }
+    #teacherDashboard .btn-warning { background: #fff8e9; border-color: #efd9a6; color: #8f651d; }
+    #teacherDashboard .btn-danger { background: #fff4f0; border-color: #efd0c5; color: #a6523c; }
+
+    #teacherDashboard .questions-list,
+    #studentsContainer,
+    #questionsContainer {
+      border: 1px solid #e1eae5 !important;
+      border-radius: 7px !important;
+      background: #fbfcfb !important;
+    }
+
+    #studentsContainer,
+    #questionsContainer { height: min(320px, 42vh) !important; }
+
+    .workflow-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 18px;
+      padding-top: 15px;
+      border-top: 1px solid #e8eeeb;
+    }
+    .workflow-actions-end { justify-content: flex-end; }
+    .workflow-hint { color: #81908a; font-size: 11px; }
+    .workflow-next,
+    .workflow-back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 40px;
+      padding: 9px 14px;
+      border: 1px solid #dce7e2;
+      border-radius: 6px;
+      background: #fff;
+      color: #40574e;
+      font: inherit;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .workflow-next { border-color: #0b826d; background: #0b826d; color: #fff; }
+    .workflow-next:hover { background: #086f5e; }
+    .workflow-back:hover { background: #f7faf8; }
+
+    #examStep3 > div:first-child {
+      background: #e9f4ef !important;
+      border: 1px solid #d8e9e1 !important;
+      border-radius: 8px !important;
+      color: #23473d !important;
+      box-shadow: none !important;
+    }
+    #examStep3 > div:first-child h2 { font-size: 20px !important; }
+    #examStep3 > div:first-child p { color: #647b72; opacity: 1 !important; }
+    #examStep3 .grid { gap: 14px; }
+    #examStep3 #studentsContainer,
+    #examStep3 #questionsContainer { height: min(310px, 40vh) !important; }
+    #examStep3 #examsList { min-height: 90px !important; }
+    #examStep3 button[onclick="createAndAssignExam()"] {
+      min-height: 48px;
+      border-radius: 6px !important;
+      background: #0b826d !important;
+      box-shadow: none !important;
+    }
+
+    @media (max-width: 700px) {
+      #teacherDashboard.teacher-dashboard { padding: 14px 12px 34px; }
+      #teacherDashboard .dashboard-title { font-size: 24px; }
+      #teacherDashboard .teacher-panel { padding: 16px; border-radius: 8px; }
+      .exam-workflow-heading { flex-direction: column; gap: 12px; }
+      .exam-workflow-heading h2 { font-size: 20px; }
+      .exam-stepper { gap: 3px; padding: 7px; }
+      .exam-step { flex-direction: column; gap: 5px; padding: 7px 3px; text-align: center; }
+      .exam-step-number { width: 28px; height: 28px; }
+      .exam-step small { display: none; }
+      .exam-step-connector { flex-basis: 10px; }
+      #teacherDashboard .stats-grid { grid-template-columns: 1fr 1fr; }
+      #examStep3 > .grid { grid-template-columns: 1fr !important; }
+      .workflow-actions { align-items: stretch; }
+      .workflow-hint { display: none; }
+      .workflow-next, .workflow-back { flex: 1; }
+    }
 
   
  

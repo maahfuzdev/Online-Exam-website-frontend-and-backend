@@ -28,7 +28,8 @@ function init() {
   setupInputFocusEvents();
 
       // Add event listeners for real-time preview
-  document.getElementById('questionInput').addEventListener('input', updateQuestionPreview);
+  document.querySelectorAll('#questionInput, #choice1, #choice2, #choice3, #choice4')
+    .forEach(input => input.addEventListener('input', updateQuestionPreview));
 
   loadQuestionsFromDB().catch(error => {
         console.log("MongoDB load failed, trying localStorage:", error);
@@ -135,7 +136,12 @@ function insertMathSymbol(mathCode) {
     activeInput.value = before + mathCode + after;
 
     // কার্সর পজিশন আপডেট করুন
-    const newPos = start + mathCode.length;
+    const emptyGroupPosition = mathCode.indexOf('{}');
+    const newPos = start + (emptyGroupPosition >= 0
+      ? emptyGroupPosition + 1
+      : mathCode.startsWith('$') && mathCode.endsWith('$')
+        ? mathCode.length - 1
+        : mathCode.length);
     activeInput.setSelectionRange(newPos, newPos);
     activeInput.focus();
 
@@ -157,16 +163,16 @@ function insertMathAtCursor(element, mathCode) {
     element.value = before + mathCode + after;
 
     // Position cursor
-    const newPos = start + mathCode.length;
+    const emptyGroupPosition = mathCode.indexOf('{}');
+    const newPos = start + (emptyGroupPosition >= 0
+      ? emptyGroupPosition + 1
+      : mathCode.startsWith('$') && mathCode.endsWith('$')
+        ? mathCode.length - 1
+        : mathCode.length);
     element.setSelectionRange(newPos, newPos);
     element.focus();
 }
 
-
-
-//সব input-এ live preview চালু
-document.querySelectorAll('#questionInput, #choice1, #choice2, #choice3, #choice4')
-  .forEach(el => el.addEventListener("input", updateQuestionPreview));
 
 
   function updateQuestionPreview() {
@@ -423,7 +429,7 @@ async function loadQuestionsFromDB() {
       document.getElementById('choice4').value = '';
       correctAnswer = null;
       document.getElementById('correctIndicator').textContent = 'No correct answer selected';
-      document.getElementById('questionPreview').innerHTML = 'Type your question to see preview...';
+      updateQuestionPreview();
 
       const markers = document.querySelectorAll('.correct-marker');
       markers.forEach(marker => {
@@ -802,14 +808,40 @@ async function exportQuizPDF() {
     
 // auto wrap math rendering function
 
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"']/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[character]);
+}
+
 function autoWrapMath(text) {
-    // return text.replace(/\\[a-zA-Z]+(\{[^}]+\})?/g, (match) => {
-    //     return `\\(${match}\\)`;  // inline math wrapper
-  // });
-  
-  return text.replace(/\\[a-zA-Z]+(\{[^}]*\})?/g, (match) => {
-        return katex.renderToString(match, { throwOnError: false });
-    });
+  const source = String(text ?? '');
+  const argument = String.raw`\{(?:[^{}]|\{[^{}]*\})*\}`;
+  const commandPattern = new RegExp(String.raw`\\[a-zA-Z]+(?:\[[^\]]*\])?(?:${argument}){0,2}`, 'g');
+  let output = '';
+  let lastIndex = 0;
+  let match;
+
+  while ((match = commandPattern.exec(source)) !== null) {
+    output += escapeHtml(source.slice(lastIndex, match.index));
+    const prefix = source.slice(0, match.index);
+    const insideDollarMath = (prefix.match(/(?<!\\)\$/g) || []).length % 2 === 1;
+    const insideParenMath = prefix.lastIndexOf('\\(') > prefix.lastIndexOf('\\)');
+    const insideBracketMath = prefix.lastIndexOf('\\[') > prefix.lastIndexOf('\\]');
+
+    if (insideDollarMath || insideParenMath || insideBracketMath) {
+      output += escapeHtml(match[0]);
+    } else {
+      output += katex.renderToString(match[0], { throwOnError: false, strict: false });
+    }
+    lastIndex = commandPattern.lastIndex;
+  }
+
+  return output + escapeHtml(source.slice(lastIndex));
 }
 
 
@@ -821,6 +853,7 @@ function autoWrapMath(text) {
       // Set question text
       
       questionElement.innerHTML = autoWrapMath(question.question);
+      questionElement.style.whiteSpace = 'pre-wrap';
 
          renderMathInElement(questionElement, {
     delimiters: [
@@ -841,9 +874,17 @@ function autoWrapMath(text) {
       question.choices.forEach((choice, index) => {
         const choiceButton = document.createElement('button');
         choiceButton.className = 'choice-option';
-        choiceButton.innerHTML = `${String.fromCharCode(65 + index)}. ${katex.renderToString(choice)}`;
+        choiceButton.innerHTML = `${String.fromCharCode(65 + index)}. ${autoWrapMath(choice)}`;
+        choiceButton.style.whiteSpace = 'pre-wrap';
         choiceButton.onclick = () => selectAnswer(index);
         choicesContainer.appendChild(choiceButton);
+        renderMathInElement(choiceButton, {
+          delimiters: [
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true },
+            { left: '$', right: '$', display: false }
+          ]
+        });
       });
 
       selectedAnswer = null;
