@@ -65,15 +65,26 @@
         const teacherId = localStorage.getItem('userId') || '1';
 
         // Load students
-        const studentsResponse = await fetch(`http://localhost:3000/assignments/api/students`);
-        allStudents = await studentsResponse.json();
+        const studentsResponse = await fetch('/assignments/api/students');
+        allStudents = (await studentsResponse.json()).map(student => ({
+          ...student,
+          id: student._id,
+          class: student.class || ''
+        }));
 
         // Load exams
-        const examsResponse = await fetch(`http://localhost:3000/api/exams/${teacherId}`);
-        allExams = await examsResponse.json();
+        const examsResponse = await fetch(`/assignments/api/assigned-questions/teacher/${teacherId}`);
+        allExams = (await examsResponse.json()).map(exam => ({
+          id: exam._id,
+          title: exam.examTitle,
+          date: exam.startTime,
+          totalMarks: exam.totalMarks,
+          duration: exam.examTime,
+          description: `${(exam.questionIds || []).length} questions`
+        }));
 
         // Load results
-        const resultsResponse = await fetch(`http://localhost:3000/api/results/${teacherId}`);
+        const resultsResponse = await fetch(`/results/api/teacherResults/${teacherId}`);
         allResults = await resultsResponse.json();
 
         renderStats();

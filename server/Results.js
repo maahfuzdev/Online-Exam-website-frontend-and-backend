@@ -176,19 +176,45 @@ router.get("/api/studentsResult/:studentID/examID/:examID", async (req, res) => 
 router.get("/api/studentsResultbyExamID/:examID", async (req, res) => {
   try {
     const { examID } = req.params;
-
-    const resultsbyExamid = await Result.find({ examID }).populate("studentID","name");
-   
-
-    
-    res.json(resultsbyExamid);
-
+    const results = await Result.find({ examID }).populate("studentID", "name");
+    res.json(results);
   } catch (error) {
     console.error("Error fetching student result:", error);
     res.status(500).json({
       success: false,
       message: "Server error"
     });
+  }
+});
+
+router.get("/api/teacherResults/:teacherID", async (req, res) => {
+  try {
+    const results = await Result.find({ teacherID: req.params.teacherID })
+      .populate("studentID", "name")
+      .sort({ generatedAt: -1 });
+
+    res.json(results.map(result => {
+      const percentage = result.percentage ?? (
+        result.totalMarks ? (result.score / result.totalMarks) * 100 : 0
+      );
+
+      return {
+        id: result._id,
+        studentId: result.studentID?._id,
+        studentName: result.studentID?.name || "Unknown student",
+        class: "",
+        examId: result.examID,
+        examTitle: result.examTitle || "Exam",
+        score: result.score ?? 0,
+        total: result.totalMarks ?? 0,
+        percentage,
+        grade: percentage >= 90 ? "A" : percentage >= 80 ? "B" : percentage >= 70 ? "C" : percentage >= 60 ? "D" : "F",
+        date: result.date || result.generatedAt
+      };
+    }));
+  } catch (error) {
+    console.error("Error fetching teacher results:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 

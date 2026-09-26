@@ -16,7 +16,7 @@ async function initExamCreator() {
 async function loadStudents() {
     try {
       // Use your existing students array or fetch from MongoDB
-      const res = await fetch('http://localhost:3000/assignments/api/students');
+      const res = await fetch('/assignments/api/students');
     if(!res.ok) throw new Error("Students API not responding");
     const data = await res.json();
       console.log("Fetched students:", data);
@@ -41,7 +41,7 @@ async function loadExamQuestions() {
         }
 
         // Fetch questions from API
-        const response = await fetch(`http://localhost:3000/api/questions/${teacherId}`);
+        const response = await fetch(`/api/questions/${teacherId}`);
         if (!response.ok) {
             throw new Error(`Failed to fetch questions: ${response.status}`);
         }
@@ -306,7 +306,7 @@ async function createAndAssignExam() {
     try {
         console.log("Sending exam data:", exam);
         
-        const response = await fetch('http://localhost:3000/assignments/api/assigned-questions', {
+        const response = await fetch('/assignments/api/assigned-questions', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -358,7 +358,7 @@ function saveExamToStorage(exam) {
         const teacherID = localStorage.getItem('userId') || 'your-teacher-id-here';
         
         // Fetch from API
-        const response = await fetch(`http://localhost:3000/assignments/api/assigned-questions/teacher/${teacherID}`);
+        const response = await fetch(`/assignments/api/assigned-questions/teacher/${teacherID}`);
         
         if (!response.ok) throw new Error("Failed to load exams from server");
         

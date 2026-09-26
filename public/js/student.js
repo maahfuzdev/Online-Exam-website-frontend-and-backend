@@ -858,7 +858,7 @@ const stuResult = {
 
   console.log("result", JSON.stringify(stuResult));
   
-    const res = await fetch("http://localhost:3000/results/api/studentresult", {
+    const res = await fetch("/results/api/studentresult", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(stuResult)
