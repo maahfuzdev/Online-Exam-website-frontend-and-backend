@@ -1,63 +1,142 @@
+
 const express = require("express");
 const app = express();
 const path = require("path");
 const mongoose = require("mongoose");
 const cors = require("cors");
- require('dotenv').config({path:'./server/.env'});
-// Database connection
-mongoose.connect('mongodb+srv://maahfuz_db_user:BALcnkm9XnmieqSs@cluster0.in2mhyy.mongodb.net/online_exam_database?retryWrites=true&w=majority')
-    .then(() => console.log("✅ MongoDB Connected"))
-    .catch(err => console.log(err));
+require("dotenv").config();
 
 
+// =========================================================
+// MONGODB CONNECTION
+// =========================================================
 
-// Middleware
+// MongoDB Atlas connection string will come from
+// the MONGODB_URI environment variable.
+//
+// Local example:
+// MONGODB_URI=mongodb://localhost:27017/online_exam_database
+//
+// Render:
+// MONGODB_URI=your MongoDB Atlas connection string
+
+const MONGODB_URI =
+    process.env.MONGODB_URI ||
+    "mongodb://localhost:27017/online_exam_database";
+
+
+mongoose.connect(MONGODB_URI)
+    .then(() => {
+        console.log("✅ MongoDB Connected");
+    })
+    .catch((err) => {
+        console.error("❌ MongoDB Connection Error:", err);
+    });
+
+
+// =========================================================
+// MIDDLEWARE
+// =========================================================
+
 app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname,"..", "public")));
 
-//home page route
+app.use(express.json());
+
+app.use(express.urlencoded({ extended: true }));
+
+
+// =========================================================
+// SERVE FRONTEND
+// =========================================================
+
+app.use(express.static(path.join(__dirname, "..", "public")));
+
+
+// =========================================================
+// HOME PAGE
+// =========================================================
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname,"..", "public","html", "index.html"));
+    res.sendFile(
+        path.join(__dirname, "..", "public", "html", "index.html")
+    );
 });
 
 
-//Student Registration and Login page
+// =========================================================
+// STUDENT LOGIN / REGISTRATION PAGE
+// =========================================================
+
 app.get("/studentsLogReg", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "authentication.html"));
-    
+    res.sendFile(
+        path.join(__dirname, "..", "public", "html", "authentication.html")
+    );
 });
 
-// here we will import different routes
-// user routes
-const { router: authenticationRouter } = require('./authentication');
-app.use('/authentication', authenticationRouter);
 
-// question routes
-const { router: questionRouter } = require('./question');
-app.use('/', questionRouter);
+// =========================================================
+// AUTHENTICATION ROUTES
+// =========================================================
 
-// result routes
-const { router: resultRouter } = require('./Results');
-app.use('/results', resultRouter);
+const { router: authenticationRouter } = require("./authentication");
 
-// submission routes
-const { router: submissionRouter } = require('./Submissions');
-app.use('/submissions', submissionRouter);
-
-// assignments routes
-const { router: assignmentRouter } = require('./AssignedQuestions');
-app.use('/assignments', assignmentRouter);
+app.use("/authentication", authenticationRouter);
 
 
+// =========================================================
+// QUESTION ROUTES
+// =========================================================
+
+const { router: questionRouter } = require("./question");
+
+app.use("/", questionRouter);
 
 
+// =========================================================
+// RESULT ROUTES
+// =========================================================
+
+const { router: resultRouter } = require("./Results");
+
+app.use("/results", resultRouter);
 
 
+// =========================================================
+// SUBMISSION ROUTES
+// =========================================================
 
-// Start server
-const PORT = process.env.PORT||3000;
+const { router: submissionRouter } = require("./Submissions");
+
+app.use("/submissions", submissionRouter);
+
+
+// =========================================================
+// ASSIGNMENT ROUTES
+// =========================================================
+
+const { router: assignmentRouter } = require("./AssignedQuestions");
+
+app.use("/assignments", assignmentRouter);
+
+
+// =========================================================
+// HEALTH CHECK
+// =========================================================
+
+app.get("/health", (req, res) => {
+    res.json({
+        success: true,
+        message: "Online Exam Server is running"
+    });
+});
+
+
+// =========================================================
+// START SERVER
+// =========================================================
+
+const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 });
