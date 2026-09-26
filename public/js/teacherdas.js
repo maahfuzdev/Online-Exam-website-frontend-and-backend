@@ -11,17 +11,30 @@
     let performanceChart, gradeChart, scoreChart, examChart;
 
     // Initialize the application
-    function init() {
-      loadAllData();
+    async function init() {
+      const teacherName = localStorage.getItem('userName');
+      if (teacherName) document.getElementById('teacherName').textContent = teacherName;
+      await loadAllData();
       setupCharts();
-      renderStats();
-      // Set today's date as default for exam form
-      document.getElementById('examDate').valueAsDate = new Date();
+      renderAnalytics();
+      const examDateInput = document.getElementById('examDate');
+      if (examDateInput) examDateInput.valueAsDate = new Date();
     }
 
     // Tab switching
     function switchTab(tabName) {
       currentTab = tabName;
+      const sectionDetails = {
+        dashboard: ['OVERVIEW', 'Teacher dashboard', 'Monitor student performance and manage exams.'],
+        results: ['ASSESSMENT', 'Student results', 'Review, filter, and export assessment results.'],
+        exams: ['ASSESSMENT SETUP', 'Exam management', 'Create exams and review current assignments.'],
+        analytics: ['INSIGHTS', 'Performance analytics', 'Explore score distributions and top performers.'],
+        students: ['PEOPLE', 'Student management', 'Maintain student accounts and review progress.']
+      };
+      const [eyebrow, title, subtitle] = sectionDetails[tabName];
+      document.getElementById('pageEyebrow').textContent = eyebrow;
+      document.getElementById('pageTitle').textContent = title;
+      document.getElementById('pageSubtitle').textContent = subtitle;
 
       // Update tab buttons
       document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -59,21 +72,21 @@
       }
     }
 
-    // Load all data
     async function loadAllData() {
       try {
-        const teacherId = localStorage.getItem('userId') || '1';
+        const teacherId = localStorage.getItem('userId');
+        if (!teacherId) throw new Error('Please sign in as a teacher');
 
-        // Load students
         const studentsResponse = await fetch('/assignments/api/students');
+        if (!studentsResponse.ok) throw new Error('Failed to load students');
         allStudents = (await studentsResponse.json()).map(student => ({
           ...student,
           id: student._id,
           class: student.class || ''
         }));
 
-        // Load exams
         const examsResponse = await fetch(`/assignments/api/assigned-questions/teacher/${teacherId}`);
+        if (!examsResponse.ok) throw new Error('Failed to load exams');
         allExams = (await examsResponse.json()).map(exam => ({
           id: exam._id,
           title: exam.examTitle,
@@ -83,8 +96,8 @@
           description: `${(exam.questionIds || []).length} questions`
         }));
 
-        // Load results
         const resultsResponse = await fetch(`/results/api/teacherResults/${teacherId}`);
+        if (!resultsResponse.ok) throw new Error('Failed to load results');
         allResults = await resultsResponse.json();
 
         renderStats();
@@ -94,52 +107,19 @@
         renderDashboard();
         renderAnalytics();
         loadStudentsList();
-
       } catch (error) {
         console.error('Error loading data:', error);
-        // Load sample data for demo
-        loadSampleData();
+        allStudents = [];
+        allExams = [];
+        allResults = [];
+        renderStats();
+        populateExamFilter();
+        loadResults();
+        loadExams();
+        renderAnalytics();
+        loadStudentsList();
+        document.getElementById('recentActivity').textContent = `Could not load dashboard data: ${error.message}`;
       }
-    }
-
-    // Load sample data for demo
-    function loadSampleData() {
-      // allStudents = [
-      //   { id: 1, name: 'John Smith', class: '10', email: 'john@example.com' },
-      //   { id: 2, name: 'Emma Johnson', class: '11', email: 'emma@example.com' },
-      //   { id: 3, name: 'Michael Brown', class: '12', email: 'michael@example.com' },
-      //   { id: 4, name: 'Sarah Davis', class: '10', email: 'sarah@example.com' },
-      //   { id: 5, name: 'David Wilson', class: '11', email: 'david@example.com' },
-      //   { id: 6, name: 'Lisa Miller', class: '12', email: 'lisa@example.com' },
-      //   { id: 7, name: 'Robert Taylor', class: '10', email: 'robert@example.com' },
-      //   { id: 8, name: 'Jennifer Anderson', class: '11', email: 'jennifer@example.com' }
-      // ];
-      
-      allExams = [
-        { id: 1, title: 'Mid Term Exam - Math', date: '2024-03-15', totalMarks: 100, duration: 120, description: 'Mathematics mid-term examination covering algebra and geometry' },
-        { id: 2, title: 'Final Exam - Science', date: '2024-03-20', totalMarks: 100, duration: 90, description: 'Comprehensive science exam covering physics, chemistry, and biology' },
-        { id: 3, title: 'Quiz - Physics', date: '2024-03-25', totalMarks: 50, duration: 60, description: 'Short quiz on Newtonian physics concepts' },
-        { id: 4, title: 'Chemistry Test', date: '2024-04-01', totalMarks: 100, duration: 120, description: 'Test on chemical equations and periodic table' }
-      ];
-
-      allResults = [
-        { id: 1, studentId: 1, studentName: 'John Smith', class: '10', examId: 1, examTitle: 'Mid Term Exam - Math', score: 85, total: 100, percentage: 85, grade: 'A', date: '2024-03-15' },
-        { id: 2, studentId: 2, studentName: 'Emma Johnson', class: '11', examId: 1, examTitle: 'Mid Term Exam - Math', score: 92, total: 100, percentage: 92, grade: 'A', date: '2024-03-15' },
-        { id: 3, studentId: 3, studentName: 'Michael Brown', class: '12', examId: 1, examTitle: 'Mid Term Exam - Math', score: 78, total: 100, percentage: 78, grade: 'B', date: '2024-03-15' },
-        { id: 4, studentId: 4, studentName: 'Sarah Davis', class: '10', examId: 1, examTitle: 'Mid Term Exam - Math', score: 65, total: 100, percentage: 65, grade: 'C', date: '2024-03-15' },
-        { id: 5, studentId: 5, studentName: 'David Wilson', class: '11', examId: 2, examTitle: 'Final Exam - Science', score: 88, total: 100, percentage: 88, grade: 'A', date: '2024-03-20' },
-        { id: 6, studentId: 6, studentName: 'Lisa Miller', class: '12', examId: 2, examTitle: 'Final Exam - Science', score: 95, total: 100, percentage: 95, grade: 'A', date: '2024-03-20' },
-        { id: 7, studentId: 7, studentName: 'Robert Taylor', class: '10', examId: 3, examTitle: 'Quiz - Physics', score: 42, total: 50, percentage: 84, grade: 'A', date: '2024-03-25' },
-        { id: 8, studentId: 1, studentName: 'John Smith', class: '10', examId: 2, examTitle: 'Final Exam - Science', score: 76, total: 100, percentage: 76, grade: 'B', date: '2024-03-20' }
-      ];
-
-      renderStats();
-      populateExamFilter();
-      loadResults();
-      loadExams();
-      renderDashboard();
-      renderAnalytics();
-      loadStudentsList();
     }
 
     // Render statistics
@@ -169,10 +149,37 @@
         performanceChart = new Chart(ctx1, {
           type: 'line',
           data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            labels: (() => {
+              const months = [];
+              const currentMonth = new Date();
+              currentMonth.setDate(1);
+              for (let offset = 5; offset >= 0; offset--) {
+                const month = new Date(currentMonth);
+                month.setMonth(month.getMonth() - offset);
+                months.push(month);
+              }
+              return months;
+            })().map(month => month.toLocaleString(undefined, { month: 'short' })),
             datasets: [{
               label: 'Average Score %',
-              data: [65, 72, 78, 82, 85, 88],
+              data: (() => {
+                const months = new Map();
+                const currentMonth = new Date();
+                currentMonth.setDate(1);
+                for (let offset = 5; offset >= 0; offset--) {
+                  const month = new Date(currentMonth);
+                  month.setMonth(month.getMonth() - offset);
+                  months.set(`${month.getFullYear()}-${month.getMonth()}`, []);
+                }
+                allResults.forEach(result => {
+                  const date = new Date(result.date);
+                  const values = months.get(`${date.getFullYear()}-${date.getMonth()}`);
+                  if (values) values.push(Number(result.percentage) || 0);
+                });
+                return [...months.values()].map(values => values.length
+                  ? values.reduce((sum, value) => sum + value, 0) / values.length
+                  : 0);
+              })(),
               borderColor: '#667eea',
               backgroundColor: 'rgba(102, 126, 234, 0.1)',
               tension: 0.4,
@@ -328,7 +335,7 @@
               </td>
               <td>${formatDate(result.date)}</td>
               <td>
-                <button class="btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="viewStudentDetail(${result.studentId})">
+                <button class="btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="viewStudentDetail(${JSON.stringify(String(result.studentId))})">
                   👁️ View
                 </button>
               </td>
@@ -424,31 +431,16 @@
 
     // Load exams
     function loadExams() {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      const upcomingExams = allExams.filter(exam => {
-        const examDate = new Date(exam.date);
-        examDate.setHours(0, 0, 0, 0);
-        return examDate >= today;
-      });
-
-      const pastExams = allExams.filter(exam => {
-        const examDate = new Date(exam.date);
-        examDate.setHours(0, 0, 0, 0);
-        return examDate < today;
-      });
-
-      renderExams(upcomingExams, 'upcomingExams');
-      renderExams(pastExams, 'pastExams');
+      renderExams(allExams, 'teacherExamsList');
     }
 
     // Render exams
     function renderExams(exams, containerId) {
       const container = document.getElementById(containerId);
+      if (!container) return;
 
       if (exams.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #64748b; font-style: italic;">No exams found</p>';
+        container.innerHTML = '<p style="color: #64748b; font-style: italic;">No assigned exams yet.</p>';
         return;
       }
 
@@ -464,11 +456,8 @@
             <div>📊 Total Marks: ${exam.totalMarks}</div>
           </div>
           <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button class="btn" style="padding: 8px 16px; font-size: 0.85rem; flex: 1;" onclick="viewExamResults(${exam.id})">
+            <button class="btn" style="padding: 8px 16px; font-size: 0.85rem; flex: 1;" onclick="viewExamResults(${JSON.stringify(String(exam.id))})">
               View Results
-            </button>
-            <button class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem;" onclick="editExam(${exam.id})">
-              Edit
             </button>
           </div>
         </div>
@@ -649,7 +638,7 @@
             </div>
             
             <div style="margin-top: 30px; display: flex; gap: 15px;">
-              <button class="btn btn-primary" onclick="generateReport(${studentId})">📄 Generate Report</button>
+              <button class="btn btn-primary" onclick="generateReport(${JSON.stringify(String(studentId))})">📄 Generate Report</button>
               <button class="btn" onclick="closeModal()">Close</button>
             </div>
           </div>
@@ -679,114 +668,50 @@
     }
 
     // Export functions
-    function exportToPDF() {
-      alert('PDF export feature would be implemented here');
-      // Implementation for PDF export
+    function exportToPDF(results = filteredResults, fileName = 'student-results.pdf') {
+      const PDFDocument = window.jspdf?.jsPDF;
+      if (!PDFDocument) return alert('PDF export library is unavailable');
+
+      const document = new PDFDocument();
+      document.text('Student Results', 14, 16);
+      let y = 28;
+      results.forEach(result => {
+        const line = `${result.studentName} | ${result.examTitle} | ${result.score}/${result.total} | ${result.percentage}% | ${result.grade} | ${formatDate(result.date)}`;
+        const wrappedLines = document.splitTextToSize(line, 180);
+        if (y + wrappedLines.length * 7 > 280) {
+          document.addPage();
+          y = 18;
+        }
+        document.text(wrappedLines, 14, y);
+        y += wrappedLines.length * 7;
+      });
+      document.save(fileName);
     }
 
     function exportToExcel() {
-      alert('Excel export feature would be implemented here');
-      // Implementation for Excel export
+      const columns = ['Student', 'Class', 'Exam', 'Score', 'Total', 'Percentage', 'Grade', 'Date'];
+      const csvCell = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
+      const rows = filteredResults.map(result => [
+        result.studentName,
+        result.class,
+        result.examTitle,
+        result.score,
+        result.total,
+        `${result.percentage}%`,
+        result.grade,
+        formatDate(result.date)
+      ]);
+      const csv = [columns, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
+      const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'student-results.csv';
+      link.click();
+      URL.revokeObjectURL(url);
     }
 
     function printResults() {
       window.print();
-    }
-
-    // Exam management functions
-    function createExam() {
-      const title = document.getElementById('examTitle').value;
-      const date = document.getElementById('examDate').value;
-      const duration = document.getElementById('examDuration').value;
-      const marks = document.getElementById('examMarks').value;
-      const description = document.getElementById('examDescription').value;
-
-      if (!title || !date || !duration || !marks) {
-        alert('Please fill in all required fields');
-        return;
-      }
-
-      const newExam = {
-        id: allExams.length + 1,
-        title: title,
-        date: date,
-        duration: parseInt(duration),
-        totalMarks: parseInt(marks),
-        description: description
-      };
-
-      allExams.push(newExam);
-      alert('Exam created successfully!');
-      clearExamForm();
-      loadExams();
-      populateExamFilter();
-      renderStats();
-      switchTab('exams');
-    }
-
-    function clearExamForm() {
-      document.getElementById('examTitle').value = '';
-      document.getElementById('examDate').valueAsDate = new Date();
-      document.getElementById('examDuration').value = '';
-      document.getElementById('examMarks').value = '';
-      document.getElementById('examDescription').value = '';
-    }
-
-    function editExam(examId) {
-      const exam = allExams.find(e => e.id == examId);
-      if (!exam) return;
-
-      // Fill form with exam data
-      document.getElementById('examTitle').value = exam.title;
-      document.getElementById('examDate').value = exam.date;
-      document.getElementById('examDuration').value = exam.duration;
-      document.getElementById('examMarks').value = exam.totalMarks;
-      document.getElementById('examDescription').value = exam.description || '';
-
-      // Change button to update
-      const createBtn = document.querySelector('.btn-teacher');
-      createBtn.textContent = '📝 Update Exam';
-      createBtn.onclick = function() { updateExam(examId); };
-
-      // Scroll to form
-      document.getElementById('examFormSection').scrollIntoView();
-      switchTab('exams');
-    }
-
-    function updateExam(examId) {
-      const title = document.getElementById('examTitle').value;
-      const date = document.getElementById('examDate').value;
-      const duration = document.getElementById('examDuration').value;
-      const marks = document.getElementById('examMarks').value;
-      const description = document.getElementById('examDescription').value;
-
-      if (!title || !date || !duration || !marks) {
-        alert('Please fill in all required fields');
-        return;
-      }
-
-      const examIndex = allExams.findIndex(e => e.id == examId);
-      if (examIndex !== -1) {
-        allExams[examIndex] = {
-          ...allExams[examIndex],
-          title: title,
-          date: date,
-          duration: parseInt(duration),
-          totalMarks: parseInt(marks),
-          description: description
-        };
-
-        alert('Exam updated successfully!');
-        clearExamForm();
-        loadExams();
-        populateExamFilter();
-        switchTab('exams');
-
-        // Reset button
-        const createBtn = document.querySelector('.btn-teacher');
-        createBtn.textContent = '📝 Create Exam';
-        createBtn.onclick = createExam;
-      }
     }
 
     function viewExamResults(examId) {
@@ -800,35 +725,45 @@
     }
 
     // Student management functions
-    function addStudent() {
-      const name = document.getElementById('studentName').value;
-      const email = document.getElementById('studentEmail').value;
+    async function addStudent() {
+      const name = document.getElementById('studentName').value.trim();
+      const email = document.getElementById('studentEmail').value.trim();
+      const password = document.getElementById('studentPassword').value;
       const studentClass = document.getElementById('studentClass').value;
 
-      if (!name || !email || !studentClass) {
-        alert('Please fill in all required fields');
+      if (!name || !email || !studentClass || password.length < 6) {
+        alert('Enter the student name, email, class, and a password of at least 6 characters.');
         return;
       }
 
-      const newStudent = {
-        id: allStudents.length + 1,
-        name: name,
-        email: email,
-        class: studentClass
-      };
+      try {
+        const response = await fetch('/assignments/api/students', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password, class: studentClass })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Could not create student');
 
-      allStudents.push(newStudent);
-      alert('Student added successfully!');
-      clearStudentForm();
-      loadStudentsList();
-      renderStats();
-      switchTab('students');
+        clearStudentForm();
+        await loadAllData();
+        switchTab('students');
+        alert('Student account created. Share the initial password securely with the student.');
+      } catch (error) {
+        alert(error.message);
+      }
     }
 
     function clearStudentForm() {
       document.getElementById('studentName').value = '';
       document.getElementById('studentEmail').value = '';
+      document.getElementById('studentPassword').value = '';
       document.getElementById('studentClass').value = '';
+      document.getElementById('studentPassword').required = true;
+      document.getElementById('studentPassword').placeholder = 'At least 6 characters';
+      const submitButton = document.getElementById('studentSubmitButton');
+      submitButton.textContent = '👤 Add Student';
+      submitButton.onclick = addStudent;
     }
 
     function loadStudentsList() {
@@ -871,10 +806,10 @@
               </div>
             </td>
             <td>
-              <button class="btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="viewStudentDetail(${student.id})">
+              <button class="btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="viewStudentDetail(${JSON.stringify(String(student.id))})">
                 👁️ View
               </button>
-              <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="editStudent(${student.id})">
+              <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="editStudent(${JSON.stringify(String(student.id))})">
                 ✏️ Edit
               </button>
             </td>
@@ -892,21 +827,25 @@
       // Fill form with student data
       document.getElementById('studentName').value = student.name;
       document.getElementById('studentEmail').value = student.email;
-      document.getElementById('studentClass').value = student.class;
+      document.getElementById('studentClass').value = student.class || '';
+      const passwordInput = document.getElementById('studentPassword');
+      passwordInput.value = '';
+      passwordInput.required = false;
+      passwordInput.placeholder = 'Leave blank to keep current password';
 
       // Change button to update
-      const addBtn = document.querySelector('.btn-teacher');
+      const addBtn = document.getElementById('studentSubmitButton');
       addBtn.textContent = '✏️ Update Student';
       addBtn.onclick = function() { updateStudent(studentId); };
 
       // Scroll to form
-      document.getElementById('examFormSection').scrollIntoView();
       switchTab('students');
+      document.getElementById('studentsTab').scrollIntoView();
     }
 
-    function updateStudent(studentId) {
-      const name = document.getElementById('studentName').value;
-      const email = document.getElementById('studentEmail').value;
+    async function updateStudent(studentId) {
+      const name = document.getElementById('studentName').value.trim();
+      const email = document.getElementById('studentEmail').value.trim();
       const studentClass = document.getElementById('studentClass').value;
 
       if (!name || !email || !studentClass) {
@@ -914,42 +853,38 @@
         return;
       }
 
-      const studentIndex = allStudents.findIndex(s => s.id == studentId);
-      if (studentIndex !== -1) {
-        allStudents[studentIndex] = {
-          ...allStudents[studentIndex],
-          name: name,
-          email: email,
-          class: studentClass
-        };
-
-        // Update student name in results
-        allResults.forEach(result => {
-          if (result.studentId == studentId) {
-            result.studentName = name;
-            result.class = studentClass;
-          }
+      try {
+        const response = await fetch(`/assignments/api/students/${encodeURIComponent(studentId)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, class: studentClass })
         });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Could not update student');
 
-        alert('Student updated successfully!');
         clearStudentForm();
-        loadStudentsList();
-        loadResults();
-
-        // Reset button
-        const addBtn = document.querySelector('.btn-teacher');
-        addBtn.textContent = '👤 Add Student';
-        addBtn.onclick = addStudent;
+        await loadAllData();
+        switchTab('students');
+      } catch (error) {
+        alert(error.message);
       }
     }
 
     function generateReport(studentId) {
-      alert(`Generate report for student ${studentId} - This feature would generate a detailed PDF report`);
+      const student = allStudents.find(item => String(item.id) === String(studentId));
+      if (!student) return alert('Student not found');
+      const results = allResults.filter(result => String(result.studentId) === String(studentId));
+      const fileName = `${student.name.trim().replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-report.pdf`;
+      exportToPDF(results, fileName);
     }
 
     function showLandingPage() {
-      // In a real app, this would log out the teacher
       if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('userId');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('teacherId');
+        localStorage.removeItem('showteacher');
         window.location.href = '/'; // Redirect to login page
       }
     }

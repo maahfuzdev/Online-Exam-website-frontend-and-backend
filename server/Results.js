@@ -190,7 +190,7 @@ router.get("/api/studentsResultbyExamID/:examID", async (req, res) => {
 router.get("/api/teacherResults/:teacherID", async (req, res) => {
   try {
     const results = await Result.find({ teacherID: req.params.teacherID })
-      .populate("studentID", "name")
+      .populate("studentID", "name class")
       .sort({ generatedAt: -1 });
 
     res.json(results.map(result => {
@@ -202,7 +202,7 @@ router.get("/api/teacherResults/:teacherID", async (req, res) => {
         id: result._id,
         studentId: result.studentID?._id,
         studentName: result.studentID?.name || "Unknown student",
-        class: "",
+        class: result.studentID?.class || "",
         examId: result.examID,
         examTitle: result.examTitle || "Exam",
         score: result.score ?? 0,

@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const { Auth: Auth } = require('./authentication'); // User model
 const { Question: Question } = require('./question'); // Question model
 
@@ -46,12 +47,80 @@ router.post("/api/assigned-questions", async (req, res) => {
 // GET: All students (for frontend selection)
 router.get("/api/students", async (req, res) => {
   try {
-    
-    const students = await Auth.find({ role: "student" }, { _id: 1, name: 1, email: 1 });
+    const students = await Auth.find(
+      { role: "student" },
+      { _id: 1, name: 1, email: 1, class: 1 }
+    ).sort({ name: 1 });
     res.json(students);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error fetching students" });
+  }
+});
+
+router.post("/api/students", async (req, res) => {
+  try {
+    const { name, email, class: studentClass, password } = req.body;
+    if (!name?.trim() || !email?.trim() || !studentClass || !password || password.length < 6) {
+      return res.status(400).json({ error: "Name, email, class, and a password of at least 6 characters are required" });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (await Auth.findOne({ email: normalizedEmail })) {
+      return res.status(409).json({ error: "An account with this email already exists" });
+    }
+
+    const student = await Auth.create({
+      name: name.trim(),
+      email: normalizedEmail,
+      role: "student",
+      class: studentClass,
+      password: await bcrypt.hash(password, 10)
+    });
+
+    res.status(201).json({
+      _id: student._id,
+      name: student.name,
+      email: student.email,
+      class: student.class
+    });
+  } catch (err) {
+    console.error("Error creating student:", err);
+    res.status(500).json({ error: "Error creating student" });
+  }
+});
+
+router.put("/api/students/:studentId", async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { name, email, class: studentClass } = req.body;
+    if (!mongoose.isValidObjectId(studentId)) {
+      return res.status(400).json({ error: "Invalid student ID" });
+    }
+    if (!name?.trim() || !email?.trim() || !studentClass) {
+      return res.status(400).json({ error: "Name, email, and class are required" });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const duplicate = await Auth.findOne({
+      email: normalizedEmail,
+      _id: { $ne: studentId }
+    });
+    if (duplicate) {
+      return res.status(409).json({ error: "An account with this email already exists" });
+    }
+
+    const student = await Auth.findOneAndUpdate(
+      { _id: studentId, role: "student" },
+      { name: name.trim(), email: normalizedEmail, class: studentClass },
+      { new: true, runValidators: true, projection: { _id: 1, name: 1, email: 1, class: 1 } }
+    );
+    if (!student) return res.status(404).json({ error: "Student not found" });
+
+    res.json(student);
+  } catch (err) {
+    console.error("Error updating student:", err);
+    res.status(500).json({ error: "Error updating student" });
   }
 });
 

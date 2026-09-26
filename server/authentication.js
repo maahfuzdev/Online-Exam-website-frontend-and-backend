@@ -9,6 +9,7 @@ const AuthSchema = new mongoose.Schema({
   role: { type: String, enum: ['student', 'teacher'], default: 'student' },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  class: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
 });
 

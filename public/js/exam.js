@@ -209,8 +209,8 @@ function toggleQuestion(questionIndex) {
 
 // Select all students
 function selectAllStudents() {
-    students.forEach((_, index) => {
-        selectedStudents.add(index);
+    students.forEach(student => {
+        selectedStudents.add(student._id);
     });
     renderStudentsList();
     updateStudentsCount();
@@ -287,7 +287,8 @@ async function createAndAssignExam() {
     if (selectedQuestions.size === 0) return showMessage("Please select at least one question", "error");
 
     // Get teacher ID (আপনার authentication system থেকে)
-    const teacherID = localStorage.getItem('userId') || 'your-teacher-id-here';
+    const teacherID = localStorage.getItem('userId');
+    if (!teacherID) return showMessage("Please log in as a teacher first", "error");
 
     // Create exam object with correct format
     const exam = {
