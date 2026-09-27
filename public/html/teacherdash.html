@@ -277,9 +277,8 @@
         </style>
         <script>
           function goToManualExamCreation() {
-            // This would redirect to the manual exam creation page
-            // For now, we'll simulate by showing a form
-            alert('Redirecting to manual exam creation page...');
+            // Tell the exam builder to open the teacher workspace after navigation.
+            localStorage.setItem('showteacher', 'true');
             window.location.href = '/html/index.html';
           }
           function showOCRSystem() {

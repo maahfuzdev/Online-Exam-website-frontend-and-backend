@@ -52,6 +52,11 @@ function init() {
       document.getElementById('teacherDashboard').classList.remove('hidden');
       currentMode = 'teacher';
       updateTeacherStats();
+      // The dashboard is shown after the page's load event, so exam.js's
+      // load-time initializer cannot populate the exam creator here.
+      if (typeof initExamCreator === 'function') {
+        initExamCreator();
+      }
     }
 
     function showStudentDashboard() {
