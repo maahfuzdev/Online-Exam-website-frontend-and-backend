@@ -1659,3 +1659,78 @@
   #examStep3 .create-assignment-button { position: sticky; bottom: 8px; z-index: 2; box-shadow: 0 5px 18px rgba(11, 130, 109, .22); }
   #examStep2 .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Modern interaction polish for question creation and exam assignment */
+.exam-stepper { border-color: #e0eae5; border-radius: 14px; background: rgba(255,255,255,.78); }
+.exam-step { min-height: 54px; border-radius: 10px; transition: background 150ms ease, color 150ms ease; }
+.exam-step:hover { background: #f1f7f4; }
+.exam-step-number { width: 34px; height: 34px; border-radius: 50%; transition: background 150ms ease, border-color 150ms ease; }
+.exam-step.active { box-shadow: inset 0 0 0 1px #d3e9df; }
+.exam-step-connector.completed { background: #0b826d; }
+.exam-step:focus-visible, .assignment-picker summary:focus-visible, .created-exams-panel summary:focus-visible,
+.assignment-search:focus-visible, .picker-select-all:focus-visible, .create-assignment-button:focus-visible,
+.question-bank-launch:focus-visible { outline: 3px solid rgba(11,130,109,.26); outline-offset: 2px; }
+#examStep1 .section-title { font-size: 18px; }
+#examStep1 .question-creator-form { border-radius: 14px; }
+#examStep1 .creator-form-heading h3 { font-size: 20px; }
+#examStep1 .creator-back-button { border-radius: 8px; }
+#examStep1 .math-toolbar { overflow: hidden; padding: 0; border-radius: 10px; }
+#examStep1 .math-toolbar > summary { display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 13px; cursor: pointer; list-style: none; }
+#examStep1 .math-toolbar > summary::-webkit-details-marker { display: none; }
+#examStep1 .math-toolbar > summary::after { content: "+"; color: #0b826d; font-size: 18px; }
+#examStep1 .math-toolbar[open] > summary::after { content: "−"; }
+#examStep1 .math-toolbar > .math-buttons { padding: 0 12px 12px; }
+#examStep1 .question-preview-heading { margin: 0 0 9px; }
+#examStep1 .form-group > div[style*="background: #f8fafc"] { padding: 13px !important; border-radius: 11px !important; }
+#examStep1 .action-buttons { grid-template-columns: minmax(0, 240px); }
+#examStep1 .action-buttons .btn { border-radius: 10px; font-weight: 800; }
+#examStep3 .form-section h3 { color: #23473d; }
+#examStep3 .assignment-pickers { margin-top: 14px; }
+#examStep3 .assignment-picker { box-shadow: 0 2px 8px rgba(29, 70, 56, .035); transition: border-color 150ms ease, box-shadow 150ms ease; }
+#examStep3 .assignment-picker[open] { border-color: #acd5c7; box-shadow: 0 6px 18px rgba(29, 70, 56, .07); }
+#examStep3 .assignment-picker > summary { min-height: 58px; padding: 12px 16px; font-size: 14px; }
+#examStep3 .picker-content { padding: 0 15px 15px; }
+.assignment-search { display: block; width: 100%; min-height: 44px; margin: 8px 0; padding: 10px 13px; border: 1px solid #dce7e1; border-radius: 9px; background: #fff; color: #29443a; font: inherit; font-size: 12px; transition: border-color 150ms ease, box-shadow 150ms ease; }
+.assignment-search::placeholder { color: #9aa8a2; }
+.assignment-search:focus { border-color: #58a897; outline: 0; box-shadow: 0 0 0 3px rgba(11,130,109,.1); }
+.assignment-options { display: flex; flex-direction: column; gap: 7px; }
+.assignment-options > div { min-height: 58px; border-radius: 9px !important; }
+.assignment-options > div:hover { box-shadow: 0 3px 10px rgba(27,75,58,.07); }
+.assignment-options input[type="checkbox"] { accent-color: #0b826d; flex: 0 0 auto; }
+#examStep3 .question-selection-filters select { min-height: 44px; border-radius: 9px; }
+#examStep3 .create-assignment-button { min-height: 54px; border-radius: 10px; box-shadow: 0 6px 16px rgba(11,130,109,.14); transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease; }
+#examStep3 .create-assignment-button:hover { transform: translateY(-1px); box-shadow: 0 9px 20px rgba(11,130,109,.2); }
+#examStep2 .stat-card { transition: transform 150ms ease, border-color 150ms ease; }
+#examStep2 .review-intro-card { border-radius: 14px; }
+#examStep2 .review-bank-launch { width: min(300px, 100%); min-height: 48px; justify-content: flex-start; padding: 0 15px; border-radius: 10px; }
+.created-exams-panel { box-shadow: 0 2px 8px rgba(29,70,56,.035); }
+
+@media (max-width: 700px) {
+  .exam-stepper { padding: 6px; }
+  .exam-step { min-height: 58px; }
+  .exam-step strong { font-size: 11px; }
+  .exam-step-number { width: 30px; height: 30px; }
+  #examStep1 .action-buttons { grid-template-columns: 1fr; }
+  #examStep3 .assignment-picker > summary { min-height: 56px; }
+  #examStep3 .picker-content { padding: 0 11px 12px; }
+  .assignment-search, #examStep3 .question-selection-filters select { min-height: 46px; font-size: 16px; }
+  .assignment-options > div { padding: 11px !important; }
+  .assignment-options > div > div:first-of-type { min-width: 0; overflow-wrap: anywhere; }
+  #examStep3 .create-assignment-button { bottom: max(8px, env(safe-area-inset-bottom)); }
+}
+
+/* Calculator-style math entry: visible keys insert readable symbols, no source syntax */
+#examStep1 .math-keyboard { display: grid; gap: 13px; padding: 2px 12px 13px; }
+#examStep1 .math-keyboard-section > span { display: block; margin: 0 0 7px; color: #75857e; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+#examStep1 .math-keyboard-section .math-buttons { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+#examStep1 .math-btn.math-key { min-width: 0; min-height: 42px; height: auto; border: 1px solid #dce8e2; border-radius: 8px; background: #fff; color: #29483d; font-size: 15px; font-weight: 700; box-shadow: 0 1px 2px rgba(31,65,53,.04); }
+#examStep1 .math-btn.math-key:hover { border-color: #91c7b5; background: #eff8f3; transform: translateY(-1px); }
+#examStep1 .math-btn.math-key-accent { background: #eaf5f0; color: #087865; }
+#examStep1 .math-keyboard-section:first-child .math-btn.math-key { font-size: 16px; }
+#examStep1 .math-keyboard-section:last-child .math-btn.math-key { font-size: 12px; }
+
+@media (max-width: 560px) {
+  #examStep1 .math-keyboard { gap: 11px; padding: 0 9px 10px; }
+  #examStep1 .math-keyboard-section .math-buttons { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  #examStep1 .math-btn.math-key { min-height: 44px; font-size: 16px; }
+}

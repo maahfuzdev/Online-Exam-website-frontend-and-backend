@@ -123,7 +123,7 @@
         <div id="questionTypeChooser" class="question-type-chooser hidden" aria-label="Choose question type">
           <button type="button" class="question-type-card" onclick="beginQuestionCreation('mathematical')">
             <span class="question-type-icon">∑</span>
-            <span><strong>Mathematical</strong><small>LaTeX tools and equation preview</small></span>
+            <span><strong>Mathematical</strong><small>Calculator-style math keyboard and live preview</small></span>
             <span class="question-type-arrow">→</span>
           </button>
           <button type="button" class="question-type-card" onclick="beginQuestionCreation('general')">
@@ -145,39 +145,76 @@
 
           <div class="form-group">
             <label class="form-label" for="questionInput">Question</label>
-            <p class="creator-help">Write the prompt students will answer. You can add equations with the symbol bar below.</p>
-            <div class="math-toolbar">
-              <div class="math-toolbar-title">Math symbols <span>Tap a symbol to insert it in the active field</span></div>
-              <div class="math-buttons">
-                <button class="math-btn" onclick="insertMathSymbol('$\\frac{}{}$')" title="Fraction">½</button>
-                <button class="math-btn" onclick="insertMathSymbol('$x^{}$')" title="Superscript">x²</button>
-                <button class="math-btn" onclick="insertMathSymbol('$x_{}$')" title="Subscript">x₁</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\sqrt{}$')" title="Square Root">√</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\sqrt[3]{}$')" title="Cube Root">∛</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\pi$')" title="Pi">π</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\alpha$')" title="Alpha">α</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\beta$')" title="Beta">β</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\gamma$')" title="Gamma">γ</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\theta$')" title="Theta">θ</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\sum$')" title="Sum">Σ</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\int$')" title="Integral">∫</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\lim$')" title="Limit">lim</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\infty$')" title="Infinity">∞</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\leq$')" title="Less than equal">≤</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\geq$')" title="Greater than equal">≥</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\neq$')" title="Not equal">≠</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\pm$')" title="Plus minus">±</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\times$')" title="Times">×</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\div$')" title="Division">÷</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\log$')" title="Logarithm">log</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\ln$')" title="Natural log">ln</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\sin$')" title="Sine">sin</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\cos$')" title="Cosine">cos</button>
-                <button class="math-btn" onclick="insertMathSymbol('$\\tan$')" title="Tangent">tan</button>
+            <p class="creator-help">Write the prompt students will answer. Type normally or use the math keyboard. No special code needed.</p>
+            <details class="math-toolbar">
+              <summary class="math-toolbar-title">Math keyboard <span>Tap a key to insert it — no LaTeX needed</span></summary>
+              <div class="math-keyboard" aria-label="Math keyboard">
+                <div class="math-keyboard-section"><span>Numbers</span><div class="math-buttons">
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('0')" aria-label="Insert 0">0</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('1')" aria-label="Insert 1">1</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('2')" aria-label="Insert 2">2</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('3')" aria-label="Insert 3">3</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('4')" aria-label="Insert 4">4</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('5')" aria-label="Insert 5">5</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('6')" aria-label="Insert 6">6</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('7')" aria-label="Insert 7">7</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('8')" aria-label="Insert 8">8</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('9')" aria-label="Insert 9">9</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('.')" aria-label="Decimal point">.</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('(')" aria-label="Open parenthesis">(</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol(')')" aria-label="Close parenthesis">)</button>
+                </div></div>
+                <div class="math-keyboard-section"><span>Operations</span><div class="math-buttons">
+                  <button type="button" class="math-btn math-key math-key-accent" onclick="insertMathSymbol('+')" aria-label="Plus">+</button>
+                  <button type="button" class="math-btn math-key math-key-accent" onclick="insertMathSymbol('−')" aria-label="Minus">−</button>
+                  <button type="button" class="math-btn math-key math-key-accent" onclick="insertMathSymbol('×')" aria-label="Multiply">×</button>
+                  <button type="button" class="math-btn math-key math-key-accent" onclick="insertMathSymbol('÷')" aria-label="Divide">÷</button>
+                  <button type="button" class="math-btn math-key math-key-accent" onclick="insertMathSymbol('=')" aria-label="Equals">=</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('±')" aria-label="Plus or minus">±</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('≤')" aria-label="Less than or equal">≤</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('≥')" aria-label="Greater than or equal">≥</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('≠')" aria-label="Not equal">≠</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('%')" aria-label="Percent">%</button>
+                </div></div>
+                <div class="math-keyboard-section"><span>Common math</span><div class="math-buttons">
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('√()', 2)" aria-label="Square root">√</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('x²')" aria-label="x squared">x²</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('x³')" aria-label="x cubed">x³</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('xⁿ')" aria-label="Power template">xⁿ</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('()/()', 1)" aria-label="Fraction">a/b</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('½')" aria-label="One half">½</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('¼')" aria-label="One quarter">¼</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('π')" aria-label="Pi">π</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('∞')" aria-label="Infinity">∞</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('θ')" aria-label="Theta">θ</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('α')" aria-label="Alpha">α</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('β')" aria-label="Beta">β</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('Σ')" aria-label="Sum">Σ</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('∫')" aria-label="Integral">∫</button>
+                </div></div>
+                <div class="math-keyboard-section"><span>Superscript numbers</span><div class="math-buttons">
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('⁰')" aria-label="Insert superscript 0">⁰</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('¹')" aria-label="Insert superscript 1">¹</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('²')" aria-label="Insert superscript 2">²</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('³')" aria-label="Insert superscript 3">³</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('⁴')" aria-label="Insert superscript 4">⁴</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('⁵')" aria-label="Insert superscript 5">⁵</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('⁶')" aria-label="Insert superscript 6">⁶</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('⁷')" aria-label="Insert superscript 7">⁷</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('⁸')" aria-label="Insert superscript 8">⁸</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('⁹')" aria-label="Insert superscript 9">⁹</button>
+                </div></div>
+                <div class="math-keyboard-section"><span>Functions</span><div class="math-buttons">
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('sin()', 4)">sin</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('cos()', 4)">cos</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('tan()', 4)">tan</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('log()', 4)">log</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('ln()', 3)">ln</button>
+                </div></div>
               </div>
-            </div>
+            </details>
             <textarea id="questionInput" class="form-input" rows="3"
-              placeholder="Enter your question here. Use LaTeX for math: $\frac{1}{2}$, $x^2$, $\sqrt{x}$, etc."></textarea>
+              placeholder="Type your question here. Use the math keyboard for symbols and equations."></textarea>
             <div
               style="margin-top: 10px; padding: 15px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
               <div class="question-preview-heading">Live preview</div>
@@ -192,24 +229,24 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">📋 Answer Choices (Mathematical expressions supported)</label>
-            <p class="creator-help">Enter all four options, then tap the letter of the correct answer.</p>
+            <label class="form-label">📋 Answer Choices</label>
+            <p class="creator-help">Enter four options. Use the math keyboard for symbols, then tap the correct answer letter.</p>
             <div class="choices-grid">
               <div class="choice-input">
-                <input type="text" id="choice1" class="form-input" aria-label="Choice A" placeholder="Choice A (e.g., $\frac{1}{2}$)">
+                <input type="text" id="choice1" class="form-input" aria-label="Choice A" placeholder="Choice A (e.g., 1/2)">
 
                 <button type="button" class="correct-marker inactive" onclick="setCorrectAnswer(0)" aria-label="Mark choice A as correct" aria-pressed="false">A</button>
               </div>
               <div class="choice-input">
-                <input type="text" id="choice2" class="form-input" aria-label="Choice B" placeholder="Choice B (e.g., $x^2$)">
+                <input type="text" id="choice2" class="form-input" aria-label="Choice B" placeholder="Choice B (e.g., x²)">
                 <button type="button" class="correct-marker inactive" onclick="setCorrectAnswer(1)" aria-label="Mark choice B as correct" aria-pressed="false">B</button>
               </div>
               <div class="choice-input">
-                <input type="text" id="choice3" class="form-input" aria-label="Choice C" placeholder="Choice C (e.g., $\sqrt{x}$)">
+                <input type="text" id="choice3" class="form-input" aria-label="Choice C" placeholder="Choice C (e.g., √x)">
                 <button type="button" class="correct-marker inactive" onclick="setCorrectAnswer(2)" aria-label="Mark choice C as correct" aria-pressed="false">C</button>
               </div>
               <div class="choice-input">
-                <input type="text" id="choice4" class="form-input" aria-label="Choice D" placeholder="Choice D (e.g., $\pi r^2$)">
+                <input type="text" id="choice4" class="form-input" aria-label="Choice D" placeholder="Choice D (e.g., πr²)">
                 <button type="button" class="correct-marker inactive" onclick="setCorrectAnswer(3)" aria-label="Mark choice D as correct" aria-pressed="false">D</button>
               </div>
             </div>
@@ -308,7 +345,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <!-- Exam Title -->
             <div class="space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">Exam Title</label>
+              <label class="block text-sm font-semibold text-gray-700" for="examTitle">Exam title</label>
               <input id="examTitle" type="text" placeholder="e.g., Mid Term Exam – Math"
                 class="w-full px-4 py-3.5 border border-gray-300 rounded-xl text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md">
             </div>
@@ -321,7 +358,7 @@
 
             <!-- Marks Per Question -->
             <div class="space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">Marks Per Question</label>
+              <label class="block text-sm font-semibold text-gray-700" for="marksPerQuestion">Marks per question</label>
               <div class="relative">
                 <input id="marksPerQuestion" type="number" min="1" value="1"
                   class="w-full px-4 py-3.5 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md appearance-none">
@@ -335,7 +372,7 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <!-- Total Duration -->
             <div class="space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">Exam Duration</label>
+              <label class="block text-sm font-semibold text-gray-700" for="totalTime">Exam duration</label>
               <div class="relative">
                 <input id="totalTime" type="number" min="1" value="60"
                   class="w-full px-4 py-3.5 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md appearance-none">
@@ -348,7 +385,7 @@
 
             <!-- Start Time -->
             <div class="space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">Start Date & Time</label>
+              <label class="block text-sm font-semibold text-gray-700" for="startTime">Start date &amp; time</label>
               <div class="relative group">
                 <input id="startTime" type="datetime-local"
                   class="w-full px-4 py-3.5 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md appearance-none [color-scheme:light]">
@@ -363,7 +400,7 @@
 
             <!-- End Time -->
             <div class="space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">End Date & Time</label>
+              <label class="block text-sm font-semibold text-gray-700" for="endTime">End date &amp; time</label>
               <div class="relative group">
                 <input id="endTime" type="datetime-local"
                   class="w-full px-4 py-3.5 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md appearance-none [color-scheme:light]">
@@ -390,6 +427,7 @@
               <summary><span>Choose students</span><span class="picker-count" id="studentPickerCount">0 selected</span></summary>
               <div class="picker-content">
                 <div class="picker-tools"><span>Students</span><button type="button" class="picker-select-all" onclick="selectAllStudents()">Select all</button></div>
+                <input id="studentSearch" class="assignment-search" type="search" placeholder="Search by name or email" aria-label="Search students" oninput="renderStudentsList()">
                 <div id="studentsContainer" class="assignment-list"><div class="assignment-loading">Loading students…</div></div>
                 <div class="picker-total"><span id="selectedStudentsCount">0 selected</span><span id="totalStudentsCount">Total: 0</span></div>
               </div>
@@ -402,6 +440,7 @@
                   <select id="scheduleQuestionSubject" aria-label="Filter questions by subject" onchange="renderQuestionsList()"><option value="">All subjects</option></select>
                   <select id="scheduleQuestionClass" aria-label="Filter questions by class" onchange="renderQuestionsList()"><option value="">All classes</option></select>
                 </div>
+                <input id="scheduleQuestionSearch" class="assignment-search" type="search" placeholder="Search question text" aria-label="Search questions" oninput="renderQuestionsList()">
                 <div id="questionsContainer" class="assignment-list"><div class="assignment-loading">Loading questions…</div></div>
                 <div class="picker-total"><span id="selectedQuestionsCount">0 selected</span><span id="totalQuestionsCount">Total: 0</span></div>
               </div>
@@ -530,6 +569,11 @@
         const buttonStep = Number(button.dataset.examStep);
         button.classList.toggle('active', buttonStep === step);
         button.classList.toggle('completed', buttonStep < step);
+        if (buttonStep === step) button.setAttribute('aria-current', 'step');
+        else button.removeAttribute('aria-current');
+      });
+      document.querySelectorAll('.exam-step-connector').forEach((connector, index) => {
+        connector.classList.toggle('completed', index + 1 < step);
       });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }

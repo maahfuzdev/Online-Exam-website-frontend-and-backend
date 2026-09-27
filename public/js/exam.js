@@ -91,9 +91,16 @@ function renderStudentsList() {
         return;
     }
     
-    let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+    const search = document.getElementById('studentSearch')?.value.trim().toLocaleLowerCase() || '';
+    const visibleStudents = students.filter(student => `${student.name || ''} ${student.email || ''}`.toLocaleLowerCase().includes(search));
+    if (!visibleStudents.length) {
+        container.innerHTML = '<div class="assignment-loading">No students match your search.</div>';
+        return;
+    }
+
+    let html = '<div class="assignment-options">';
     
-    students.forEach((student) => {
+    visibleStudents.forEach((student) => {
         const isSelected = selectedStudents.has(student._id);
         html += `
             <div style="display: flex; align-items: center; padding: 12px; 
@@ -141,16 +148,18 @@ function renderQuestionsList() {
 
     const subjectFilter = document.getElementById('scheduleQuestionSubject')?.value || '';
     const classFilter = document.getElementById('scheduleQuestionClass')?.value || '';
-    const visibleQuestions = quizQuestions.map((question, index) => ({ question, index })).filter(({ question }) =>
-        (!subjectFilter || question.subject === subjectFilter) && (!classFilter || question.class === classFilter)
-    );
+    const search = document.getElementById('scheduleQuestionSearch')?.value.trim().toLocaleLowerCase() || '';
+    const visibleQuestions = quizQuestions.map((question, index) => ({ question, index })).filter(({ question }) => {
+        const text = `${question.questionText || question.question || ''} ${question.subject || ''} ${question.class || ''}`.toLocaleLowerCase();
+        return (!subjectFilter || question.subject === subjectFilter) && (!classFilter || question.class === classFilter) && text.includes(search);
+    });
 
     if (!visibleQuestions.length) {
         container.innerHTML = '<div style="padding:32px 14px;text-align:center;color:#77877f;font-size:12px;">No questions match these filters.</div>';
         return;
     }
 
-    let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+    let html = '<div class="assignment-options">';
 
     visibleQuestions.forEach(({ question, index }) => {
 

@@ -123,7 +123,7 @@ document.querySelectorAll("input, textarea").forEach(el => {
   
 });
 
-function insertMathSymbol(mathCode) {
+function insertMathSymbol(mathText, cursorOffset = mathText.length) {
     // প্রথমে activeInputId অনুযায়ী খুঁজুন
     let activeInput = document.getElementById(activeInputId);
     
@@ -148,15 +148,10 @@ function insertMathSymbol(mathCode) {
     const after = text.substring(end, text.length);
 
     // নতুন টেক্সট ইনসার্ট করুন
-    activeInput.value = before + mathCode + after;
+    activeInput.value = before + mathText + after;
 
     // কার্সর পজিশন আপডেট করুন
-    const emptyGroupPosition = mathCode.indexOf('{}');
-    const newPos = start + (emptyGroupPosition >= 0
-      ? emptyGroupPosition + 1
-      : mathCode.startsWith('$') && mathCode.endsWith('$')
-        ? mathCode.length - 1
-        : mathCode.length);
+    const newPos = start + Math.min(Math.max(cursorOffset, 0), mathText.length);
     activeInput.setSelectionRange(newPos, newPos);
     activeInput.focus();
 
@@ -205,21 +200,21 @@ function beginQuestionCreation(type) {
   document.getElementById('questionTypeHeading').textContent =
     selectedQuestionType === 'mathematical' ? 'Mathematical question' : 'General question';
   document.getElementById('questionInput').placeholder = selectedQuestionType === 'mathematical'
-    ? 'Write your question. Add LaTeX between $ signs or use the math symbol bar.'
+    ? 'Write your question in plain text and use the math keyboard for equations.'
     : 'Write your question in plain text.';
   document.querySelector('#examStep1 .creator-help').textContent = selectedQuestionType === 'mathematical'
-    ? 'Write the question and use the math toolbar when you need equations or symbols.'
+    ? 'Write the question normally and tap the math keyboard for equations or symbols.'
     : 'Write a text based question. Math symbols and equation tools are hidden for this type.';
   const optionHelp = document.querySelectorAll('#examStep1 .creator-help')[1];
   document.querySelectorAll('#questionCreatorForm .form-label')[3].textContent = selectedQuestionType === 'mathematical'
-    ? 'Answer choices (LaTeX supported)'
+    ? 'Answer choices'
     : 'Answer choices';
   optionHelp.textContent = selectedQuestionType === 'mathematical'
-    ? 'Enter four answer options, then tap the letter of the correct answer. LaTeX is supported.'
+    ? 'Enter four answer options, use the math keyboard if needed, and tap the correct answer letter.'
     : 'Enter four text answer options, then tap the letter of the correct answer.';
   ['choice1', 'choice2', 'choice3', 'choice4'].forEach((id, index) => {
     document.getElementById(id).placeholder = selectedQuestionType === 'mathematical'
-      ? `Choice ${String.fromCharCode(65 + index)} (LaTeX supported)`
+      ? `Choice ${String.fromCharCode(65 + index)}`
       : `Choice ${String.fromCharCode(65 + index)}`;
   });
   form.scrollIntoView({ behavior: 'smooth', block: 'start' });
