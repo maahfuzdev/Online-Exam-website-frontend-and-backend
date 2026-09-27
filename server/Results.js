@@ -84,22 +84,7 @@ async function visibleResultsForStudent(results) {
 
 router.post("/api/studentresult", async (req, res) => {
   try {
-    const {
-      studentID,
-      teacherID,
-      examID,
-      examTitle,
-      totalQuestions,
-      correctAnswers,
-      wrongAnswers,
-      skippedQuestion,
-      score,
-      totalMarks,
-      percentage,
-      timeTaken,
-      date,
-      answers
-    } = req.body;
+    const { studentID, examID, timeTaken, answers } = req.body;
 
         const { AssignedQuestion } = require("./AssignedQuestions");
         const exam = await AssignedQuestion.findOne({ _id: examID, studentIDs: studentID }).populate("questionIds");
