@@ -40,7 +40,7 @@
                 <div class="stat-card">
                     <span class="stat-icon">📝</span>
                     <div class="stat-info">
-                        <div class="stat-number" id="activeExamsCount">2</div>
+                        <div class="stat-number" id="activeExamsCount">0</div>
                         <div class="stat-label">Active Exams</div>
                     </div>
                 </div>
@@ -48,7 +48,7 @@
                 <div class="stat-card">
                     <span class="stat-icon">✅</span>
                     <div class="stat-info">
-                        <div class="stat-number" id="completedExamsCount">2</div>
+                        <div class="stat-number" id="completedExamsCount">0</div>
                         <div class="stat-label">Completed Exams</div>
                     </div>
                 </div>
@@ -56,7 +56,7 @@
                 <div class="stat-card">
                     <span class="stat-icon">❌</span>
                     <div class="stat-info">
-                        <div class="stat-number" id="absentExamsCount">2</div>
+                        <div class="stat-number" id="absentExamsCount">0</div>
                         <div class="stat-label">Absence</div>
                     </div>
                 </div>
@@ -64,7 +64,7 @@
                 <div class="stat-card">
                     <span class="stat-icon">⭐</span>
                     <div class="stat-info">
-                        <div class="stat-number" id="averageScore">87%</div>
+                        <div class="stat-number" id="averageScore">—</div>
                         <div class="stat-label">Average Score</div>
                     </div>
                 </div>
@@ -122,10 +122,10 @@
                 <div class="exam-meta">
                     <span class="exam-meta-item" id="examQuestionsCount">10 Questions</span>
                     <span class="exam-meta-item" id="examTotalMarks">Total: 100 marks</span>
-                    <span class="exam-meta-item" id="examTimeRemaining">⏱️ Time: 01:30:00</span>
+                    <span class="exam-meta-item exam-timer" id="examTimeRemaining" aria-live="polite">⏱️ Time: 01:30:00</span>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="confirmSubmitExam()">📤 Submit Exam</button>
+            <button type="button" class="btn btn-primary submit-exam-btn" onclick="confirmSubmitExam()">Submit exam</button>
         </div>
 
         <!-- Exam Timer Alert -->
@@ -140,7 +140,7 @@
             </div>
             <div class="progress-info">
                 <span id="currentQuestionNumber">Question 1</span>
-                <span id="examProgressText">1/10</span>
+                <span id="examProgressText" aria-live="polite">0/10 answered</span>
             </div>
         </div>
 
@@ -165,51 +165,39 @@
                     <!-- Options/Answer Area -->
                     <div class="answer-section">
                         <!-- Multiple Choice -->
-                        <div id="mcqOptions" class="mcq-options">
-                            <div class="option-row" onclick="selectMCQOption(0)">
+                        <div id="mcqOptions" class="mcq-options" role="radiogroup" aria-label="Answer choices" onkeydown="handleMCQKeydown(event)">
+                            <button type="button" class="option-row" role="radio" aria-checked="false" tabindex="0" onclick="selectMCQOption(0)">
                                 <span class="option-label">A</span>
-                                <div class="option-text" id="optionA">3.14</div>
-                            </div>
-                            <div class="option-row" onclick="selectMCQOption(1)">
+                                <span class="option-text" id="optionA">3.14</span>
+                            </button>
+                            <button type="button" class="option-row" role="radio" aria-checked="false" tabindex="0" onclick="selectMCQOption(1)">
                                 <span class="option-label">B</span>
-                                <div class="option-text" id="optionB">3.15</div>
-                            </div>
-                            <div class="option-row" onclick="selectMCQOption(2)">
+                                <span class="option-text" id="optionB">3.15</span>
+                            </button>
+                            <button type="button" class="option-row" role="radio" aria-checked="false" tabindex="0" onclick="selectMCQOption(2)">
                                 <span class="option-label">C</span>
-                                <div class="option-text" id="optionC">3.16</div>
-                            </div>
-                            <div class="option-row" onclick="selectMCQOption(3)">
+                                <span class="option-text" id="optionC">3.16</span>
+                            </button>
+                            <button type="button" class="option-row" role="radio" aria-checked="false" tabindex="0" onclick="selectMCQOption(3)">
                                 <span class="option-label">D</span>
-                                <div class="option-text" id="optionD">3.17</div>
-                            </div>
+                                <span class="option-text" id="optionD">3.17</span>
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 <div class="question-navigation">
-                    <button class="btn btn-outline" onclick="previousQuestionExam()" id="prevQuestionBtn">
+                    <button type="button" class="btn btn-outline" onclick="previousQuestionExam()" id="prevQuestionBtn">
                         ← Previous
                     </button>
                     <div class="answer-status" id="answerStatus">Not answered</div>
-                    <button class="btn btn-primary" onclick="nextQuestionExam()" id="nextQuestionBtn">
+                    <button type="button" class="btn btn-primary" onclick="nextQuestionExam()" id="nextQuestionBtn">
                         Next →
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Exam Controls -->
-        <div class="exam-controls">
-            <button class="btn btn-outline" onclick="flagQuestion()" id="flagBtn">
-                🚩 Flag for Review
-            </button>
-            <button class="btn btn-outline" onclick="reviewFlagged()">
-                📋 Review Flagged
-            </button>
-            <button class="btn btn-primary" onclick="saveAndContinue()">
-                💾 Save & Continue
-            </button>
-        </div>
     </div>
 
     <!-- Results Interface -->
@@ -269,39 +257,7 @@
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="results-actions"
-            style="display: flex; gap: 15px; justify-content: center; margin-top: 30px; flex-wrap: wrap;">
-            <button class="btn btn-success" onclick="downloadResult()">
-                📥 Download Result
-            </button>
-            <button class="btn btn-primary" onclick="retakeExam()">
-                🔄 Retake Exam
-            </button>
-        </div>
     </div>
-
-    <!-- Timer Auto-Submit Modal -->
-    <div id="autoSubmitModal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>⏰ Time's Up!</h2>
-            </div>
-            <div class="modal-body">
-                <p>The exam time has ended. Your answers have been automatically submitted.</p>
-                <div class="timer-warning">🔄 Redirecting to results in <span id="redirectTimer">5</span> seconds...
-                </div>
-            </div>
-            <div class="modal-footer" style="margin-top: 20px;">
-                <button class="btn btn-primary" onclick="viewResultsNow()">
-                    View Results Now
-                </button>
-            </div>
-        </div>
-    </div>
-
-
-
 
 </body>
 
