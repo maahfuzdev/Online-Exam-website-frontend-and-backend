@@ -1,664 +1,76 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuizMaster Pro - Login & Registration</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
-  <style>
-    :root {
-      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-      --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-      --text-dark: #2d3748;
-      --text-light: #718096;
-      --bg-light: #f7fafc;
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--primary-gradient);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .container {
-      background: white;
-      border-radius: 20px;
-      padding: 40px;
-      box-shadow: var(--shadow-xl);
-      max-width: 450px;
-      width: 100%;
-      text-align: center;
-      transition: all 0.3s ease;
-    }
-
-    .container:hover {
-      transform: translateY(-5px);
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .logo {
-      font-size: 2.5rem;
-      font-weight: 800;
-      background: var(--primary-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      color: var(--text-light);
-      font-size: 1.1rem;
-      margin-bottom: 30px;
-    }
-
-    .role-selector {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-
-    .role-btn {
-      flex: 1;
-      padding: 15px 20px;
-      border: 2px solid #e2e8f0;
-      border-radius: 15px;
-      background: white;
-      color: var(--text-dark);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 600;
-      font-size: 1rem;
-    }
-
-    .role-btn.active {
-      border-color: #667eea;
-      background: var(--primary-gradient);
-      color: white;
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .role-btn:hover {
-      border-color: #667eea;
-      transform: translateY(-2px);
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-      text-align: left;
-    }
-
-    .form-label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: var(--text-dark);
-    }
-
-    .form-input {
-      width: 100%;
-      padding: 15px;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-      background: #f8fafc;
-    }
-
-    .form-input:focus {
-      outline: none;
-      border-color: #667eea;
-      background: white;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .btn {
-      width: 100%;
-      padding: 15px;
-      border: none;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-bottom: 15px;
-    }
-
-    .btn-primary {
-      background: var(--primary-gradient);
-      color: white;
-    }
-
-    .btn-secondary {
-      background: var(--secondary-gradient);
-      color: white;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .toggle-link {
-      color: #667eea;
-      text-decoration: none;
-      font-weight: 600;
-      cursor: pointer;
-      transition: color 0.3s ease;
-    }
-
-    .toggle-link:hover {
-      color: #764ba2;
-      text-decoration: underline;
-    }
-
-    .message {
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      font-weight: 600;
-      text-align: center;
-    }
-
-    .message.success {
-      background: #dcfce7;
-      color: #166534;
-      border: 1px solid #bbf7d0;
-    }
-
-    .message.error {
-      background: #fef2f2;
-      color: #dc2626;
-      border: 1px solid #fecaca;
-    }
-
-    .message.info {
-      background: #eff6ff;
-      color: #1d4ed8;
-      border: 1px solid #bfdbfe;
-    }
-
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid #667eea;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-right: 10px;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    .password-container {
-      position: relative;
-    }
-
-    .toggle-password {
-      position: absolute;
-      right: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      color: var(--text-light);
-      font-size: 1.2rem;
-      transition: color 0.3s ease;
-    }
-
-    .toggle-password:hover {
-      color: var(--text-dark);
-    }
-
-    .strength-weak {
-      color: #ef4444;
-    }
-
-    .strength-medium {
-      color: #f59e0b;
-    }
-
-    .strength-strong {
-      color: #10b981;
-    }
-
-    .dashboard-preview {
-      background: #f8fafc;
-      border-radius: 15px;
-      padding: 20px;
-      margin-top: 20px;
-      text-align: center;
-    }
-
-    .welcome-text {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 10px;
-    }
-
-    .user-info {
-      color: var(--text-light);
-      margin-bottom: 20px;
-    }
-
-    .logout-btn {
-      background: var(--danger-gradient);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-    }
-
-    .logout-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    @media (max-width: 480px) {
-      .container {
-        padding: 30px 20px;
-        margin: 10px;
-      }
-
-      .role-selector {
-        flex-direction: column;
-      }
-
-      .logo {
-        font-size: 2rem;
-      }
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f6fb">
+  <title>Sign in · QuizMaster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/css/authentication.css">
+  <script defer src="/js/authentication.js"></script>
 </head>
-
 <body>
-  <!-- Landing Page -->
-  <div id="landingPage" class="container">
-    <div class="logo">🧮 QuizMaster Pro</div>
-    <p class="subtitle">Advanced Math Quiz Platform</p>
+  <main class="auth-page">
+    <header class="auth-topbar">
+      <a class="brand" href="/" aria-label="QuizMaster home"><span class="brand-mark">Q</span><span>QuizMaster<small>EXAM PLATFORM</small></span></a>
+      <a class="back-home" href="/"><i class="fa-solid fa-arrow-left"></i><span>Back to home</span></a>
+    </header>
 
-    <div class="role-selector">
-      <div class="role-btn active" id="teacherRoleBtn" onclick="selectRole('teacher')">
-        👨‍🏫 Teacher
-      </div>
-      <div class="role-btn" id="studentRoleBtn" onclick="selectRole('student')">
-        👨‍🎓 Student
-      </div>
+    <div class="auth-layout">
+      <aside class="welcome-panel">
+        <div class="welcome-content">
+          <span class="welcome-eyebrow"><i class="fa-solid fa-sparkles"></i> YOUR LEARNING WORKSPACE</span>
+          <h1>Every exam starts with a great experience.</h1>
+          <p>Sign in to create assessments, take exams, and keep your learning on track.</p>
+          <div class="welcome-features">
+            <div><span class="feature-icon"><i class="fa-solid fa-pen-to-square"></i></span><span><strong>Thoughtful assessments</strong><small>Build clear, organized exams with ease.</small></span></div>
+            <div><span class="feature-icon"><i class="fa-solid fa-chart-line"></i></span><span><strong>Progress at a glance</strong><small>See results and follow improvement.</small></span></div>
+          </div>
+        </div>
+        <div class="welcome-foot"><span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><span class="welcome-mark"><i class="fa-solid fa-graduation-cap"></i></span><span class="foot-copy">A focused space for better learning</span></div>
+      </aside>
+
+      <section class="auth-card" aria-labelledby="authTitle">
+        <div class="auth-card-heading">
+          <span class="card-eyebrow" id="modeEyebrow">WELCOME BACK</span>
+          <h2 id="authTitle">Sign in to your account</h2>
+          <p id="authSubtitle">Enter your details to continue to QuizMaster.</p>
+        </div>
+
+        <div class="role-block" id="roleBlock" hidden>
+          <span class="role-label">I am joining as</span>
+          <div class="role-selector" aria-label="Choose your account type">
+            <button type="button" class="role-btn active" id="teacherRoleBtn" aria-pressed="true" data-role="teacher"><i class="fa-solid fa-chalkboard-user"></i><span>Teacher</span></button>
+            <button type="button" class="role-btn" id="studentRoleBtn" aria-pressed="false" data-role="student"><i class="fa-solid fa-user-graduate"></i><span>Student</span></button>
+          </div>
+        </div>
+
+        <div id="messageContainer" aria-live="polite" aria-atomic="true"></div>
+
+        <form id="loginForm" class="auth-form" novalidate>
+          <label class="field"><span>Email address</span><span class="input-wrap"><i class="fa-regular fa-envelope field-icon"></i><input type="email" id="loginEmail" name="email" placeholder="you@example.com" autocomplete="email" required></span></label>
+          <label class="field"><span>Password</span><span class="input-wrap"><i class="fa-solid fa-lock field-icon"></i><input type="password" id="loginPassword" name="password" placeholder="Enter your password" autocomplete="current-password" required><button type="button" class="password-toggle" data-password="loginPassword" aria-label="Show password"><i class="fa-regular fa-eye"></i></button></span></label>
+          <button type="submit" class="submit-btn" id="signInBtn"><span>Sign in</span><i class="fa-solid fa-arrow-right"></i></button>
+          <p class="form-switch">New to QuizMaster? <button type="button" class="text-action" data-toggle-form>Create an account</button></p>
+        </form>
+
+        <form id="registerForm" class="auth-form hidden" novalidate>
+          <label class="field"><span>Full name</span><span class="input-wrap"><i class="fa-regular fa-user field-icon"></i><input type="text" id="registerName" name="name" placeholder="Your full name" autocomplete="name" maxlength="100" required></span></label>
+          <label class="field"><span>Email address</span><span class="input-wrap"><i class="fa-regular fa-envelope field-icon"></i><input type="email" id="registerEmail" name="email" placeholder="you@example.com" autocomplete="email" required></span></label>
+          <label class="field"><span>Password</span><span class="input-wrap"><i class="fa-solid fa-lock field-icon"></i><input type="password" id="registerPassword" name="new-password" placeholder="At least 6 characters" autocomplete="new-password" minlength="6" required><button type="button" class="password-toggle" data-password="registerPassword" aria-label="Show password"><i class="fa-regular fa-eye"></i></button></span></label>
+          <div id="passwordStrength" class="password-strength" aria-live="polite"></div>
+          <label class="field"><span>Confirm password</span><span class="input-wrap"><i class="fa-solid fa-lock field-icon"></i><input type="password" id="confirmPassword" name="confirm-password" placeholder="Enter your password again" autocomplete="new-password" required><button type="button" class="password-toggle" data-password="confirmPassword" aria-label="Show password"><i class="fa-regular fa-eye"></i></button></span></label>
+          <button type="submit" class="submit-btn" id="signUpBtn"><span>Create account</span><i class="fa-solid fa-arrow-right"></i></button>
+          <p class="form-switch">Already have an account? <button type="button" class="text-action" data-toggle-form>Sign in</button></p>
+        </form>
+
+        <p class="security-note"><i class="fa-solid fa-shield-halved"></i> Your account details are protected and kept private.</p>
+      </section>
     </div>
-
-    <div id="messageContainer"></div>
-
-    <!-- Login Form -->
-    <div id="loginForm">
-      <div class="form-group">
-        <label class="form-label">Email Address</label>
-        <input type="email" id="loginEmail" class="form-input" placeholder="Enter your email">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Password</label>
-        <div class="password-container">
-          <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password">
-          <span class="toggle-password" onclick="togglePassword('loginPassword')">👁️</span>
-        </div>
-      </div>
-
-      <button class="btn btn-primary" onclick="signIn()" id="signInBtn">
-        🚀 Sign In
-      </button>
-
-      <p>
-        Don't have an account?
-        <a href="#" class="toggle-link" onclick="toggleForm()">Register here</a>
-      </p>
-    </div>
-
-    <!-- Registration Form -->
-    <div id="registerForm" class="hidden">
-      <div class="form-group">
-        <label class="form-label">Full Name</label>
-        <input type="text" id="registerName" class="form-input" placeholder="Enter your full name">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Email Address</label>
-        <input type="email" id="registerEmail" class="form-input" placeholder="Enter your email">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Password</label>
-        <div class="password-container">
-          <input type="password" id="registerPassword" class="form-input" placeholder="Create a password"
-            oninput="checkPasswordStrength()">
-          <span class="toggle-password" onclick="togglePassword('registerPassword')">👁️</span>
-        </div>
-        <div id="passwordStrength" class="password-strength"></div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Confirm Password</label>
-        <div class="password-container">
-          <input type="password" id="confirmPassword" class="form-input" placeholder="Confirm your password">
-          <span class="toggle-password" onclick="togglePassword('confirmPassword')">👁️</span>
-        </div>
-      </div>
-
-      <button class="btn btn-secondary" onclick="signUp()" id="signUpBtn">
-        ✨ Create Account
-      </button>
-
-      <p>
-        Already have an account?
-        <a href="#" class="toggle-link" onclick="toggleForm()">Sign in here</a>
-      </p>
-    </div>
-  </div>
-
-  <!-- Dashboard Preview -->
-  <div id="dashboardPreview" class="container hidden">
-    <div class="dashboard-preview">
-      <div class="welcome-text" id="welcomeText">Welcome!</div>
-      <div class="user-info" id="userInfo">Loading...</div>
-
-      <div style="margin: 20px 0;">
-        <div style="font-size: 1.1rem; color: var(--text-dark); margin-bottom: 10px;">
-          ✅ Successfully signed in as <span id="userRole">User</span>
-        </div>
-        <div style="color: var(--text-light); font-size: 0.9rem;">
-          Account created and ready to use!
-        </div>
-      </div>
-
-      <button class="logout-btn" onclick="signOut()">
-        🔴 Sign Out
-      </button>
-
-      <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 10px; border: 1px solid #e2e8f0;">
-        <div style="color: var(--text-light); font-size: 0.9rem;">
-          💡 This is a preview. In the full app, you would see your dashboard with quiz management tools.
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // Global variables
-    let selectedRole = 'teacher';
-    window.selectedRole = selectedRole;
-    let isLoginMode = true;
-
-    // Initialize App  
-    function init() {
-      console.log("App initialized without Firebase.");
-    }
-
-
-    // Role Selection
-
-
-    function selectRole(role) {
-      selectedRole = role;
-      window.selectedRole = role;
-      document.getElementById('teacherRoleBtn').classList.remove('active');
-      document.getElementById('studentRoleBtn').classList.remove('active');
-      document.getElementById(role + 'RoleBtn').classList.add('active');
-
-      clearMessage();
-    }
-
-
-
-
-    // Toggle Login / Register Form
-    function toggleForm() {
-      isLoginMode = !isLoginMode;
-
-      if (isLoginMode) {
-        document.getElementById('loginForm').classList.remove('hidden');
-        document.getElementById('registerForm').classList.add('hidden');
-      } else {
-        document.getElementById('loginForm').classList.add('hidden');
-        document.getElementById('registerForm').classList.remove('hidden');
-      }
-
-      clearMessage();
-      clearForms();
-    }
-
-    // Dummy Sign In (Firebase removed)
-    function signIn() {
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value.trim();
-
-      if (!validateLoginForm(email, password)) return;
-
-      showMessage("Login request sent (No Firebase).", "success");
-      verificationSignIn();
-    }
-
-    //fetch server to verify student login
-    // fetch server to verify student/teacher login
-    async function verificationSignIn() {
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value.trim();
-
-      const response = await fetch('/authentication/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-
-      const data = await response.json();
-
-
-
-      if (data.success) {
-
-        // Common storage
-        localStorage.setItem("userId", data.user.id);
-        localStorage.setItem("role", data.user.role);
-        localStorage.setItem("userName", data.user.name);
-
-        showMessage("Login successful!", "success");
-        console.log("Logged in user data:", data);
-
-        // 🔁 Role based redirect
-        if (data.user.role === "teacher") {
-
-          localStorage.setItem("teacherId", data.user.id);
-          localStorage.setItem("showteacher", "true");
-
-          // 👉 Teacher Dashboard
-          window.location.href = "/html/teacherdash.html";
-
-        } else if (data.user.role === "student") {
-
-          localStorage.setItem("studentId", data.user.id);
-          localStorage.setItem("showstudent", "true");
-
-          // 👉 Student Dashboard
-          window.location.href = "/html/studentdash.html";
-        }
-
-      } else {
-        showMessage(data.message || "Login failed", "error");
-      }
-    }
-
-
-    // Dummy Sign Up (Firebase removed)
-    function signUp() {
-      const name = document.getElementById('registerName').value.trim();
-      const email = document.getElementById('registerEmail').value.trim();
-      const password = document.getElementById('registerPassword').value.trim();
-      const confirmPassword = document.getElementById('confirmPassword').value.trim();
-
-      if (!validateRegisterForm(name, email, password, confirmPassword)) return;
-
-      showMessage("Registration request sent .", "success");
-
-      //fetch server to create student account
-      fetch('/authentication/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, role: window.selectedRole, email, password })
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            showMessage("Registration successful! Please log in.", "success");
-            toggleForm();
-          } else {
-            showMessage(data.message || "Registration failed.", "error");
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          showMessage("An error occurred during registration.", "error");
-        });
-    }
-
-    // Validation Functions
-    function validateLoginForm(email, password) {
-      if (!email) {
-        showMessage('Please enter your email address.', 'error');
-        return false;
-      }
-
-      if (!isValidEmail(email)) {
-        showMessage('Please enter a valid email.', 'error');
-        return false;
-      }
-
-      if (!password) {
-        showMessage('Please enter your password.', 'error');
-        return false;
-      }
-
-      return true;
-    }
-
-    function validateRegisterForm(name, email, password, confirmPassword) {
-      if (!name) return showError("Enter your name.");
-      if (!email) return showError("Enter your email.");
-      if (!isValidEmail(email)) return showError("Invalid email.");
-      if (!password) return showError("Enter password.");
-      if (password.length < 6) return showError("Password must be 6+ characters.");
-      if (password !== confirmPassword) return showError("Passwords do not match.");
-
-      return true;
-    }
-
-    function showError(msg) {
-      showMessage(msg, "error");
-      return false;
-    }
-
-    function isValidEmail(email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(email);
-    }
-
-    // Password Strength Checker
-    function checkPasswordStrength() {
-      const password = document.getElementById('registerPassword').value;
-      const strengthDiv = document.getElementById('passwordStrength');
-
-      if (!password) {
-        strengthDiv.innerHTML = '';
-        return;
-      }
-
-      let strength = 0;
-
-      if (password.length >= 8) strength++;
-      if (/[a-z]/.test(password)) strength++;
-      if (/[A-Z]/.test(password)) strength++;
-      if (/[0-9]/.test(password)) strength++;
-      if (/[^A-Za-z0-9]/.test(password)) strength++;
-
-      if (strength <= 2) {
-        strengthDiv.innerHTML = "<span class='strength-weak'>Weak</span>";
-      } else if (strength <= 4) {
-        strengthDiv.innerHTML = "<span class='strength-medium'>Medium</span>";
-      } else {
-        strengthDiv.innerHTML = "<span class='strength-strong'>Strong ✓</span>";
-      }
-    }
-
-    // Toggle Password Visibility
-    function togglePassword(inputId) {
-      const input = document.getElementById(inputId);
-      const icon = input.nextElementSibling;
-      const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-      input.setAttribute('type', type);
-      icon.textContent = type === 'password' ? '👁️' : '🙈';
-    }
-
-    // UI Helper Functions
-    function showMessage(message, type) {
-      const msg = document.getElementById("messageContainer");
-      msg.innerHTML = `<div class="message ${type}">${message}</div>`;
-    }
-
-    function clearMessage() {
-      document.getElementById("messageContainer").innerHTML = "";
-    }
-
-    function clearForms() {
-      document.getElementById('loginEmail').value = "";
-      document.getElementById('loginPassword').value = "";
-      document.getElementById('registerName').value = "";
-      document.getElementById('registerEmail').value = "";
-      document.getElementById('registerPassword').value = "";
-      document.getElementById('confirmPassword').value = "";
-      document.getElementById('passwordStrength').innerHTML = "";
-    }
-
-    // Initialize app
-    window.addEventListener('load', init);
-
-  </script>
+    <footer class="auth-footer"><span>© <span id="year"></span> QuizMaster</span><span>Learn. Assess. Grow.</span></footer>
+  </main>
 </body>
-
 </html>
