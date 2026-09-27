@@ -1461,5 +1461,42 @@
       .workflow-next, .workflow-back { flex: 1; }
     }
 
-  
- 
+    /* Clearer, touch friendly manual question builder */
+    #examStep1 .form-section { padding: clamp(16px, 3vw, 26px); }
+    #examStep1 .form-group { margin-bottom: 24px; }
+    #examStep1 .form-label { display: block; margin-bottom: 5px; font-size: 14px; }
+    #examStep1 .creator-help { margin: 0 0 11px; color: #71817c; font-size: 12px; line-height: 1.55; }
+    #examStep1 .math-toolbar-title { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; font-size: 12px; }
+    #examStep1 .math-toolbar-title span { color: #82918b; font-size: 11px; font-weight: 500; }
+    #examStep1 .math-buttons { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 6px; }
+    #examStep1 .math-btn { width: 100%; min-width: 40px; min-height: 40px; height: auto; border-radius: 8px; font-size: 14px; }
+    #examStep1 textarea.form-input { min-height: 120px; line-height: 1.6; }
+    #examStep1 .question-preview-heading { margin-bottom: 7px; color: #40574e; font-size: 12px; font-weight: 800; }
+    #examStep1 #questionPreview,
+    #examStep1 [id$="Preview"] { overflow-wrap: anywhere; }
+    #examStep1 #questionPreview:empty { display: none; }
+    #examStep1 .choices-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    #examStep1 .choice-input input { min-height: 50px; padding-right: 52px; border-radius: 9px; font-size: 14px; }
+    #examStep1 .correct-marker {
+      width: 34px; height: 34px; right: 9px; border-radius: 9px;
+      padding: 0; font: inherit; font-size: 13px; font-weight: 800;
+      appearance: none; -webkit-appearance: none;
+    }
+    #examStep1 .correct-marker:hover { transform: translateY(-50%) scale(1.05); }
+    #examStep1 .correct-marker:focus-visible,
+    #examStep1 .math-btn:focus-visible,
+    #examStep1 .action-buttons .btn:focus-visible { outline: 3px solid #81cbbb; outline-offset: 2px; }
+    #examStep1 .correct-indicator { margin: 12px 0 0; color: #61716b; font-size: 12px; font-weight: 700; }
+    #examStep1 .action-buttons { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr)); gap: 10px; }
+    #examStep1 .action-buttons .btn { width: 100%; min-height: 48px; border-radius: 9px; font-size: 13px; }
+    #examStep1 .workflow-actions { margin-top: 8px; }
+
+    @media (max-width: 560px) {
+      #examStep1 .form-section { padding: 15px 12px; }
+      #examStep1 .choices-grid { grid-template-columns: 1fr; }
+      #examStep1 .math-buttons { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      #examStep1 .action-buttons { grid-template-columns: 1fr 1fr; }
+      #examStep1 .action-buttons .btn:first-child { grid-column: 1 / -1; }
+      #examStep1 .workflow-actions-end { justify-content: stretch; }
+      #examStep1 .workflow-next { width: 100%; min-height: 48px; }
+    }

@@ -115,9 +115,10 @@
 
         <div class="form-section">
           <div class="form-group">
-            <label class="form-label">Question Text (Mathematical expressions supported)</label>
+            <label class="form-label" for="questionInput">Question</label>
+            <p class="creator-help">Write the prompt students will answer. You can add equations with the symbol bar below.</p>
             <div class="math-toolbar">
-              <div class="math-toolbar-title">Quick Math Symbols - Click to insert:</div>
+              <div class="math-toolbar-title">Math symbols <span>Tap a symbol to insert it in the active field</span></div>
               <div class="math-buttons">
                 <button class="math-btn" onclick="insertMathSymbol('$\\frac{}{}$')" title="Fraction">½</button>
                 <button class="math-btn" onclick="insertMathSymbol('$x^{}$')" title="Superscript">x²</button>
@@ -150,7 +151,7 @@
               placeholder="Enter your question here. Use LaTeX for math: $\frac{1}{2}$, $x^2$, $\sqrt{x}$, etc."></textarea>
             <div
               style="margin-top: 10px; padding: 15px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
-              <div style="font-weight: 600; color: #4a5568; margin-bottom: 8px;">Preview:</div>
+              <div class="question-preview-heading">Live preview</div>
               <div id="questionPreview" style="font-size: 1.1rem; line-height: 1.6;">Type your question to see
                 preview...
               </div>
@@ -163,23 +164,24 @@
 
           <div class="form-group">
             <label class="form-label">📋 Answer Choices (Mathematical expressions supported)</label>
+            <p class="creator-help">Enter all four options, then tap the letter of the correct answer.</p>
             <div class="choices-grid">
               <div class="choice-input">
-                <input type="text" id="choice1" class="form-input" placeholder="Choice A (e.g., $\frac{1}{2}$)">
+                <input type="text" id="choice1" class="form-input" aria-label="Choice A" placeholder="Choice A (e.g., $\frac{1}{2}$)">
 
-                <div class="correct-marker inactive" onclick="setCorrectAnswer(0)">A</div>
+                <button type="button" class="correct-marker inactive" onclick="setCorrectAnswer(0)" aria-label="Mark choice A as correct" aria-pressed="false">A</button>
               </div>
               <div class="choice-input">
-                <input type="text" id="choice2" class="form-input" placeholder="Choice B (e.g., $x^2$)">
-                <div class="correct-marker inactive" onclick="setCorrectAnswer(1)">B</div>
+                <input type="text" id="choice2" class="form-input" aria-label="Choice B" placeholder="Choice B (e.g., $x^2$)">
+                <button type="button" class="correct-marker inactive" onclick="setCorrectAnswer(1)" aria-label="Mark choice B as correct" aria-pressed="false">B</button>
               </div>
               <div class="choice-input">
-                <input type="text" id="choice3" class="form-input" placeholder="Choice C (e.g., $\sqrt{x}$)">
-                <div class="correct-marker inactive" onclick="setCorrectAnswer(2)">C</div>
+                <input type="text" id="choice3" class="form-input" aria-label="Choice C" placeholder="Choice C (e.g., $\sqrt{x}$)">
+                <button type="button" class="correct-marker inactive" onclick="setCorrectAnswer(2)" aria-label="Mark choice C as correct" aria-pressed="false">C</button>
               </div>
               <div class="choice-input">
-                <input type="text" id="choice4" class="form-input" placeholder="Choice D (e.g., $\pi r^2$)">
-                <div class="correct-marker inactive" onclick="setCorrectAnswer(3)">D</div>
+                <input type="text" id="choice4" class="form-input" aria-label="Choice D" placeholder="Choice D (e.g., $\pi r^2$)">
+                <button type="button" class="correct-marker inactive" onclick="setCorrectAnswer(3)" aria-label="Mark choice D as correct" aria-pressed="false">D</button>
               </div>
             </div>
             <div style="text-align: center; margin-top: 15px;">

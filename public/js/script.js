@@ -225,9 +225,11 @@ function insertMathAtCursor(element, mathCode) {
       markers.forEach((marker, i) => {
         if (i === index) {
           marker.classList.remove('inactive');
+          marker.setAttribute('aria-pressed', 'true');
           marker.style.transform = 'translateY(-50%) scale(1.2)';
         } else {
           marker.classList.add('inactive');
+          marker.setAttribute('aria-pressed', 'false');
           marker.style.transform = 'translateY(-50%) scale(1)';
         }
       });
