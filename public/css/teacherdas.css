@@ -1006,9 +1006,96 @@
     .export-section .action-buttons { margin: 0; justify-content: flex-end; }
 
     #examsTab .form-section > div[style*="display: grid"] > div {
+      display: flex !important;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 20px !important;
       border: 1px solid var(--line) !important;
-      border-radius: 8px !important;
+      border-radius: 12px !important;
       box-shadow: var(--shadow-soft) !important;
+      text-align: left !important;
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    #examsTab .form-section > div[style*="display: grid"] > div:hover {
+      transform: translateY(-2px);
+      border-color: #a9c9bc !important;
+      box-shadow: 0 8px 22px rgba(25, 60, 53, .08) !important;
+    }
+
+    #examsTab .form-section > div[style*="display: grid"] > div > div:first-child {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      margin: 0 0 13px !important;
+      border-radius: 11px;
+      background: #edf5f1;
+      font-size: 21px !important;
+    }
+
+    #examsTab .form-section > div[style*="display: grid"] > div h4 {
+      margin-bottom: 7px !important;
+      color: #203b34 !important;
+      font-size: 16px !important;
+      line-height: 1.35;
+    }
+
+    #examsTab .form-section > div[style*="display: grid"] > div p {
+      margin-bottom: 12px !important;
+      color: #71817c !important;
+      font-size: 12px;
+      line-height: 1.55 !important;
+    }
+
+    #examsTab .form-section > div[style*="display: grid"] > div ul {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px 14px;
+      width: 100%;
+      margin: 0 0 16px !important;
+      padding: 0 !important;
+      list-style: none;
+      color: #53665e !important;
+      font-size: 11px;
+    }
+
+    #examsTab .form-section > div[style*="display: grid"] > div li {
+      margin: 0 !important;
+      line-height: 1.45;
+    }
+
+    #examsTab .form-section > div[style*="display: grid"] > div li::before {
+      content: "✓";
+      margin-right: 6px;
+      color: #0b826d;
+      font-weight: 800;
+    }
+
+    #examsTab .form-section > div[style*="display: grid"] > div > button {
+      min-height: 42px;
+      margin-top: auto;
+      border-radius: 8px !important;
+      font-size: 12px;
+    }
+
+    #examsTab .form-section > h3 {
+      margin-bottom: 6px !important;
+      color: #203b34 !important;
+      font-size: 18px;
+    }
+
+    #examsTab .form-section > p {
+      max-width: 660px;
+      margin-bottom: 18px !important;
+      color: #71817c !important;
+      font-size: 12px;
+    }
+
+    #examsTab .form-section > div[style*="display: grid"] {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px !important;
+      margin-top: 0 !important;
     }
 
     #teacherExamsList > div {
@@ -1070,6 +1157,8 @@
       .chart-container, .export-section, .form-section { padding: 15px; }
       .export-section { align-items: flex-start; flex-direction: column; }
       .export-section .action-buttons { justify-content: flex-start; }
+      #examsTab .form-section > div[style*="display: grid"] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      #examsTab .form-section > div[style*="display: grid"] > div { padding: 16px !important; }
     }
 
     @media (max-width: 460px) {
@@ -1083,4 +1172,6 @@
       .stat-label { font-size: 10px; }
       .dashboard-sidebar .tab-btn { flex-direction: column; gap: 2px; min-width: 61px; padding: 6px; }
       .results-table th, .results-table td { padding: 9px 10px; }
+      #examsTab .form-section > div[style*="display: grid"] { grid-template-columns: 1fr !important; }
+      #examsTab .form-section > div[style*="display: grid"] > div ul { grid-template-columns: 1fr 1fr; }
     }
