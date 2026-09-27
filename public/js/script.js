@@ -27,6 +27,10 @@ function init() {
       updateTeacherStats();
   updateStudentStats();
   setupInputFocusEvents();
+  document.querySelectorAll('.latex-key').forEach(button => button.addEventListener('click', () => {
+    const latex = button.dataset.latex || '';
+    insertMathSymbol(latex, Number(button.dataset.cursor || latex.length));
+  }));
   document.getElementById('questionBankModal')?.addEventListener('click', event => {
     if (event.target.id === 'questionBankModal') closeQuestionBank();
   });
@@ -200,18 +204,18 @@ function beginQuestionCreation(type) {
   document.getElementById('questionTypeHeading').textContent =
     selectedQuestionType === 'mathematical' ? 'Mathematical question' : 'General question';
   document.getElementById('questionInput').placeholder = selectedQuestionType === 'mathematical'
-    ? 'Write your question in plain text and use the math keyboard for equations.'
-    : 'Write your question in plain text.';
+    ? 'Write your question and add formulas like \\(x^2\\), or use Formula tools.'
+    : 'Write your question in plain text. Add a formula with Formula tools if needed.';
   document.querySelector('#examStep1 .creator-help').textContent = selectedQuestionType === 'mathematical'
-    ? 'Write the question normally and tap the math keyboard for equations or symbols.'
-    : 'Write a text based question. Math symbols and equation tools are hidden for this type.';
+    ? 'Type LaTeX between \\( ... \\) or use Formula tools. The preview shows how it will look to students.'
+    : 'You can include LaTeX between \\( ... \\) in a text question too.';
   const optionHelp = document.querySelectorAll('#examStep1 .creator-help')[1];
   document.querySelectorAll('#questionCreatorForm .form-label')[3].textContent = selectedQuestionType === 'mathematical'
     ? 'Answer choices'
     : 'Answer choices';
   optionHelp.textContent = selectedQuestionType === 'mathematical'
-    ? 'Enter four answer options, use the math keyboard if needed, and tap the correct answer letter.'
-    : 'Enter four text answer options, then tap the letter of the correct answer.';
+    ? 'Add formulas as LaTeX between \\( ... \\), or insert them with Formula tools. Then mark the correct answer.'
+    : 'Enter four answer options. LaTeX is supported here too; mark the correct answer letter.';
   ['choice1', 'choice2', 'choice3', 'choice4'].forEach((id, index) => {
     document.getElementById(id).placeholder = selectedQuestionType === 'mathematical'
       ? `Choice ${String.fromCharCode(65 + index)}`
@@ -298,6 +302,7 @@ function filterQuestionBank() {
     renderMathInElement(container, { delimiters: [
       { left: '\\(', right: '\\)', display: false },
       { left: '\\[', right: '\\]', display: true },
+      { left: '$$', right: '$$', display: true },
       { left: '$', right: '$', display: false }
     ], throwOnError: false });
   }
@@ -323,6 +328,7 @@ function filterQuestionBank() {
           delimiters: [
             { left: "\\(", right: "\\)", display: false },
             { left: "\\[", right: "\\]", display: true },
+            { left: "$$", right: "$$", display: true },
             { left: "$", right: "$", display: false }
           ]
         });
@@ -682,8 +688,8 @@ async function loadQuestionsFromDB() {
     delimiters: [
         {left: "\\(", right: "\\)", display: false},
              { left: "\\[", right: "\\]", display: true },
-             { left: "$", right: "$", display: false },
-             { left: "\\begin{", right: "\\end{", display: true }
+             { left: "$$", right: "$$", display: true },
+             { left: "$", right: "$", display: false }
     ]
   });
     });
@@ -826,6 +832,7 @@ async function exportQuizPDF() {
         delimiters: [
           {left: "\\(", right: "\\)", display: false},
           {left: "\\[", right: "\\]", display: true},
+          {left: "$$", right: "$$", display: true},
           {left: "$", right: "$", display: false}
         ],
         throwOnError: false
@@ -845,6 +852,7 @@ async function exportQuizPDF() {
           delimiters: [
             {left: "\\(", right: "\\)", display: false},
             {left: "\\[", right: "\\]", display: true},
+            {left: "$$", right: "$$", display: true},
             {left: "$", right: "$", display: false}
           ],
           throwOnError: false
@@ -999,7 +1007,11 @@ function autoWrapMath(text) {
     if (insideDollarMath || insideParenMath || insideBracketMath) {
       output += escapeHtml(match[0]);
     } else {
+      const previousCharacter = source.slice(0, match.index).slice(-1);
+      const nextCharacter = source.slice(match.index + match[0].length, match.index + match[0].length + 1);
+      if (/[A-Za-z\u0980-\u09FF]/.test(previousCharacter) && !/\s$/.test(output)) output += ' ';
       output += katex.renderToString(match[0], { throwOnError: false, strict: false });
+      if (/[A-Za-z\u0980-\u09FF]/.test(nextCharacter)) output += ' ';
     }
     lastIndex = commandPattern.lastIndex;
   }
@@ -1022,6 +1034,7 @@ function autoWrapMath(text) {
     delimiters: [
         {left: "\\(", right: "\\)", display: false},
              { left: "\\[", right: "\\]", display: true },
+             { left: "$$", right: "$$", display: true },
              { left: "$", right: "$", display: false }
             
 
@@ -1045,6 +1058,7 @@ function autoWrapMath(text) {
           delimiters: [
             { left: '\\(', right: '\\)', display: false },
             { left: '\\[', right: '\\]', display: true },
+            { left: '$$', right: '$$', display: true },
             { left: '$', right: '$', display: false }
           ]
         });

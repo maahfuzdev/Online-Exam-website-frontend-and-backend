@@ -648,6 +648,7 @@ let AttendId = JSON.parse(localStorage.getItem("attendID")) || [];
                     delimiters: [
                         { left: '\\(', right: '\\)', display: false },
                         { left: '\\[', right: '\\]', display: true },
+                        { left: '$$', right: '$$', display: true },
                         { left: '$', right: '$', display: false }
                     ],
                     throwOnError: false

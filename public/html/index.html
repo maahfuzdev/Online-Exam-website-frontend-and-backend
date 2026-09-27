@@ -123,12 +123,12 @@
         <div id="questionTypeChooser" class="question-type-chooser hidden" aria-label="Choose question type">
           <button type="button" class="question-type-card" onclick="beginQuestionCreation('mathematical')">
             <span class="question-type-icon">∑</span>
-            <span><strong>Mathematical</strong><small>Calculator-style math keyboard and live preview</small></span>
+            <span><strong>Mathematical</strong><small>Formula templates, LaTeX input, and live preview</small></span>
             <span class="question-type-arrow">→</span>
           </button>
           <button type="button" class="question-type-card" onclick="beginQuestionCreation('general')">
             <span class="question-type-icon general">Aa</span>
-            <span><strong>General</strong><small>Text based question without math tools</small></span>
+            <span><strong>General</strong><small>Text question, with formula tools available if needed</small></span>
             <span class="question-type-arrow">→</span>
           </button>
         </div>
@@ -145,7 +145,7 @@
 
           <div class="form-group">
             <label class="form-label" for="questionInput">Question</label>
-            <p class="creator-help">Write the prompt students will answer. Type normally or use the math keyboard. No special code needed.</p>
+            <p class="creator-help">Write normally, type LaTeX such as \(x^2\), or use the math keyboard. Formulas appear in the preview and in the student exam.</p>
             <details class="math-toolbar">
               <summary class="math-toolbar-title">Math keyboard <span>Tap a key to insert it — no LaTeX needed</span></summary>
               <div class="math-keyboard" aria-label="Math keyboard">
@@ -213,8 +213,26 @@
                 </div></div>
               </div>
             </details>
+            <details class="latex-keyboard">
+              <summary>Formula tools <span>Insert LaTeX templates directly into the focused field</span></summary>
+              <div class="latex-key-grid" aria-label="LaTeX formula tools">
+                <button type="button" class="latex-key" data-latex="&#92;(&#92;frac{}{}&#92;)" data-cursor="8"><b>a&frasl;b</b><span>Fraction</span></button>
+                <button type="button" class="latex-key" data-latex="&#92;(&#92;sqrt{}&#92;)" data-cursor="7"><b>&#8730;x</b><span>Square root</span></button>
+                <button type="button" class="latex-key" data-latex="&#92;(x^{}&#92;)" data-cursor="5"><b>x<sup>n</sup></b><span>Power</span></button>
+                <button type="button" class="latex-key" data-latex="&#92;(x_{}&#92;)" data-cursor="5"><b>x<sub>n</sub></b><span>Subscript</span></button>
+                <button type="button" class="latex-key" data-latex="&#92;(&#92;pi&#92;)" data-cursor="7"><b>&#960;</b><span>Pi</span></button>
+                <button type="button" class="latex-key" data-latex="&#92;(\sin()&#92;)" data-cursor="7"><b>sin</b><span>Sine</span></button>
+                <button type="button" class="latex-key" data-latex="&#92;(\cos()&#92;)" data-cursor="7"><b>cos</b><span>Cosine</span></button>
+                <button type="button" class="latex-key" data-latex="&#92;(&#92;theta&#92;)" data-cursor="10"><b>&#952;</b><span>Theta</span></button>
+                <button type="button" class="latex-key" data-latex="&#92;(&#92;le&#92;)" data-cursor="8"><b>&le;</b><span>Less or equal</span></button>
+                <button type="button" class="latex-key" data-latex="&#92;(&#92;ge&#92;)" data-cursor="8"><b>&ge;</b><span>Greater or equal</span></button>
+                <button type="button" class="latex-key" data-latex="&#92;(&#92;times&#92;)" data-cursor="11"><b>&times;</b><span>Multiply</span></button>
+                <button type="button" class="latex-key" data-latex="&#92;(&#92;div&#92;)" data-cursor="9"><b>&divide;</b><span>Divide</span></button>
+              </div>
+              <p class="latex-keyboard-help">Write LaTeX directly using <code>\( ... \)</code> for inline math or <code>\[ ... \]</code> for a displayed equation.</p>
+            </details>
             <textarea id="questionInput" class="form-input" rows="3"
-              placeholder="Type your question here. Use the math keyboard for symbols and equations."></textarea>
+              placeholder="Type your question, or add LaTeX such as \\(x^2\\)."></textarea>
             <div
               style="margin-top: 10px; padding: 15px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
               <div class="question-preview-heading">Live preview</div>
@@ -230,7 +248,7 @@
 
           <div class="form-group">
             <label class="form-label">📋 Answer Choices</label>
-            <p class="creator-help">Enter four options. Use the math keyboard for symbols, then tap the correct answer letter.</p>
+            <p class="creator-help">Enter four options. LaTeX formulas are supported; tap the correct answer letter.</p>
             <div class="choices-grid">
               <div class="choice-input">
                 <input type="text" id="choice1" class="form-input" aria-label="Choice A" placeholder="Choice A (e.g., 1/2)">

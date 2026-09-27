@@ -1734,3 +1734,24 @@
   #examStep1 .math-keyboard-section .math-buttons { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
   #examStep1 .math-btn.math-key { min-height: 44px; font-size: 16px; }
 }
+
+/* LaTeX-first math entry for manual question creation */
+#examStep1 .math-toolbar { display: none !important; }
+#examStep1 .latex-keyboard { margin: 10px 0 13px; overflow: hidden; border: 1px solid #dce8e2; border-radius: 11px; background: #f9fcfa; }
+#examStep1 .latex-keyboard > summary { display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 13px; color: #29483d; font-size: 13px; font-weight: 750; cursor: pointer; list-style: none; }
+#examStep1 .latex-keyboard > summary::-webkit-details-marker { display: none; }
+#examStep1 .latex-keyboard > summary::after { content: "+"; color: #0b826d; font-size: 19px; }
+#examStep1 .latex-keyboard[open] > summary::after { content: "−"; }
+#examStep1 .latex-key-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; padding: 0 12px 11px; }
+#examStep1 .latex-key { display: grid; min-height: 54px; place-content: center; gap: 2px; border: 1px solid #dce8e2; border-radius: 9px; background: #fff; color: #29483d; cursor: pointer; }
+#examStep1 .latex-key:hover, #examStep1 .latex-key:focus-visible { border-color: #78b8a3; background: #eff8f3; outline: 0; }
+#examStep1 .latex-key b { font-size: 15px; }
+#examStep1 .latex-key span { color: #74857c; font-size: 10px; }
+#examStep1 .latex-keyboard-help { margin: 0; padding: 0 12px 12px; color: #697d72; font-size: 11px; line-height: 1.6; }
+#examStep1 .latex-keyboard-help code { padding: 1px 4px; border-radius: 4px; background: #eaf3ee; color: #17644f; }
+@media (max-width: 560px) {
+  #examStep1 .latex-key-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding-inline: 9px; }
+  #examStep1 .latex-key { min-height: 51px; }
+  #examStep1 .latex-keyboard > summary { align-items: flex-start; flex-direction: column; gap: 3px; }
+  #examStep1 .latex-keyboard > summary::after { position: absolute; right: 27px; }
+}
