@@ -11,6 +11,11 @@ let submittedExamIds = [];
 let examTimerInterval = null;
 let pendingResultSave = Promise.resolve();
 
+function studentExamStorageKey(prefix, examId) {
+  const studentId = localStorage.getItem("userId") || "guest";
+  return `${prefix}_${studentId}_${examId}`;
+}
+
 
 
 
@@ -70,7 +75,7 @@ async function loadStudentExams() {
   }));
 
   currentQuestionIndex = 0;
-  const savedAnswers = JSON.parse(localStorage.getItem(`examAnswers_${examId}`) || '{}');
+  const savedAnswers = JSON.parse(localStorage.getItem(studentExamStorageKey('examAnswers', examId)) || '{}');
   studentAnswers = Object.fromEntries(Object.entries(savedAnswers).filter(([index, answer]) =>
     Number(index) >= 0 && Number(index) < quizQuestions1.length && Number(answer) >= 0 && Number(answer) < 4
   ).map(([index, answer]) => [Number(index), Number(answer)]));
@@ -728,7 +733,7 @@ function updateMCQUI() {
 function selectMCQOption(optionIndex) {
   studentAnswers[currentQuestionIndex] = optionIndex;
   const examId = localStorage.getItem("currentExamId");
-  if (examId) localStorage.setItem(`examAnswers_${examId}`, JSON.stringify(studentAnswers));
+  if (examId) localStorage.setItem(studentExamStorageKey('examAnswers', examId), JSON.stringify(studentAnswers));
   updateMCQUI();
 }
 
@@ -779,14 +784,14 @@ function nextQuestionExam() {
         // Submit exam
 async function submitExam() {
   let examid = localStorage.getItem("currentExamId");
-  const submitted = localStorage.getItem(`submitted_${examid}`);
+  const submitted = localStorage.getItem(studentExamStorageKey('submitted', examid));
 
 if (submitted) {
   alert("You have already submitted this exam!");
   return;
 }
   if (examTimerInterval) clearInterval(examTimerInterval);
-  localStorage.setItem(`examAnswers_${examid}`, JSON.stringify(studentAnswers));
+  localStorage.setItem(studentExamStorageKey('examAnswers', examid), JSON.stringify(studentAnswers));
   const endexamTime = localStorage.getItem("endexamTime");
   const duration = Number(localStorage.getItem("duration")); // minutes
   const now = new Date().getTime();
@@ -802,7 +807,7 @@ if (submitted) {
 
   // send result to backend
   pendingResultSave = sendResultToDB(timeTaken).then(payload => {
-    localStorage.setItem(`submitted_${examid}`, "true");
+    localStorage.setItem(studentExamStorageKey('submitted', examid), "true");
     const normalizedExamId = String(payload.result?.examID?._id || payload.result?.examID || examid);
     if (!submittedExamIds.includes(normalizedExamId)) submittedExamIds.push(normalizedExamId);
     if (!attemptedExamIds.includes(normalizedExamId)) attemptedExamIds.push(normalizedExamId);
