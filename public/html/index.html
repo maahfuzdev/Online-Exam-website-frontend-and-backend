@@ -113,7 +113,37 @@
           📝 Question Creator
         </div>
 
-        <div class="form-section">
+        <div class="question-creator-launcher">
+          <button type="button" class="creator-launch-button" onclick="toggleQuestionTypeChooser()">
+            <span class="creator-launch-icon" aria-hidden="true">＋</span>
+            <span><strong>Create a question</strong><small>Choose a question type to get started</small></span>
+            <span class="creator-launch-arrow" aria-hidden="true">⌄</span>
+          </button>
+        </div>
+
+        <div id="questionTypeChooser" class="question-type-chooser hidden" aria-label="Choose question type">
+          <button type="button" class="question-type-card" onclick="beginQuestionCreation('mathematical')">
+            <span class="question-type-icon">∑</span>
+            <span><strong>Mathematical</strong><small>LaTeX tools and equation preview</small></span>
+            <span class="question-type-arrow">→</span>
+          </button>
+          <button type="button" class="question-type-card" onclick="beginQuestionCreation('general')">
+            <span class="question-type-icon general">Aa</span>
+            <span><strong>General</strong><small>Text based question without math tools</small></span>
+            <span class="question-type-arrow">→</span>
+          </button>
+        </div>
+
+        <div class="form-section question-creator-form hidden" id="questionCreatorForm">
+          <div class="creator-form-heading">
+            <div><span class="creator-eyebrow">NEW QUESTION</span><h3 id="questionTypeHeading">Create a question</h3></div>
+            <button type="button" class="creator-back-button" onclick="backToQuestionTypeChooser()">Change type</button>
+          </div>
+          <div class="question-metadata-grid">
+            <div><label class="form-label" for="questionSubject">Subject</label><input id="questionSubject" class="form-input" type="text" placeholder="e.g., Mathematics" required></div>
+            <div><label class="form-label" for="questionClass">Class / Grade</label><input id="questionClass" class="form-input" type="text" placeholder="e.g., Class 10" required></div>
+          </div>
+
           <div class="form-group">
             <label class="form-label" for="questionInput">Question</label>
             <p class="creator-help">Write the prompt students will answer. You can add equations with the symbol bar below.</p>
@@ -208,6 +238,20 @@
         </div>
       </section>
 
+      <div id="questionBankModal" class="question-bank-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="questionBankTitle">
+        <section class="question-bank-modal">
+          <header class="question-bank-header">
+            <div><span class="creator-eyebrow">YOUR LIBRARY</span><h3 id="questionBankTitle">Question bank</h3><p>Filter questions by subject and class.</p></div>
+            <button type="button" class="question-bank-close" onclick="closeQuestionBank()" aria-label="Close question bank">×</button>
+          </header>
+          <div class="question-bank-filters">
+            <label>Subject<select id="questionBankSubject" onchange="filterQuestionBank()"><option value="">All subjects</option></select></label>
+            <label>Class / Grade<select id="questionBankClass" onchange="filterQuestionBank()"><option value="">All classes</option></select></label>
+          </div>
+          <div id="questionBankResults" class="question-bank-results"></div>
+        </section>
+      </div>
+
       <section class="exam-step-panel hidden" id="examStep2">
         <div class="stats-grid">
           <div class="stat-card">
@@ -240,7 +284,11 @@
           <div class="section-title">
             📚 Questions Bank
           </div>
-          <div class="questions-list" id="questionsList">
+          <p class="bank-section-description">Find saved questions by subject and class, then review each question and its choices.</p>
+          <button type="button" class="question-bank-launch review-bank-launch" onclick="openQuestionBank()">
+            <span aria-hidden="true">▤</span> Open question bank
+          </button>
+          <div class="questions-list hidden" id="questionsList">
             <p style="text-align: center; color: #64748b; font-style: italic;">No questions added yet...</p>
           </div>
         </div>
@@ -466,6 +514,11 @@
                   <button onclick="deselectAllQuestions()"
                     style="padding:6px 12px; border-radius:6px; background:#f3f4f6;">Deselect</button>
                 </div>
+              </div>
+
+              <div class="question-selection-filters">
+                <select id="scheduleQuestionSubject" aria-label="Filter questions by subject" onchange="renderQuestionsList()"><option value="">All subjects</option></select>
+                <select id="scheduleQuestionClass" aria-label="Filter questions by class" onchange="renderQuestionsList()"><option value="">All classes</option></select>
               </div>
 
               <div id="questionsContainer" style="

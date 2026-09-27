@@ -5,6 +5,7 @@
 //Global variables
     let currentMode = 'landing'; // landing, teacher, student, quiz
     let quizQuestions = [];
+    let selectedQuestionType = 'general';
 
 
     // Quiz state
@@ -26,6 +27,14 @@ function init() {
       updateTeacherStats();
   updateStudentStats();
   setupInputFocusEvents();
+  document.getElementById('questionBankModal')?.addEventListener('click', event => {
+    if (event.target.id === 'questionBankModal') closeQuestionBank();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !document.getElementById('questionBankModal').classList.contains('hidden')) {
+      closeQuestionBank();
+    }
+  });
 
       // Add event listeners for real-time preview
   document.querySelectorAll('#questionInput, #choice1, #choice2, #choice3, #choice4')
@@ -79,6 +88,7 @@ function init() {
 
 
 let activeInputId = 'questionInput';
+let questionBankReturnFocus = null;
 
 function setupInputFocusEvents() {
     const inputs = [  // ভ্যারিয়েবলের নাম 'inputs' করুন
@@ -176,6 +186,126 @@ function insertMathAtCursor(element, mathCode) {
         : mathCode.length);
     element.setSelectionRange(newPos, newPos);
     element.focus();
+}
+
+function toggleQuestionTypeChooser() {
+  const chooser = document.getElementById('questionTypeChooser');
+  const form = document.getElementById('questionCreatorForm');
+  const willOpen = chooser.classList.contains('hidden');
+  if (willOpen) form.classList.add('hidden');
+  chooser.classList.toggle('hidden');
+}
+
+function beginQuestionCreation(type) {
+  selectedQuestionType = type === 'mathematical' ? 'mathematical' : 'general';
+  const form = document.getElementById('questionCreatorForm');
+  form.classList.toggle('mathematical-question', selectedQuestionType === 'mathematical');
+  document.getElementById('questionTypeChooser').classList.add('hidden');
+  form.classList.remove('hidden');
+  document.getElementById('questionTypeHeading').textContent =
+    selectedQuestionType === 'mathematical' ? 'Mathematical question' : 'General question';
+  document.getElementById('questionInput').placeholder = selectedQuestionType === 'mathematical'
+    ? 'Write your question. Add LaTeX between $ signs or use the math symbol bar.'
+    : 'Write your question in plain text.';
+  document.querySelector('#examStep1 .creator-help').textContent = selectedQuestionType === 'mathematical'
+    ? 'Write the question and use the math toolbar when you need equations or symbols.'
+    : 'Write a text based question. Math symbols and equation tools are hidden for this type.';
+  const optionHelp = document.querySelectorAll('#examStep1 .creator-help')[1];
+  document.querySelectorAll('#questionCreatorForm .form-label')[3].textContent = selectedQuestionType === 'mathematical'
+    ? 'Answer choices (LaTeX supported)'
+    : 'Answer choices';
+  optionHelp.textContent = selectedQuestionType === 'mathematical'
+    ? 'Enter four answer options, then tap the letter of the correct answer. LaTeX is supported.'
+    : 'Enter four text answer options, then tap the letter of the correct answer.';
+  ['choice1', 'choice2', 'choice3', 'choice4'].forEach((id, index) => {
+    document.getElementById(id).placeholder = selectedQuestionType === 'mathematical'
+      ? `Choice ${String.fromCharCode(65 + index)} (LaTeX supported)`
+      : `Choice ${String.fromCharCode(65 + index)}`;
+  });
+  form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function backToQuestionTypeChooser() {
+  document.getElementById('questionCreatorForm').classList.add('hidden');
+  document.getElementById('questionTypeChooser').classList.remove('hidden');
+}
+
+function closeQuestionBank() {
+  document.getElementById('questionBankModal').classList.add('hidden');
+  questionBankReturnFocus?.focus();
+}
+
+async function openQuestionBank() {
+  if (quizQuestions.length === 0 && typeof loadExamQuestions === 'function') {
+    await loadExamQuestions();
+  }
+  const modal = document.getElementById('questionBankModal');
+  questionBankReturnFocus = document.activeElement;
+  if (modal.parentElement !== document.body) document.body.appendChild(modal);
+  renderQuestionBankFilters();
+  filterQuestionBank();
+  modal.classList.remove('hidden');
+  modal.querySelector('.question-bank-close').focus();
+}
+
+function renderQuestionBankFilters() {
+  const subjectSelect = document.getElementById('questionBankSubject');
+  const classSelect = document.getElementById('questionBankClass');
+  const currentSubject = subjectSelect.value;
+  const currentClass = classSelect.value;
+  const subjects = [...new Set(quizQuestions.map(question => question.subject).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const classes = [...new Set(quizQuestions.map(question => question.class).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+  subjectSelect.innerHTML = '<option value="">All subjects</option>';
+  classSelect.innerHTML = '<option value="">All classes</option>';
+  subjects.forEach(subject => subjectSelect.add(new Option(subject, subject)));
+  classes.forEach(className => classSelect.add(new Option(className, className)));
+  subjectSelect.value = subjects.includes(currentSubject) ? currentSubject : '';
+  classSelect.value = classes.includes(currentClass) ? currentClass : '';
+}
+
+function filterQuestionBank() {
+  const subject = document.getElementById('questionBankSubject').value;
+  const className = document.getElementById('questionBankClass').value;
+  const questions = quizQuestions.filter(question =>
+    (!subject || question.subject === subject) && (!className || question.class === className)
+  );
+  const container = document.getElementById('questionBankResults');
+
+  if (!questions.length) {
+    container.innerHTML = `<div class="question-bank-empty"><span>▤</span><strong>No questions found</strong><p>Try another subject or class, or create a new question.</p></div>`;
+    return;
+  }
+
+  container.innerHTML = questions.map(question => {
+    const options = question.choices || question.options || [];
+    const questionText = question.question || question.questionText || '';
+    const isMathQuestion = question.questionType === 'mathematical' || question.hasMath || hasMathContent(questionText);
+    const correctIndex = typeof question.correct === 'number'
+      ? question.correct
+      : String(question.correctAnswer || 'A').charCodeAt(0) - 65;
+    const choices = ['A', 'B', 'C', 'D'].map((letter, index) => `
+      <li class="${index === correctIndex ? 'bank-correct-choice' : ''}">
+        <span>${letter}</span><div>${autoWrapMath(options[index] || '')}</div>
+      </li>`).join('');
+    return `
+      <details class="question-bank-item">
+        <summary>
+          <span class="bank-question-type ${isMathQuestion ? 'math' : ''}">${isMathQuestion ? 'Mathematical' : 'General'}</span>
+          <span class="bank-question-prompt">${autoWrapMath(questionText)}</span>
+          <span class="bank-question-meta">${escapeHtml(question.subject || 'Unsorted')} · ${escapeHtml(question.class || 'Class not set')}</span>
+        </summary>
+        <ul class="bank-choice-list">${choices}</ul>
+      </details>`;
+  }).join('');
+
+  if (typeof renderMathInElement === 'function') {
+    renderMathInElement(container, { delimiters: [
+      { left: '\\(', right: '\\)', display: false },
+      { left: '\\[', right: '\\]', display: true },
+      { left: '$', right: '$', display: false }
+    ], throwOnError: false });
+  }
 }
 
 
@@ -290,6 +420,8 @@ function loadFromLocalStorage() {
 // Updated addQuestion function
 function addQuestion(event) {
     const questionText = document.getElementById('questionInput').value.trim();
+    const subject = document.getElementById('questionSubject').value.trim();
+    const questionClass = document.getElementById('questionClass').value.trim();
     const choice1 = document.getElementById('choice1').value.trim();
     const choice2 = document.getElementById('choice2').value.trim();
     const choice3 = document.getElementById('choice3').value.trim();
@@ -305,11 +437,19 @@ function addQuestion(event) {
         return;
     }
 
+    if (!subject || !questionClass) {
+        alert('Please add a subject and class so this question is easy to find later.');
+        return;
+    }
+
     const question = {
         question: questionText,
         choices: [choice1, choice2, choice3, choice4],
         correct: correctAnswer,
-        hasMath: hasMathContent(questionText) || [choice1, choice2, choice3, choice4].some(choice => hasMathContent(choice))
+        subject,
+        class: questionClass,
+        questionType: selectedQuestionType,
+        hasMath: selectedQuestionType === 'mathematical' && (hasMathContent(questionText) || [choice1, choice2, choice3, choice4].some(choice => hasMathContent(choice)))
     };
 
   // Try MongoDB first, fallback to localStorage
@@ -324,7 +464,10 @@ function addQuestion(event) {
             teacherId: teacherId,
             questionText: questionText,
             options: [choice1, choice2, choice3, choice4],
-            correctAnswer: String.fromCharCode(65 + correctAnswer)
+            correctAnswer: String.fromCharCode(65 + correctAnswer),
+            subject,
+            class: questionClass,
+            questionType: selectedQuestionType
         })
     })
     .then(res => res.json())
@@ -332,6 +475,8 @@ function addQuestion(event) {
         // MongoDB success
         question._id = data.question._id;
         quizQuestions.push(question);
+        if (typeof populateQuestionSelectionFilters === 'function') populateQuestionSelectionFilters();
+        if (typeof renderQuestionsList === 'function') renderQuestionsList();
         updateTeacherStats();
         updateQuestionsList();
         clearForm();
@@ -348,6 +493,8 @@ function addQuestion(event) {
         console.log("MongoDB failed, using localStorage:", error);
         question._id = 'local_' + Date.now();
         quizQuestions.push(question);
+        if (typeof populateQuestionSelectionFilters === 'function') populateQuestionSelectionFilters();
+        if (typeof renderQuestionsList === 'function') renderQuestionsList();
         updateTeacherStats();
         updateQuestionsList();
         clearForm();
@@ -406,7 +553,10 @@ async function loadQuestionsFromDB() {
             question: q.questionText,
             choices: q.options,
             correct: q.correctAnswer.charCodeAt(0) - 65,
-            hasMath: hasMathContent(q.questionText) || q.options.some(option => hasMathContent(option))
+            subject: q.subject || '',
+            class: q.class || '',
+            questionType: q.questionType || (hasMathContent(q.questionText) || q.options.some(option => hasMathContent(option)) ? 'mathematical' : 'general'),
+            hasMath: q.questionType === 'mathematical' || hasMathContent(q.questionText) || q.options.some(option => hasMathContent(option))
         }));
         
         updateTeacherStats();
@@ -436,6 +586,11 @@ async function loadQuestionsFromDB() {
       document.getElementById('choice4').value = '';
       correctAnswer = null;
       document.getElementById('correctIndicator').textContent = 'No correct answer selected';
+      document.querySelectorAll('.correct-marker').forEach(marker => {
+        marker.classList.add('inactive');
+        marker.setAttribute('aria-pressed', 'false');
+        marker.style.transform = '';
+      });
       updateQuestionPreview();
 
       const markers = document.querySelectorAll('.correct-marker');
@@ -476,7 +631,7 @@ async function loadQuestionsFromDB() {
 
     function updateTeacherStats() {
       document.getElementById('totalQuestions').textContent = quizQuestions.length;
-      const mathCount = quizQuestions.filter(q => q.hasMath).length;
+      const mathCount = quizQuestions.filter(q => q.questionType === 'mathematical' || q.hasMath).length;
       document.getElementById('mathQuestions').textContent = mathCount;
 
       const statusEl = document.getElementById('readyStatus');
@@ -500,17 +655,20 @@ async function loadQuestionsFromDB() {
       let html = '';
       quizQuestions.forEach((q, index) => {
         const choices = ['A', 'B', 'C', 'D'];
-        const mathIndicator = q.hasMath ? '🧮 ' : '📝 ';
-        const questionPreview = q.hasMath 
-      ? `<span class="math">${q.question}</span>` 
-      : q.question;
+        const questionText = q.question || q.questionText || '';
+        const questionIsMath = q.questionType === 'mathematical' || q.hasMath || hasMathContent(questionText);
+        const mathIndicator = questionIsMath ? '🧮 ' : '📝 ';
+        const questionPreviewText = questionText.length > 80 ? `${questionText.substring(0, 80)}...` : questionText;
+        const questionPreview = questionIsMath
+          ? `<span class="math">${escapeHtml(questionPreviewText)}</span>`
+          : escapeHtml(questionPreviewText);
         html += `
              <div class= "question-item">
                         <div class="question-text-preview">
-                            ${mathIndicator}Q${index + 1}: ${questionPreview.substring(0, 80)}${questionPreview.length > 80 ? '...' : ''}
+                            ${mathIndicator}Q${index + 1}: ${questionPreview}
                         </div>
                         <div class="question-meta">
-                            Correct Answer: ${choices[q.correct]} | ${q.hasMath ? 'Contains Math' : 'Text Only'}
+                            ${escapeHtml(q.subject || 'Unsorted')} · ${escapeHtml(q.class || 'Class not set')} | Correct answer: ${choices[typeof q.correct === 'number' ? q.correct : String(q.correctAnswer || 'A').charCodeAt(0) - 65]} | ${questionIsMath ? 'Mathematical' : 'General'}
                             <button onclick="removeQuestion(${index})" style="float: right; background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">Remove</button>
                         </div>
                     </div>
@@ -599,7 +757,7 @@ updateDBStatus();
         return;
       }
 
-      alert(`🚀 Quiz published successfully!\n\n📊 Questions: ${quizQuestions.length} \n🧮 Math Questions: ${quizQuestions.filter(q => q.hasMath).length} \n\nStudents can now take the quiz from the Student Dashboard.`);
+      alert(`🚀 Quiz published successfully!\n\n📊 Questions: ${quizQuestions.length} \n🧮 Math Questions: ${quizQuestions.filter(q => q.questionType === 'mathematical' || q.hasMath).length} \n\nStudents can now take the quiz from the Student Dashboard.`);
       updateStudentStats();
     }
 

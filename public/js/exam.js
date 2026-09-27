@@ -50,12 +50,26 @@ async function loadExamQuestions() {
         console.log("Fetched questions:", questions);
         quizQuestions = questions;
 
+        populateQuestionSelectionFilters();
         renderQuestionsList();
         updateQuestionsCount();
     } catch (error) {
         console.error("Error loading questions:", error);
         showMessage("Failed to load questions", "error");
     }
+}
+
+function populateQuestionSelectionFilters() {
+    const subjectSelect = document.getElementById('scheduleQuestionSubject');
+    const classSelect = document.getElementById('scheduleQuestionClass');
+    if (!subjectSelect || !classSelect) return;
+
+    const subjects = [...new Set(quizQuestions.map(question => question.subject).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    const classes = [...new Set(quizQuestions.map(question => question.class).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    subjectSelect.innerHTML = '<option value="">All subjects</option>';
+    classSelect.innerHTML = '<option value="">All classes</option>';
+    subjects.forEach(subject => subjectSelect.add(new Option(subject, subject)));
+    classes.forEach(className => classSelect.add(new Option(className, className)));
 }
 
 // Render students list
@@ -125,16 +139,28 @@ function renderQuestionsList() {
         return;
     }
 
+    const subjectFilter = document.getElementById('scheduleQuestionSubject')?.value || '';
+    const classFilter = document.getElementById('scheduleQuestionClass')?.value || '';
+    const visibleQuestions = quizQuestions.map((question, index) => ({ question, index })).filter(({ question }) =>
+        (!subjectFilter || question.subject === subjectFilter) && (!classFilter || question.class === classFilter)
+    );
+
+    if (!visibleQuestions.length) {
+        container.innerHTML = '<div style="padding:32px 14px;text-align:center;color:#77877f;font-size:12px;">No questions match these filters.</div>';
+        return;
+    }
+
     let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
 
-    quizQuestions.forEach((question, index) => {
+    visibleQuestions.forEach(({ question, index }) => {
 
         const text = question.questionText || question.question || "";
+        const isMathQuestion = question.questionType === 'mathematical' || question.hasMath || hasMathContent(text);
         const isSelected = selectedQuestions.has(index);
 
-        const questionPreview = text.length > 80 
-            ? text.substring(0, 80) + '...' 
-            : text;
+        const questionPreview = text.length > 80
+            ? escapeHtml(text.substring(0, 80) + '...')
+            : escapeHtml(text);
 
         html += `
         <div style="display: flex; align-items: center; padding: 12px; 
@@ -153,10 +179,11 @@ function renderQuestionsList() {
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                     <span style="font-weight: 700; color: #374151; font-size: 14px;">Q${index + 1}</span>
                     <span style="font-size: 12px; padding: 2px 8px; border-radius: 4px; 
-                          background: ${question.hasMath ? '#fef3c7' : '#e0e7ff'}; 
-                          color: ${question.hasMath ? '#92400e' : '#3730a3'}; font-weight: 500;">
-                        ${question.hasMath ? 'Math' : 'Text'}
+                          background: ${isMathQuestion ? '#e8f5ef' : '#eef2ff'};
+                          color: ${isMathQuestion ? '#087865' : '#4338ca'}; font-weight: 500;">
+                        ${isMathQuestion ? 'Mathematical' : 'General'}
                     </span>
+                    <span style="margin-left:6px;color:#71817c;font-size:11px;">${escapeHtml(question.subject || 'Unsorted')} · ${escapeHtml(question.class || 'Class not set')}</span>
                 </div>
 
                 <div class="math" style="font-size: 14px; color: #4b5563; line-height: 1.4;">
