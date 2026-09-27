@@ -434,6 +434,16 @@
             </div>
           </div>
 
+          <section class="exam-policy-panel" aria-labelledby="examPolicyHeading">
+            <div class="exam-policy-heading"><span>EXAM SETTINGS</span><h3 id="examPolicyHeading">Scoring &amp; result release</h3><p>Choose how wrong answers are scored and when students can view their results.</p></div>
+            <div class="exam-policy-grid">
+              <label class="exam-policy-toggle" for="negativeMarkingEnabled"><input id="negativeMarkingEnabled" type="checkbox" onchange="toggleNegativeMarking()"><span><strong>Use negative marking</strong><small>Deduct marks for incorrect answers.</small></span></label>
+              <label class="exam-policy-field" for="negativeMarkPerWrong"><span>Deduction per wrong answer</span><span class="exam-policy-number"><input id="negativeMarkPerWrong" type="number" min="0" step="0.25" value="0.25" disabled><small>marks</small></span></label>
+              <label class="exam-policy-field exam-result-policy" for="resultVisibility"><span>Students can see results</span><select id="resultVisibility"><option value="immediate">Immediately after submitting</option><option value="after_exam_end">After the exam closes</option><option value="teacher_release">When I release them</option></select></label>
+            </div>
+            <p class="exam-policy-help" id="resultVisibilityHelp">Students will see their score and answer review as soon as they submit.</p>
+          </section>
+
           <!-- Step 2 -->
           <h3
             style="font-size:21px; font-weight:700; color:#374151; margin:35px 0 20px; display:flex; gap:12px; align-items:center;">
@@ -466,12 +476,12 @@
               </div>
             </details>
           </div>
-          <button class="create-assignment-button" onclick="createAndAssignExam()">Create exam and assign</button>
+          <div class="exam-form-actions">
+            <button id="saveExamButton" class="create-assignment-button" onclick="createAndAssignExam()">Create exam and assign</button>
+            <button id="cancelEditExamButton" class="cancel-exam-edit hidden" type="button" onclick="cancelExamEdit()">Cancel editing</button>
+          </div>
 
-          <p style="text-align:center; margin-top:12px; font-size:14px; color:#6b7280;">Students will immediately
-            receive
-            the
-            exam.</p>
+          <p style="text-align:center; margin-top:12px; font-size:14px; color:#6b7280;">Assigned students can open the exam during the schedule you set.</p>
         </div>
 
 

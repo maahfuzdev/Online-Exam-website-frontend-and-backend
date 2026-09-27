@@ -4,12 +4,51 @@ let exams = [];
 // let quizQuestions = [];
 let selectedStudents = new Set();
 let selectedQuestions = new Set();
+let editingExamId = null;
+let extendingLiveExam = false;
 
 // Initialize exam creator
 async function initExamCreator() {
     await loadStudents();
     await loadExamQuestions();
     await loadExistingExams();
+    const resultVisibilitySelect = document.getElementById('resultVisibility');
+    if (resultVisibilitySelect) resultVisibilitySelect.onchange = updateResultVisibilityHelp;
+    toggleNegativeMarking();
+    updateResultVisibilityHelp();
+}
+
+function toggleNegativeMarking() {
+    const enabled = document.getElementById('negativeMarkingEnabled')?.checked;
+    const value = document.getElementById('negativeMarkPerWrong');
+    if (!value) return;
+    value.disabled = !enabled;
+    if (enabled && (!Number(value.value) || Number(value.value) <= 0)) value.value = '0.25';
+}
+
+function updateResultVisibilityHelp() {
+    const help = document.getElementById('resultVisibilityHelp');
+    const policy = document.getElementById('resultVisibility')?.value;
+    if (!help) return;
+    help.textContent = policy === 'after_exam_end'
+        ? 'Students can see their score and answer review after the scheduled exam end time.'
+        : policy === 'teacher_release'
+            ? 'Scores stay private until you choose Release results from the exam list.'
+            : 'Students can see their score and answer review as soon as they submit.';
+}
+
+function showExamStep(step) {
+    const targetStep = Number(step);
+    if (![1, 2, 3].includes(targetStep)) return;
+    document.querySelectorAll('.exam-step-panel').forEach(panel => {
+        panel.classList.toggle('hidden', panel.id !== `examStep${targetStep}`);
+    });
+    document.querySelectorAll('[data-exam-step]').forEach(button => {
+        button.classList.toggle('active', Number(button.dataset.examStep) === targetStep);
+        if (Number(button.dataset.examStep) === targetStep) button.setAttribute('aria-current', 'step');
+        else button.removeAttribute('aria-current');
+    });
+    if (targetStep === 3) loadExistingExams();
 }
 
 // Load students from database/API
@@ -319,12 +358,18 @@ async function createAndAssignExam() {
     const endTime = document.getElementById('endTime').value;
     const totalTime = document.getElementById("totalTime").value;
     const marksPerQuestion = parseFloat(document.getElementById('marksPerQuestion').value);
+    const negativeMarkingEnabled = document.getElementById('negativeMarkingEnabled').checked;
+    const negativeMarkPerWrong = negativeMarkingEnabled ? Number(document.getElementById('negativeMarkPerWrong').value) : 0;
+    const resultVisibility = document.getElementById('resultVisibility').value;
 
     // Validation
     if (!examTitle) return showMessage("Please enter exam title", "error");
     if (!subject) return showMessage("Please enter the exam subject", "error");
     if (!startTime || !endTime) return showMessage("Please select start and end time", "error");
     if (new Date(startTime) >= new Date(endTime)) return showMessage("End time must be after start time", "error");
+    if (!Number(totalTime) || Number(totalTime) < 1) return showMessage("Exam duration must be at least 1 minute", "error");
+    if (!marksPerQuestion || marksPerQuestion <= 0) return showMessage("Marks per question must be greater than zero", "error");
+    if (negativeMarkingEnabled && (!negativeMarkPerWrong || negativeMarkPerWrong <= 0)) return showMessage("Set a deduction greater than zero", "error");
     if (selectedStudents.size === 0) return showMessage("Please select at least one student", "error");
     if (selectedQuestions.size === 0) return showMessage("Please select at least one question", "error");
 
@@ -342,16 +387,21 @@ async function createAndAssignExam() {
         questionIds: Array.from(selectedQuestions).map(index => quizQuestions[index]._id), // Convert indices to ObjectIds
         startTime: new Date(startTime),
         endTime: new Date(endTime),
-        examTime: totalTime, // in minutesz
+        examTime: Number(totalTime),
         markPerQuestion: marksPerQuestion,
-        totalMarks: Number(selectedQuestions.size * marksPerQuestion).toFixed(2)
+        totalMarks: Number(selectedQuestions.size * marksPerQuestion).toFixed(2),
+        negativeMarkingEnabled,
+        negativeMarkPerWrong,
+        resultVisibility
     };
 
     try {
         console.log("Sending exam data:", exam);
         
-        const response = await fetch('/assignments/api/assigned-questions', {
-            method: 'POST',
+        const response = await fetch(editingExamId
+            ? `/assignments/api/assigned-questions/${editingExamId}`
+            : '/assignments/api/assigned-questions', {
+            method: editingExamId ? 'PUT' : 'POST',
             headers: { 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('token')}` // যদি authentication থাকে
@@ -366,7 +416,7 @@ async function createAndAssignExam() {
         }
 
         // Success message
-        showMessage(`Exam "${examTitle}" created successfully!`, "success");
+        showMessage(editingExamId ? (extendingLiveExam ? 'Exam closing time extended successfully.' : `Exam "${examTitle}" updated successfully!`) : `Exam "${examTitle}" created successfully!`, "success");
         
         // Reset form
         resetExamForm();
@@ -424,128 +474,154 @@ function saveExamToStorage(exam) {
         showMessage("Using cached exams data", "warning");
     }
 }
-// Render exams list
+// Render a compact exam management list with scheduling, scoring, and release state.
 function renderExamsList() {
     const container = document.getElementById('examsList');
     if (!container) return;
-    
-    if (exams.length === 0) {
-        container.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #9ca3af;">
-                <div style="width: 60px; height: 60px; border: 2px dashed #d1d5db; 
-                            border-radius: 50%; margin: 0 auto 20px; display: flex; 
-                            align-items: center; justify-content: center; font-size: 24px;">📝</div>
-                No exams created yet. Create your first exam above.
-            </div>
-        `;
+    if (!exams.length) {
+        container.innerHTML = '<div style="padding:32px 16px;text-align:center;color:#8792a5;font-size:13px;">No exams yet. Your exams will appear here after you create one.</div>';
         return;
     }
-    
-    let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">';
-    
-    exams.forEach(exam => {
+
+    const policyLabels = { immediate: 'Results: immediately', after_exam_end: 'Results: after exam', teacher_release: 'Results: teacher release' };
+    const cards = exams.map(exam => {
         const startDate = new Date(exam.startTime);
         const endDate = new Date(exam.endTime);
         const now = new Date();
-        
-        let status = 'scheduled';
-        let statusColor = '#f59e0b';
-        
-        if (now < startDate) {
-            status = 'Upcoming';
-            statusColor = '#3b82f6';
-        } else if (now >= startDate && now <= endDate) {
-            status = 'Live';
-            statusColor = '#10b981';
-        } else {
-            status = 'Completed';
-            statusColor = '#6b7280';
-        }
-        
-        html += `
-            <div style="background: white; border-radius: 14px; padding: 20px; 
-                        border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
-                        transition: all 0.3s;" 
-                 onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 25px rgba(0,0,0,0.08)'"
-                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.05)'">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
-                    <h4 style="font-size: 18px; font-weight: 700; color: #374151; margin: 0;">
-                        ${exam.examTitle}
-                    </h4>
-                    <span style="font-size: 12px; padding: 4px 10px; border-radius: 20px; 
-                          background: ${statusColor}15; color: ${statusColor}; font-weight: 600;">
-                        ${status}
-                    </span>
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                        <span style="color: #6b7280; font-size: 14px;">📅</span>
-                        <span style="font-size: 14px; color: #4b5563;">
-                            ${formatDate(startDate)} - ${formatDate(endDate)}
-                        </span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                        <span style="color: #6b7280; font-size: 14px;">👥</span>
-                        <span style="font-size: 14px; color: #4b5563;">
-                            ${exam.studentIDs ? exam.studentIDs.length : 0} students
-                        </span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="color: #6b7280; font-size: 14px;">❓</span>
-                        <span style="font-size: 14px; color: #4b5563;">
-                            ${exam.questionIds ? exam.questionIds.length : 0} questions
-                        </span>
-                    </div>
-                </div>
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-                    <div>
-                        <div style="font-size: 13px; color: #6b7280;">Total Marks</div>
-                        <div style="font-size: 20px; font-weight: 800; color: #374151;">
-                            ${exam.totalMarks}
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="viewExamDetails('${exam._id}')" 
-                                style="padding: 8px 16px; background: #3b82f6; color: white; 
-                                       border: none; border-radius: 8px; font-size: 13px; 
-                                       font-weight: 600; cursor: pointer; transition: all 0.2s;"
-                                onmouseover="this.style.background='#2563eb'"
-                                onmouseout="this.style.background='#3b82f6'">
-                            View
-                        </button>
-                        <button onclick="deleteExam('${exam._id}')" 
-                                style="padding: 8px 16px; background: #f3f4f6; color: #ef4444; 
-                                       border: none; border-radius: 8px; font-size: 13px; 
-                                       font-weight: 600; cursor: pointer; transition: all 0.2s;"
-                                onmouseover="this.style.background='#fee2e2'"
-                                onmouseout="this.style.background='#f3f4f6'">
-                            Delete
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
+        const status = now < startDate ? 'Upcoming' : now <= endDate ? 'Live' : 'Completed';
+        const statusClass = status === 'Live' ? 'exam-status-live' : status === 'Upcoming' ? 'exam-status-upcoming' : 'exam-status-completed';
+        const liveLock = status === 'Live' ? 'disabled title="A live exam cannot be deleted."' : '';
+        const negativeSummary = exam.negativeMarkingEnabled ? `−${Number(exam.negativeMarkPerWrong)} per wrong answer` : 'No negative marking';
+        const releaseAction = exam.resultVisibility === 'teacher_release' && !exam.resultsReleased
+            ? `<button class="exam-release-action" type="button" ${liveLock} onclick="releaseExamResults('${exam._id}')">Release results</button>`
+            : exam.resultVisibility === 'teacher_release' ? '<span class="exam-policy-badge">Results released</span>' : '';
+        const resultsLocked = (exam.resultVisibility === 'teacher_release' && !exam.resultsReleased) || (exam.resultVisibility === 'after_exam_end' && now < endDate);
+        const resultButton = resultsLocked
+            ? '<button type="button" disabled title="Results are hidden until the release condition is met.">Results locked</button>'
+            : `<button type="button" onclick="viewExamDetails('${exam._id}')">Results</button>`;
+        return `<article class="exam-management-card">
+          <div class="exam-management-top"><div><span class="exam-management-subject">${escapeHtml(exam.subject || 'Subject not set')}</span><h4>${escapeHtml(exam.examTitle || 'Untitled exam')}</h4></div><span class="exam-status-pill ${statusClass}">${status}</span></div>
+          <div class="exam-management-meta"><span><strong>Schedule</strong>${formatDate(startDate)} – ${formatDate(endDate)}</span><span><strong>Students</strong>${exam.studentIDs?.length || 0} assigned</span><span><strong>Questions</strong>${exam.questionIds?.length || 0} · ${Number(exam.totalMarks || 0)} marks</span></div>
+          <div class="exam-management-policies"><span class="exam-policy-badge">${negativeSummary}</span><span class="exam-policy-badge">${policyLabels[exam.resultVisibility || 'immediate']}</span></div>
+          <div class="exam-management-actions">${releaseAction}<button class="exam-edit-action" type="button" onclick="editExam('${exam._id}', ${status === 'Live'})">${status === 'Live' ? 'Extend closing time' : 'Edit / reschedule'}</button>${resultButton}<button class="exam-delete-action" type="button" ${liveLock} onclick="deleteExam('${exam._id}')">Delete</button></div>
+        </article>`;
+    }).join('');
+    container.innerHTML = `<div class="exam-management-grid">${cards}</div>`;
+}
+
+function toDateTimeLocal(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    return date.toISOString().slice(0, 16);
+}
+
+function editExam(examId, extendOnly = false) {
+    const exam = exams.find(item => String(item._id) === String(examId));
+    if (!exam) return showMessage('This exam is not available. Refresh the exam list and try again.', 'error');
+    editingExamId = String(exam._id);
+    extendingLiveExam = extendOnly;
+    document.getElementById('examTitle').value = exam.examTitle || '';
+    document.getElementById('examSubject').value = exam.subject || '';
+    document.getElementById('startTime').value = toDateTimeLocal(exam.startTime);
+    document.getElementById('endTime').value = toDateTimeLocal(exam.endTime);
+    document.getElementById('totalTime').value = Number(exam.examTime || 60);
+    document.getElementById('marksPerQuestion').value = Number(exam.markPerQuestion || 1);
+    document.getElementById('negativeMarkingEnabled').checked = Boolean(exam.negativeMarkingEnabled);
+    document.getElementById('negativeMarkPerWrong').value = Number(exam.negativeMarkPerWrong || 0.25);
+    document.getElementById('resultVisibility').value = exam.resultVisibility || 'immediate';
+    ['examTitle', 'examSubject', 'totalTime', 'marksPerQuestion', 'startTime', 'negativeMarkingEnabled', 'negativeMarkPerWrong', 'resultVisibility'].forEach(id => {
+        document.getElementById(id).disabled = extendOnly;
     });
-    
-    html += '</div>';
-    container.innerHTML = html;
+    document.querySelectorAll('.assignment-picker, .exam-policy-panel').forEach(element => {
+        element.classList.toggle('exam-extension-locked', extendOnly);
+    });
+    toggleNegativeMarking();
+    updateResultVisibilityHelp();
+
+    selectedStudents = new Set((exam.studentIDs || []).map(student => String(student._id || student)));
+    const assignedQuestions = new Set((exam.questionIds || []).map(question => String(question._id || question)));
+    selectedQuestions = new Set(quizQuestions.reduce((indices, question, index) => {
+        if (assignedQuestions.has(String(question._id))) indices.push(index);
+        return indices;
+    }, []));
+    renderStudentsList();
+    renderQuestionsList();
+    updateStudentsCount();
+    updateQuestionsCount();
+
+    document.getElementById('saveExamButton').textContent = extendOnly ? 'Extend exam closing time' : 'Save exam changes';
+    document.getElementById('cancelEditExamButton').classList.remove('hidden');
+    showExamStep(3);
+    document.getElementById('examTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function cancelExamEdit() {
+    resetExamForm();
+}
+
+async function deleteExam(examId) {
+    const exam = exams.find(item => String(item._id) === String(examId));
+    const name = exam?.examTitle || 'this exam';
+    if (!confirm(`Delete "${name}" and permanently remove all of its saved student results? This cannot be undone.`)) return;
+    try {
+        const response = await fetch(`/assignments/api/assigned-questions/${encodeURIComponent(examId)}`, {
+            method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ teacherID: localStorage.getItem('userId') })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || 'Could not delete this exam.');
+        exams = exams.filter(item => String(item._id) !== String(examId));
+        localStorage.setItem('exams', JSON.stringify(exams));
+        renderExamsList();
+        showMessage('Exam and saved results deleted.', 'success');
+    } catch (error) {
+        showMessage(error.message || 'Could not delete this exam.', 'error');
+    }
+}
+
+async function releaseExamResults(examId) {
+    try {
+        const response = await fetch(`/assignments/api/assigned-questions/${encodeURIComponent(examId)}/release-results`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ teacherID: localStorage.getItem('userId') })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || 'Could not release results.');
+        showMessage('Results are now available to students.', 'success');
+        await loadExistingExams();
+    } catch (error) {
+        showMessage(error.message || 'Could not release results.', 'error');
+    }
 }
 
 // View button er jonno function (EITA ADD KORUN)
 function viewExamDetails(examId) {
-    window.location.href = `examresult.html?examId=${examId}`;
+    window.location.href = `examresult.html?examId=${encodeURIComponent(examId)}`;
 }
 window.viewExamDetails = viewExamDetails;
 
 // Reset exam form
 function resetExamForm() {
+    editingExamId = null;
+    extendingLiveExam = false;
     document.getElementById('examTitle').value = '';
     document.getElementById('examSubject').value = '';
     document.getElementById('startTime').value = '';
     document.getElementById('endTime').value = '';
     document.getElementById('marksPerQuestion').value = '1';
+    document.getElementById('totalTime').value = '60';
+    document.getElementById('negativeMarkingEnabled').checked = false;
+    document.getElementById('negativeMarkPerWrong').value = '0.25';
+    document.getElementById('resultVisibility').value = 'immediate';
+    document.getElementById('saveExamButton').textContent = 'Create exam and assign';
+    document.getElementById('cancelEditExamButton').classList.add('hidden');
+    ['examTitle', 'examSubject', 'totalTime', 'marksPerQuestion', 'startTime', 'negativeMarkingEnabled', 'negativeMarkPerWrong', 'resultVisibility'].forEach(id => {
+        document.getElementById(id).disabled = false;
+    });
+    document.querySelectorAll('.assignment-picker, .exam-policy-panel').forEach(element => element.classList.remove('exam-extension-locked'));
+    toggleNegativeMarking();
+    updateResultVisibilityHelp();
     
     selectedStudents.clear();
     selectedQuestions.clear();

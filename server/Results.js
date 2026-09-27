@@ -41,6 +41,15 @@ const resultSchema = new mongoose.Schema({
 
   timeTaken: Number,
 
+  answerReview: [{
+    questionID: { type: mongoose.Schema.Types.ObjectId, ref: "Question" },
+    questionText: String,
+    options: [String],
+    selectedOption: Number,
+    correctOption: Number,
+    isCorrect: Boolean
+  }],
+
   date: Date,
 
   generatedAt: {
@@ -51,6 +60,27 @@ const resultSchema = new mongoose.Schema({
 
 
 const Result = mongoose.model('Result', resultSchema);
+
+async function findAssignedExam(examID) {
+  const { AssignedQuestion } = require("./AssignedQuestions");
+  return AssignedQuestion.findById(examID).select("endTime resultVisibility resultsReleased teacherID");
+}
+
+function canStudentViewResult(exam) {
+  if (!exam) return true; // Keep legacy results visible if their exam record no longer exists.
+  const policy = exam.resultVisibility || "immediate";
+  if (policy === "after_exam_end") return new Date() >= new Date(exam.endTime);
+  if (policy === "teacher_release") return Boolean(exam.resultsReleased);
+  return true;
+}
+
+async function visibleResultsForStudent(results) {
+  const { AssignedQuestion } = require("./AssignedQuestions");
+  const examIDs = [...new Set(results.map(result => String(result.examID)).filter(Boolean))];
+  const exams = await AssignedQuestion.find({ _id: { $in: examIDs } }).select("endTime resultVisibility resultsReleased");
+  const examById = new Map(exams.map(exam => [String(exam._id), exam]));
+  return results.filter(result => canStudentViewResult(examById.get(String(result.examID))));
+}
 
 router.post("/api/studentresult", async (req, res) => {
   try {
@@ -67,41 +97,93 @@ router.post("/api/studentresult", async (req, res) => {
       totalMarks,
       percentage,
       timeTaken,
-      date
+      date,
+      answers
     } = req.body;
+
+        const { AssignedQuestion } = require("./AssignedQuestions");
+        const exam = await AssignedQuestion.findOne({ _id: examID, studentIDs: studentID }).populate("questionIds");
+        if (!exam) return res.status(403).json({ success: false, message: "You are not assigned to this exam." });
 
         // Check if result already exists
     const existingResult = await Result.findOne({ studentID, examID });
     if (existingResult) {
+      const visible = canStudentViewResult(exam);
       return res.status(200).json({
         success: true,
+        submitted: true,
         message: "This exam has already been submitted.",
-        result: existingResult
+        result: visible ? existingResult : null,
+        resultVisibility: exam.resultVisibility || "immediate",
+        resultsReleased: Boolean(exam.resultsReleased)
       });
     }
 
+    if (!exam.attendedStudentIDs.some(id => String(id) === String(studentID))) {
+      return res.status(403).json({ success: false, message: "Exam attendance was not recorded. Reopen the exam and submit again." });
+    }
+    if (!answers || typeof answers !== "object" || Array.isArray(answers)) {
+      return res.status(400).json({ success: false, message: "Exam answers are missing." });
+    }
+    const invalidAnswer = Object.entries(answers).some(([index, value]) =>
+      !/^\d+$/.test(index) || !Number.isInteger(Number(value)) || Number(value) < 0 || Number(value) > 3
+    );
+    if (invalidAnswer) return res.status(400).json({ success: false, message: "One or more submitted answers are invalid." });
+
+    let correctCount = 0;
+    let wrongCount = 0;
+    let skippedCount = 0;
+    const answerReview = exam.questionIds.map((question, index) => {
+      const rawAnswer = answers[index];
+      const selectedOption = rawAnswer === undefined || rawAnswer === null || rawAnswer === "" ? null : Number(rawAnswer);
+      const correctOption = String(question.correctAnswer || "A").toUpperCase().charCodeAt(0) - 65;
+      const isCorrect = selectedOption !== null && selectedOption === correctOption;
+      if (selectedOption === null) skippedCount++;
+      else if (isCorrect) correctCount++;
+      else wrongCount++;
+      return {
+        questionID: question._id,
+        questionText: question.questionText,
+        options: question.options,
+        selectedOption,
+        correctOption,
+        isCorrect
+      };
+    });
+    const questionMark = Number(exam.markPerQuestion) || 0;
+    const penalty = exam.negativeMarkingEnabled ? Number(exam.negativeMarkPerWrong) || 0 : 0;
+    const totalMarks = questionMark * answerReview.length;
+    const score = Math.max(0, correctCount * questionMark - wrongCount * penalty);
+    const percentage = totalMarks > 0 ? (score / totalMarks) * 100 : 0;
+
     const newResult = new Result({
       studentID,
-      teacherID,
+      teacherID: exam.teacherID,
       examID,
-      examTitle,
-      totalQuestions,
-      correctAnswers,
-      wrongAnswers,
-      skippedQuestion,
+      examTitle: exam.examTitle,
+      totalQuestions: answerReview.length,
+      correctAnswers: correctCount,
+      wrongAnswers: wrongCount,
+      skippedQuestion: skippedCount,
       score,
       totalMarks,
       percentage,
       timeTaken,
-      date
+      date: new Date(),
+      answerReview
     });
 
     await newResult.save();
 
+    const visible = canStudentViewResult(exam);
+
     res.status(201).json({
       success: true,
-      message: "Result saved successfully",
-      result: newResult
+      submitted: true,
+      message: visible ? "Result saved successfully" : "Your submission is saved. The teacher's release rule will determine when you can see your result.",
+      result: visible ? newResult : null,
+      resultVisibility: exam.resultVisibility || "immediate",
+      resultsReleased: Boolean(exam.resultsReleased)
     });
 
   }
@@ -118,7 +200,8 @@ router.get("/api/studentsResult/:studentID", async (req, res) => {
   try {
     const { studentID } = req.params;
 
-    const results = await Result.find({ studentID });
+    const allResults = await Result.find({ studentID });
+    const results = await visibleResultsForStudent(allResults);
     let totalResult = results.length;
     let totalObtainMarks = 0;
     let totalExamMarks = 0;
@@ -158,6 +241,10 @@ router.get("/api/studentsResult/:studentID/examID/:examID", async (req, res) => 
     const { studentID, examID } = req.params;
 
     const results = await Result.find({ studentID, examID });
+    const exam = await findAssignedExam(examID);
+    if (!canStudentViewResult(exam)) {
+      return res.status(403).json({ success: false, message: "The teacher has not released this result yet.", count: 0, data: [] });
+    }
 
     res.status(200).json({
       success: true,
@@ -183,6 +270,9 @@ router.get("/api/studentsResult/:studentID/examID/:examID", async (req, res) => 
 router.get("/api/studentsResultbyExamID/:examID", async (req, res) => {
   try {
     const { examID } = req.params;
+    const exam = await findAssignedExam(examID);
+    if (!exam) return res.status(404).json({ error: "Exam not found." });
+    if (!canStudentViewResult(exam)) return res.status(403).json({ error: "Results are not available yet." });
     const results = await Result.find({ examID }).populate("studentID", "name");
     res.json(results);
   } catch (error) {

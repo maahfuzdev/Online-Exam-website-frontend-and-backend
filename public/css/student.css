@@ -1139,3 +1139,8 @@ body:has(.student-dashboard) {
     .exam-meta-item { font-size: .61rem; }
     .submit-exam-btn { padding: 8px; }
 }
+
+.result-release-notice { margin: 18px 0; padding: 18px; border: 1px solid #dce4ff; border-radius: 15px; background: #f4f6ff; color: #4658ae; font-size: 14px; font-weight: 700; line-height: 1.6; }
+.result-pending-card { padding: 22px; border: 1px solid #dce4ff; border-radius: 18px; background: linear-gradient(145deg, #f5f7ff, #fff); }
+.result-pending-card .exam-title { margin-bottom: 12px; color: #34447f; font-weight: 800; }
+.result-pending-card p { margin: 13px 0 0; color: #697694; font-size: 13px; line-height: 1.6; }

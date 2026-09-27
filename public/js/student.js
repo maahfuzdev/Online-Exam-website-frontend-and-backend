@@ -6,6 +6,8 @@ let activeExams = [];
 let pastExams = [];
 let studentResults = [];
 let attemptedExamIds = [];
+let attendedExamIds = [];
+let submittedExamIds = [];
 let examTimerInterval = null;
 let pendingResultSave = Promise.resolve();
 
@@ -24,7 +26,8 @@ let pendingResultSave = Promise.resolve();
   renderActiveExams();
   await renderPastExams();
   renderStudentResults();
-  const absentCount = pastExams.filter(exam => !attemptedExamIds.includes(String(exam.examId))).length;
+  document.getElementById("completedExamsCount").textContent = submittedExamIds.length;
+  const absentCount = pastExams.filter(exam => !attendedExamIds.includes(String(exam.examId))).length;
   document.getElementById("absentExamsCount").textContent = absentCount;
 }
 
@@ -40,6 +43,8 @@ async function loadStudentExams() {
 
   activeExams = [];
   pastExams = [];
+  attendedExamIds = examdata.filter(exam => exam.attended).map(exam => String(exam.examId));
+  submittedExamIds = examdata.filter(exam => exam.submitted).map(exam => String(exam.examId));
   examdata.forEach(exam => {
     if (exam.status === "active") activeExams.push(exam);
     else pastExams.push(exam);
@@ -61,7 +66,7 @@ async function loadStudentExams() {
     _id: q._id,
     question: q.questionText,
     choices: q.options,
-    correct: q.correctAnswer.charCodeAt(0) - 65
+    correct: null
   }));
 
   currentQuestionIndex = 0;
@@ -96,7 +101,7 @@ async function fetchResult() {
 
 
     document.getElementById("averageScore").textContent = `${resultData.averagePercentage} %`;
-    document.getElementById("completedExamsCount").textContent = attemptedExamIds.length;
+    document.getElementById("completedExamsCount").textContent = submittedExamIds.length;
 
 
   } catch (err) {
@@ -167,10 +172,10 @@ function renderActiveExams() {
 
                 html += `
 
-                    <div class="exam-card active" onclick="startExam('${exam.examId}',${exam.markPerQuestion},${exam.examTime},'${exam.startTime}','${exam.teacherID}','${exam.examTitle}')">
+                    <div class="exam-card active" onclick="startExamById('${exam.examId}')">
 
-                        ${exam.subject ? `<div class="exam-subject">${exam.subject}</div>` : ''}
-                        <div class="exam-title">${exam.examTitle}</div>
+                        ${exam.subject ? `<div class="exam-subject">${escapeStudentHtml(exam.subject)}</div>` : ''}
+                        <div class="exam-title">${escapeStudentHtml(exam.examTitle)}</div>
 
                         <div class="exam-meta">
 
@@ -179,6 +184,7 @@ function renderActiveExams() {
                             <span><i class="fas fa-star"></i> ${exam.totalMarks} Marks</span>
 
                             <span><i class="fas fa-clock"></i> ${exam.examTime}</span>
+                            ${exam.negativeMarkingEnabled ? `<span>−${exam.negativeMarkPerWrong} wrong</span>` : ''}
 
                         </div>
 
@@ -190,7 +196,7 @@ function renderActiveExams() {
 
                         </div>
 
-                        <button class="btn btn-primary" style="margin-top: 15px; width: 100%;">
+                        <button type="button" class="btn btn-primary" style="margin-top: 15px; width: 100%;" onclick="event.stopPropagation(); startExamById('${exam.examId}')">
 
                             <i class="fas fa-play-circle"></i> Start Exam
 
@@ -236,13 +242,9 @@ async function renderPastExams() {
 
   for (const exam of pastExams) {
     const examId = String(exam.examId);
-    if (attemptedExamIds.includes(examId)) {
-      const studentId1 = localStorage.getItem("userId");
-      const res = await fetch(
-        `/results/api/studentsResult/${studentId1}/examID/${examId}`
-      );
-      const Atetendedresult = await res.json();
-      Atetendedresult.data.forEach(result => {
+    const studentResult = studentResults.find(result => String(result.examID?._id || result.examID) === examId);
+    if (studentResult) {
+        const result = studentResult;
 
 
         const percentageColor = result.percentage >= 80
@@ -307,8 +309,13 @@ async function renderPastExams() {
 
             </div>
         `;
-      });
-
+    } else if (attendedExamIds.includes(examId)) {
+      const submitted = submittedExamIds.includes(examId);
+      const attendanceStatus = submitted ? 'Submitted · Result pending' : 'Attended · not submitted';
+      const attendanceMessage = submitted
+        ? 'Your submission is recorded. The result will appear here when it is released.'
+        : 'Your attendance is recorded, so this exam will not be marked absent. No result is available because the exam was not submitted.';
+      html += `<article class="exam-card result-pending-card"><div class="exam-title">${escapeStudentHtml(exam.examTitle)}</div><div class="exam-meta"><span>${exam.questionCount} Questions</span><span>${exam.totalMarks} Marks</span></div><span class="exam-status status-completed">${attendanceStatus}</span><p>${attendanceMessage}</p></article>`;
     }
     // ❌ ABSENT (No change needed here)
     else {
@@ -499,7 +506,13 @@ function renderStudentResults() {
 
         // Start an exam
 
-function startExam(examId, mpq, duration, startTime, teacherID, examTitle)
+function startExamById(examId) {
+  const exam = activeExams.find(item => String(item.examId) === String(examId));
+  if (!exam) return;
+  startExam(exam.examId, exam.markPerQuestion, exam.examTime, exam.startTime, exam.teacherID, exam.examTitle, exam);
+}
+
+async function startExam(examId, mpq, duration, startTime, teacherID, examTitle, examSettings = {})
 {
           let now = new Date();
           localStorage.setItem("currentExamId", examId);
@@ -508,6 +521,11 @@ function startExam(examId, mpq, duration, startTime, teacherID, examTitle)
           localStorage.setItem("startTime", startTime);
           localStorage.setItem("teacherID", teacherID);
           localStorage.setItem("examTitle", examTitle);
+          localStorage.setItem("negativeMarkingEnabled", String(Boolean(examSettings.negativeMarkingEnabled)));
+          localStorage.setItem("negativeMarkPerWrong", Number(examSettings.negativeMarkPerWrong || 0));
+          localStorage.setItem("resultVisibility", examSettings.resultVisibility || "immediate");
+          localStorage.setItem("resultsReleased", String(Boolean(examSettings.resultsReleased)));
+          localStorage.setItem("examEndTime", examSettings.endTime || "");
    const now1 = new Date();
   const examStartTime = new Date(startTime);
 
@@ -520,11 +538,23 @@ function startExam(examId, mpq, duration, startTime, teacherID, examTitle)
     return;
   }
 
-  else if (attemptedExamIds.includes(String(examId))) {
+  else if (submittedExamIds.includes(String(examId))) {
     alert("You have already attempted this exam.");
     return;
   }
   else {
+    try {
+      const response = await fetch(`/assignments/api/exam/${encodeURIComponent(examId)}/attend`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: localStorage.getItem('userId') })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || 'Could not register exam attendance.');
+      if (!attendedExamIds.includes(String(examId))) attendedExamIds.push(String(examId));
+    } catch (error) {
+      alert(error.message || 'Could not register exam attendance. Please try again.');
+      return;
+    }
     document.getElementById('studentDashboard').classList.add('hidden');
     document.getElementById('examContainer').classList.remove('hidden');
 
@@ -768,17 +798,34 @@ if (submitted) {
 
   localStorage.setItem("timeTaken", timeTaken);
 
-  showExamResults();
+  showExamResults(false, 'Saving your submission…');
 
   // send result to backend
-  pendingResultSave = sendResultToDB(timeTaken).then(savedResult => {
+  pendingResultSave = sendResultToDB(timeTaken).then(payload => {
     localStorage.setItem(`submitted_${examid}`, "true");
-    const normalizedExamId = String(savedResult.examID?._id || savedResult.examID || examid);
+    const normalizedExamId = String(payload.result?.examID?._id || payload.result?.examID || examid);
+    if (!submittedExamIds.includes(normalizedExamId)) submittedExamIds.push(normalizedExamId);
     if (!attemptedExamIds.includes(normalizedExamId)) attemptedExamIds.push(normalizedExamId);
-    if (!studentResults.some(result => String(result.examID?._id || result.examID) === normalizedExamId)) {
-      studentResults.push(savedResult);
+    if (payload.result) {
+      payload.result.answerReview?.forEach((review, index) => {
+        if (quizQuestions1[index]) quizQuestions1[index].correct = review.correctOption;
+      });
+      if (!studentResults.some(result => String(result.examID?._id || result.examID) === normalizedExamId)) studentResults.push(payload.result);
+      localStorage.setItem("totalMarks", payload.result.score);
+      localStorage.setItem("totalCorrect", payload.result.correctAnswers);
+      localStorage.setItem("totalWrong", payload.result.wrongAnswers);
+      localStorage.setItem("totalSkipped", payload.result.skippedQuestion);
+      localStorage.setItem("percentage", payload.result.percentage);
+      document.getElementById('scoreDetails').textContent = `${payload.result.score} / ${payload.result.totalMarks}`;
+      document.getElementById('finalScoreDisplay').textContent = `${payload.result.percentage}%`;
+      document.getElementById('correctAnswers').textContent = payload.result.correctAnswers;
+      document.getElementById('wrongAnswers').textContent = payload.result.wrongAnswers;
+      document.getElementById('skipedAnswer').textContent = payload.result.skippedQuestion;
+      showExamResults(true, '', Array.isArray(payload.result.answerReview) && payload.result.answerReview.length === quizQuestions1.length);
+    } else {
+      showExamResults(false, resultReleaseMessage(payload.resultVisibility, payload.resultsReleased));
     }
-    document.getElementById("completedExamsCount").textContent = attemptedExamIds.length;
+    document.getElementById("completedExamsCount").textContent = submittedExamIds.length;
   }).catch(error => {
     console.error("Failed to save exam result:", error);
     alert("Your answers are shown, but the result could not be saved. Please check your connection and contact your teacher before leaving this page.");
@@ -788,12 +835,22 @@ if (submitted) {
 }
 
         // Show exam results
-        function showExamResults() {
+        function resultReleaseMessage(policy, released) {
+            if (policy === 'teacher_release' && !released) return 'Your exam is submitted. Your teacher will release the result when it is ready.';
+            if (policy === 'after_exam_end') return 'Your exam is submitted. Your score and answer review will be available after the scheduled exam end time.';
+            return 'Your submission is saved. Results are not available yet.';
+        }
+
+        function showExamResults(revealResult = true, message = '', revealReview = revealResult) {
             document.getElementById('examContainer').classList.add('hidden');
             document.getElementById('resultsContainer').classList.remove('hidden');
-
-            // Display sample question analysis
-            displayQuestionAnalysis();
+            document.querySelector('.results-summary .main-score')?.classList.toggle('hidden', !revealResult);
+            document.querySelector('.results-summary .result-stats')?.classList.toggle('hidden', !revealResult);
+            document.querySelector('.detailed-results')?.classList.toggle('hidden', !revealResult || !revealReview);
+            const notice = document.getElementById('resultReleaseNotice');
+            notice?.classList.toggle('hidden', revealResult);
+            if (notice && !revealResult) notice.textContent = message || resultReleaseMessage(localStorage.getItem('resultVisibility'), localStorage.getItem('resultsReleased') === 'true');
+            if (revealResult && revealReview) displayQuestionAnalysis();
         }
 
         // Display question analysis
@@ -823,6 +880,7 @@ function displayQuestionAnalysis() {
       totalCorrect++;
     } else {
       totalWrong++;
+      if (localStorage.getItem('negativeMarkingEnabled') === 'true') obtainedMark = -Number(localStorage.getItem('negativeMarkPerWrong') || 0);
     }
 
     totalMarks += obtainedMark;
@@ -845,6 +903,7 @@ function displayQuestionAnalysis() {
   container.innerHTML = html;
   container.querySelectorAll('.result-math').forEach(element => renderStudentQuestionText(element, element.textContent));
 
+  totalMarks = Math.max(0, totalMarks);
   const totalPossibleMarks = (quizQuestions1.length * markPerQuestion).toFixed(2);
   const percentage =
     totalPossibleMarks > 0 ? ((totalMarks / totalPossibleMarks) * 100).toFixed(2) : 0;
@@ -892,7 +951,8 @@ const stuResult = {
   skippedQuestion:totalSkipped,
   wrongAnswers: totalWrong,
   timeTaken: timeTaken,
-  date: new Date()
+  date: new Date(),
+  answers: studentAnswers
 };
 
   console.log("result", JSON.stringify(stuResult));
@@ -906,7 +966,7 @@ const stuResult = {
     if (!res.ok || !payload.success || !payload.result) {
       throw new Error(payload.message || "Result could not be saved.");
     }
-    return payload.result;
+    return payload;
   }
 
 
@@ -963,7 +1023,8 @@ function remainingTime(duration) {
             renderActiveExams();
             await renderPastExams();
             renderStudentResults();
-            const absentCount = pastExams.filter(exam => !attemptedExamIds.includes(String(exam.examId))).length;
+            document.getElementById("completedExamsCount").textContent = submittedExamIds.length;
+            const absentCount = pastExams.filter(exam => !attendedExamIds.includes(String(exam.examId))).length;
             document.getElementById("absentExamsCount").textContent = absentCount;
         }
 
