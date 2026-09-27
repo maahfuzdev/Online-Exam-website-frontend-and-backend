@@ -155,9 +155,23 @@ router.get("/api/questions/:teacherId", async (req, res) => {
 // Delete question
 router.delete("/api/questions/:id", async (req, res) => {
     try {
-        const result = await Question.findByIdAndDelete(req.params.id);
+        const { teacherId } = req.body || {};
+        if (!mongoose.isValidObjectId(req.params.id) || !mongoose.isValidObjectId(teacherId)) {
+            return res.status(400).json({ error: "A valid question and teacher account are required." });
+        }
+        const teacher = await Auth.findOne({ _id: teacherId, role: "teacher" }).select("_id");
+        if (!teacher) return res.status(403).json({ error: "A teacher account is required." });
 
-        if (!result) return res.status(404).json({ error: "Not found" });
+        // Keep questions attached to exams intact so existing exams remain usable.
+        const { AssignedQuestion } = require("./AssignedQuestions");
+        const isAssigned = await AssignedQuestion.exists({ questionIds: req.params.id });
+        if (isAssigned) {
+            return res.status(409).json({ error: "This question is used in an exam and cannot be deleted." });
+        }
+
+        const result = await Question.findOneAndDelete({ _id: req.params.id, teacher: teacherId });
+
+        if (!result) return res.status(404).json({ error: "Question not found in your question bank." });
 
         res.json({ message: "Deleted successfully" });
     } catch (err) {

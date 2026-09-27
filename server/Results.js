@@ -71,7 +71,14 @@ router.post("/api/studentresult", async (req, res) => {
     } = req.body;
 
         // Check if result already exists
-  
+    const existingResult = await Result.findOne({ studentID, examID });
+    if (existingResult) {
+      return res.status(200).json({
+        success: true,
+        message: "This exam has already been submitted.",
+        result: existingResult
+      });
+    }
 
     const newResult = new Result({
       studentID,

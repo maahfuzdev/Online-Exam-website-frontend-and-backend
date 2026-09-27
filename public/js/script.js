@@ -295,6 +295,9 @@ function filterQuestionBank() {
           <span class="bank-question-meta">${escapeHtml(question.subject || 'Unsorted')} · ${escapeHtml(question.class || 'Class not set')}</span>
         </summary>
         <ul class="bank-choice-list">${choices}</ul>
+        <div class="bank-question-actions">
+          <button type="button" class="bank-delete-button" onclick="deleteSavedQuestion('${escapeHtml(question._id || '')}')" ${question._id ? '' : 'disabled'} aria-label="Delete question">Delete question</button>
+        </div>
       </details>`;
   }).join('');
 
@@ -305,6 +308,39 @@ function filterQuestionBank() {
       { left: '$$', right: '$$', display: true },
       { left: '$', right: '$', display: false }
     ], throwOnError: false });
+  }
+}
+
+async function deleteSavedQuestion(questionId) {
+  const question = quizQuestions.find(item => String(item._id) === String(questionId));
+  if (!question || !questionId) return;
+  if (!confirm('Delete this question from your question bank? This cannot be undone.')) return;
+
+  try {
+    const response = await fetch(`/api/questions/${encodeURIComponent(questionId)}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ teacherId: localStorage.getItem('userId') })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Could not delete the question.');
+
+    const removedIndex = quizQuestions.indexOf(question);
+    quizQuestions = quizQuestions.filter(item => String(item._id) !== String(questionId));
+    if (typeof selectedQuestions !== 'undefined' && selectedQuestions instanceof Set) {
+      selectedQuestions = new Set([...selectedQuestions]
+        .filter(index => index !== removedIndex)
+        .map(index => index > removedIndex ? index - 1 : index));
+      if (typeof updateQuestionsCount === 'function') updateQuestionsCount();
+    }
+    if (typeof populateQuestionSelectionFilters === 'function') populateQuestionSelectionFilters();
+    if (typeof renderQuestionsList === 'function') renderQuestionsList();
+    updateTeacherStats();
+    updateQuestionsList();
+    renderQuestionBankFilters();
+    filterQuestionBank();
+  } catch (error) {
+    alert(error.message || 'Could not delete the question. Please try again.');
   }
 }
 
@@ -698,40 +734,24 @@ async function loadQuestionsFromDB() {
 //remove question from db and array
 
   async function removeQuestion(index) {
-    if (!confirm('Are you sure you want to remove this question?')) return;
-    
     const question = quizQuestions[index];
-    
-    try {
-        // Delete from MongoDB if it has an _id
-        if (question._id) {
-            const response = await fetch(`/api/questions/${question._id}`, {
-                method: 'DELETE'
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to delete from database');
-            }
-            
-            console.log(`🗑️ Deleted from MongoDB: ${question._id}`);
-        }
-        
-        // Remove from local array
-        quizQuestions.splice(index, 1);
-        updateTeacherStats();
-        updateQuestionsList();
-        
-        alert('✅ Question removed from database!');
-    } catch (error) {
-        console.error('❌ Error:', error);
-        alert('Failed to delete question from database. Removed locally only.');
-        
-        // Fallback: Remove locally
-        quizQuestions.splice(index, 1);
-        updateTeacherStats();
-        updateQuestionsList();
+    if (!question) return;
+    if (String(question._id || '').startsWith('local_')) {
+      if (!confirm('Remove this locally saved question?')) return;
+      quizQuestions.splice(index, 1);
+      if (typeof selectedQuestions !== 'undefined' && selectedQuestions instanceof Set) {
+        selectedQuestions = new Set([...selectedQuestions]
+          .filter(selectedIndex => selectedIndex !== index)
+          .map(selectedIndex => selectedIndex > index ? selectedIndex - 1 : selectedIndex));
+        if (typeof updateQuestionsCount === 'function') updateQuestionsCount();
+      }
+      updateTeacherStats();
+      updateQuestionsList();
+      saveToLocalStorage();
+      return;
     }
-}
+    await deleteSavedQuestion(question._id);
+  }
 
 
 // Database status updater

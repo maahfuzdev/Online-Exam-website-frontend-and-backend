@@ -7,6 +7,7 @@ let pastExams = [];
 let studentResults = [];
 let attemptedExamIds = [];
 let examTimerInterval = null;
+let pendingResultSave = Promise.resolve();
 
 
 
@@ -18,16 +19,13 @@ let examTimerInterval = null;
 
 
 
-        // Initialize student dashboard
-
- async function initStudentDashboard() {
-  await loadStudentExams();   // ✅ MUST
-  await fetchResult();
-   renderStudentResults();
-   localStorage.setItem("absence",attemptedExamIds.length) ;
-
-
-
+        async function initStudentDashboard() {
+  await Promise.all([loadStudentExams(), fetchResult()]);
+  renderActiveExams();
+  await renderPastExams();
+  renderStudentResults();
+  const absentCount = pastExams.filter(exam => !attemptedExamIds.includes(String(exam.examId))).length;
+  document.getElementById("absentExamsCount").textContent = absentCount;
 }
 
 
@@ -35,36 +33,18 @@ let examTimerInterval = null;
 
 
 async function loadStudentExams() {
-
-
   const studentId = localStorage.getItem("userId");
-
-  const res = await fetch(
-    `/assignments/api/exams/student/${studentId}`
-  );
-
+  const res = await fetch(`/assignments/api/exams/student/${studentId}`);
+  if (!res.ok) throw new Error("Failed to load exams");
   const examdata = await res.json();
 
-  let abslen = localStorage.getItem("absence");
-  document.getElementById("absentExamsCount").textContent = examdata.length - abslen;
-
-
+  activeExams = [];
+  pastExams = [];
   examdata.forEach(exam => {
-    if (exam.status === "active") {
-      activeExams.push(exam);
-    } else {
-      pastExams.push(exam);
-    }
+    if (exam.status === "active") activeExams.push(exam);
+    else pastExams.push(exam);
   });
-
-  // ✅ render once
-  renderActiveExams();
-  renderPastExams();
 }
-
-
-
-
 
 // Load question from database for students
     async function loadAssignedQuestions(examId) {
@@ -112,8 +92,7 @@ async function fetchResult() {
 
 
 
-    attemptedExamIds = [...new Set(studentResults.map(r => r.examID))];
-   localStorage.setItem("attendID", JSON.stringify(attemptedExamIds));
+    attemptedExamIds = [...new Set(studentResults.map(result => result.examID?._id || result.examID).filter(Boolean).map(String))];
 
 
     document.getElementById("averageScore").textContent = `${resultData.averagePercentage} %`;
@@ -254,15 +233,13 @@ async function renderPastExams() {
 
   let html = '';
 
-  let AttendId = JSON.parse(localStorage.getItem("attendID")) || [];
-  console.log("attemptedExamIds:", AttendId);
 
   for (const exam of pastExams) {
-    // ✅ ATTENDED
-    if (AttendId.includes(exam.examId)) {
+    const examId = String(exam.examId);
+    if (attemptedExamIds.includes(examId)) {
       const studentId1 = localStorage.getItem("userId");
       const res = await fetch(
-        `/results/api/studentsResult/${studentId1}/examID/${exam.examId}`
+        `/results/api/studentsResult/${studentId1}/examID/${examId}`
       );
       const Atetendedresult = await res.json();
       Atetendedresult.data.forEach(result => {
@@ -524,8 +501,6 @@ function renderStudentResults() {
 
 function startExam(examId, mpq, duration, startTime, teacherID, examTitle)
 {
-let AttendId = JSON.parse(localStorage.getItem("attendID")) || [];
-  console.log("attemptedExamIds:", AttendId);
           let now = new Date();
           localStorage.setItem("currentExamId", examId);
           localStorage.setItem("markPerquestion", mpq);
@@ -545,7 +520,7 @@ let AttendId = JSON.parse(localStorage.getItem("attendID")) || [];
     return;
   }
 
-  else if (AttendId.includes(examId)) {
+  else if (attemptedExamIds.includes(String(examId))) {
     alert("You have already attempted this exam.");
     return;
   }
@@ -772,7 +747,7 @@ function nextQuestionExam() {
         }
 
         // Submit exam
-function submitExam() {
+async function submitExam() {
   let examid = localStorage.getItem("currentExamId");
   const submitted = localStorage.getItem(`submitted_${examid}`);
 
@@ -796,8 +771,20 @@ if (submitted) {
   showExamResults();
 
   // send result to backend
-  sendResultToDB(timeTaken);
-  localStorage.setItem(`submitted_${examid}`, "true");
+  pendingResultSave = sendResultToDB(timeTaken).then(savedResult => {
+    localStorage.setItem(`submitted_${examid}`, "true");
+    const normalizedExamId = String(savedResult.examID?._id || savedResult.examID || examid);
+    if (!attemptedExamIds.includes(normalizedExamId)) attemptedExamIds.push(normalizedExamId);
+    if (!studentResults.some(result => String(result.examID?._id || result.examID) === normalizedExamId)) {
+      studentResults.push(savedResult);
+    }
+    document.getElementById("completedExamsCount").textContent = attemptedExamIds.length;
+  }).catch(error => {
+    console.error("Failed to save exam result:", error);
+    alert("Your answers are shown, but the result could not be saved. Please check your connection and contact your teacher before leaving this page.");
+    throw error;
+  });
+  try { await pendingResultSave; } catch (_) { /* Keep the result view open so the student sees the save warning. */ }
 }
 
         // Show exam results
@@ -915,6 +902,11 @@ const stuResult = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(stuResult)
     });
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok || !payload.success || !payload.result) {
+      throw new Error(payload.message || "Result could not be saved.");
+    }
+    return payload.result;
   }
 
 
@@ -962,10 +954,17 @@ function remainingTime(duration) {
 
 
         // Back to dashboard
-        function backToDashboard() {
+        async function backToDashboard() {
+            try { await pendingResultSave; } catch (_) { /* Refresh from the server even if saving failed. */ }
             document.getElementById('examContainer').classList.add('hidden');
             document.getElementById('resultsContainer').classList.add('hidden');
             document.getElementById('studentDashboard').classList.remove('hidden');
+            await Promise.all([loadStudentExams(), fetchResult()]);
+            renderActiveExams();
+            await renderPastExams();
+            renderStudentResults();
+            const absentCount = pastExams.filter(exam => !attemptedExamIds.includes(String(exam.examId))).length;
+            document.getElementById("absentExamsCount").textContent = absentCount;
         }
 
         // Show landing page

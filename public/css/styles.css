@@ -1644,6 +1644,10 @@
     .bank-choice-list li { display: flex; gap: 8px; padding: 8px; border-radius: 8px; background: #f7faf8; color: #586a62; font-size: 11px; overflow-wrap: anywhere; }
     .bank-choice-list li > span { color: #71817c; font-weight: 900; }
     .bank-choice-list li.bank-correct-choice { background: #e8f5ef; color: #176350; }
+    .bank-question-actions { display: flex; justify-content: flex-end; padding: 0 13px 13px; }
+    .bank-delete-button { min-height: 36px; padding: 7px 12px; border: 1px solid #f0d3d1; border-radius: 9px; background: #fff8f7; color: #b34742; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; }
+    .bank-delete-button:hover:not(:disabled) { border-color: #e6b2af; background: #fff0ee; }
+    .bank-delete-button:disabled { opacity: .5; cursor: not-allowed; }
     .question-bank-empty { padding: 42px 16px; text-align: center; color: #6d7d76; }
     .question-bank-empty > span { display: block; margin-bottom: 10px; color: #95aaa0; font-size: 28px; }
     .question-bank-empty strong { display: block; color: #30463d; font-size: 14px; }
