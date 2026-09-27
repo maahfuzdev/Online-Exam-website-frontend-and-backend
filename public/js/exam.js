@@ -274,6 +274,7 @@ function updateQuestionsCount() {
 // Create and assign exam
 async function createAndAssignExam() {
     const examTitle = document.getElementById('examTitle').value.trim();
+    const subject = document.getElementById('examSubject').value.trim();
     const startTime = document.getElementById('startTime').value;
     const endTime = document.getElementById('endTime').value;
     const totalTime = document.getElementById("totalTime").value;
@@ -281,6 +282,7 @@ async function createAndAssignExam() {
 
     // Validation
     if (!examTitle) return showMessage("Please enter exam title", "error");
+    if (!subject) return showMessage("Please enter the exam subject", "error");
     if (!startTime || !endTime) return showMessage("Please select start and end time", "error");
     if (new Date(startTime) >= new Date(endTime)) return showMessage("End time must be after start time", "error");
     if (selectedStudents.size === 0) return showMessage("Please select at least one student", "error");
@@ -296,6 +298,7 @@ async function createAndAssignExam() {
         studentIDs: Array.from(selectedStudents),
         // MongoDB ObjectId গুলো
         examTitle:examTitle,
+        subject,
         questionIds: Array.from(selectedQuestions).map(index => quizQuestions[index]._id), // Convert indices to ObjectIds
         startTime: new Date(startTime),
         endTime: new Date(endTime),
@@ -499,6 +502,7 @@ window.viewExamDetails = viewExamDetails;
 // Reset exam form
 function resetExamForm() {
     document.getElementById('examTitle').value = '';
+    document.getElementById('examSubject').value = '';
     document.getElementById('startTime').value = '';
     document.getElementById('endTime').value = '';
     document.getElementById('marksPerQuestion').value = '1';

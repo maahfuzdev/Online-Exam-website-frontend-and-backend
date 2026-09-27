@@ -187,6 +187,7 @@ function renderActiveExams() {
 
                     <div class="exam-card active" onclick="startExam('${exam.examId}',${exam.markPerQuestion},${exam.examTime},'${exam.startTime}','${exam.teacherID}','${exam.examTitle}')">
 
+                        ${exam.subject ? `<div class="exam-subject">${exam.subject}</div>` : ''}
                         <div class="exam-title">${exam.examTitle}</div>
 
                         <div class="exam-meta">
@@ -630,6 +631,63 @@ let AttendId = JSON.parse(localStorage.getItem("attendID")) || [];
         }
 
         // Load question
+        function escapeStudentHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[character]);
+        }
+
+        function formatStudentQuestionText(value) {
+            let text = String(value ?? '');
+            // Separate adjacent Bangla and Latin words when the source omitted a space.
+            text = text
+                .replace(/([A-Za-z])([\u0980-\u09FF])/g, '$1 $2')
+                .replace(/([\u0980-\u09FF])([A-Za-z])/g, '$1 $2')
+                .replace(/(\$[^$]+\$|\\\([^)]*\\\)|\\\[[\s\S]*?\\\])(?=[A-Za-z\u0980-\u09FF])/g, '$1 ')
+                .replace(/([A-Za-z\u0980-\u09FF])(?=\$[^$]+\$|\\\([^)]*\\\)|\\\[[\s\S]*?\\\])/g, '$1 ');
+
+            const latexCommand = String.raw`\\[a-zA-Z]+(?:\[[^\]]*\])?(?:\{(?:[^{}]|\{[^{}]*\})*\}){0,2}`;
+            const commandPattern = new RegExp(latexCommand, 'g');
+            let html = '';
+            let lastIndex = 0;
+            let match;
+
+            while ((match = commandPattern.exec(text)) !== null) {
+                html += escapeStudentHtml(text.slice(lastIndex, match.index));
+                const before = text.slice(0, match.index);
+                const inDollarMath = (before.match(/(?<!\\)\$/g) || []).length % 2 === 1;
+                const inParenMath = before.lastIndexOf('\\(') > before.lastIndexOf('\\)');
+                const inBracketMath = before.lastIndexOf('\\[') > before.lastIndexOf('\\]');
+
+                if (inDollarMath || inParenMath || inBracketMath || !window.katex) {
+                    html += escapeStudentHtml(match[0]);
+                } else {
+                    const previousCharacter = text.slice(0, match.index).slice(-1);
+                    const nextCharacter = text.slice(match.index + match[0].length, match.index + match[0].length + 1);
+                    if (/[A-Za-z\u0980-\u09FF]/.test(previousCharacter) && !/\s$/.test(html)) html += ' ';
+                    html += katex.renderToString(match[0], { throwOnError: false, strict: false });
+                    if (/[A-Za-z\u0980-\u09FF]/.test(nextCharacter)) html += ' ';
+                }
+                lastIndex = commandPattern.lastIndex;
+            }
+
+            return html + escapeStudentHtml(text.slice(lastIndex));
+        }
+
+        function renderStudentQuestionText(element, value) {
+            element.innerHTML = formatStudentQuestionText(value);
+            if (window.renderMathInElement) {
+                renderMathInElement(element, {
+                    delimiters: [
+                        { left: '\\(', right: '\\)', display: false },
+                        { left: '\\[', right: '\\]', display: true },
+                        { left: '$', right: '$', display: false }
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
         function loadQuestion(index) {
             // For demo, just update the UI
             document.getElementById('questionNumberDisplay').textContent = `Question ${index + 1}`;
@@ -644,16 +702,16 @@ let AttendId = JSON.parse(localStorage.getItem("attendID")) || [];
          
             const questions = quizQuestions1.map(q => q.question);
 
-            document.getElementById('questionTextDisplay').textContent = questions[index] || "Question not available";
+            renderStudentQuestionText(document.getElementById('questionTextDisplay'), questions[index] || "Question not available");
 
             // Update options 
             const options = quizQuestions1.map(q => q.choices);
 
             if (options[index]) {
-                document.getElementById('optionA').textContent = options[index][0] || "Option A";
-                document.getElementById('optionB').textContent = options[index][1] || "Option B";
-                document.getElementById('optionC').textContent = options[index][2] || "Option C";
-                document.getElementById('optionD').textContent = options[index][3] || "Option D";
+                renderStudentQuestionText(document.getElementById('optionA'), options[index][0] || "Option A");
+                renderStudentQuestionText(document.getElementById('optionB'), options[index][1] || "Option B");
+                renderStudentQuestionText(document.getElementById('optionC'), options[index][2] || "Option C");
+                renderStudentQuestionText(document.getElementById('optionD'), options[index][3] || "Option D");
             }
 
           updateQuestionNavigation(index);
@@ -1000,4 +1058,3 @@ function remainingTime(duration) {
             // Initialize first question
             loadQuestion(0);
         });
-    

@@ -10,6 +10,15 @@
     let sortDirection = 'desc';
     let performanceChart, gradeChart, scoreChart, examChart;
 
+    function subjectFromExamTitle(title) {
+      const value = String(title || '').trim();
+      const subject = value
+        .replace(/[\s_:#-]*(?:(?:exam|quiz|test|assessment|midterm|final(?:[\s_-]*exam)?)[\s_:#-]*)?\d+$/i, '')
+        .replace(/[\s_:#-]+(?:exam|quiz|test|assessment|midterm|final(?:[\s_-]*exam)?)$/i, '')
+        .trim();
+      return subject || '';
+    }
+
     // Initialize the application
     async function init() {
       const teacherName = localStorage.getItem('userName');
@@ -90,6 +99,7 @@
         allExams = (await examsResponse.json()).map(exam => ({
           id: exam._id,
           title: exam.examTitle,
+          subject: exam.subject || subjectFromExamTitle(exam.examTitle),
           date: exam.startTime,
           totalMarks: exam.totalMarks,
           duration: exam.examTime,
@@ -98,7 +108,13 @@
 
         const resultsResponse = await fetch(`/results/api/teacherResults/${teacherId}`);
         if (!resultsResponse.ok) throw new Error('Failed to load results');
-        allResults = await resultsResponse.json();
+        allResults = (await resultsResponse.json()).map(result => {
+          const linkedExam = allExams.find(exam => String(exam.id) === String(result.examId));
+          return {
+            ...result,
+            subject: result.subject || linkedExam?.subject || subjectFromExamTitle(result.examTitle)
+          };
+        });
 
         renderStats();
         populateExamFilter();
@@ -231,20 +247,23 @@
 
     // Apply filters to results
     function applyFilters() {
+      const subjectFilter = document.getElementById('filterSubject').value;
       const examFilter = document.getElementById('filterExam').value;
       const classFilter = document.getElementById('filterClass').value;
       const gradeFilter = document.getElementById('filterGrade').value;
       const searchFilter = document.getElementById('searchStudent').value.toLowerCase();
 
       filteredResults = allResults.filter(result => {
+        const matchesSubject = !subjectFilter || (result.subject || '') === subjectFilter;
         const matchesExam = !examFilter || result.examId == examFilter;
         const matchesClass = !classFilter || result.class == classFilter;
         const matchesGrade = !gradeFilter || result.grade === gradeFilter;
         const matchesSearch = !searchFilter ||
           result.studentName.toLowerCase().includes(searchFilter) ||
-          result.examTitle.toLowerCase().includes(searchFilter);
+          result.examTitle.toLowerCase().includes(searchFilter) ||
+          (result.subject || '').toLowerCase().includes(searchFilter);
 
-        return matchesExam && matchesClass && matchesGrade && matchesSearch;
+        return matchesSubject && matchesExam && matchesClass && matchesGrade && matchesSearch;
       });
     }
 
@@ -261,6 +280,10 @@
           case 'exam':
             aValue = a.examTitle;
             bValue = b.examTitle;
+            break;
+          case 'subject':
+            aValue = a.subject || '';
+            bValue = b.subject || '';
             break;
           case 'score':
             aValue = a.percentage;
@@ -302,7 +325,7 @@
       if (pageResults.length === 0) {
         html = `
           <tr>
-            <td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">
+            <td colspan="8" style="text-align: center; padding: 40px; color: #64748b;">
               No results found. Try changing your filters.
             </td>
           </tr>
@@ -323,6 +346,7 @@
                   </div>
                 </div>
               </td>
+              <td>${result.subject || '—'}</td>
               <td>${result.examTitle}</td>
               <td>
                 <div style="font-weight: 600; color: #1a202c;">${result.score}/${result.total}</div>
@@ -408,13 +432,25 @@
 
     // Populate exam filter
     function populateExamFilter() {
+      const subjectSelect = document.getElementById('filterSubject');
       const examSelect = document.getElementById('filterExam');
+      const selectedSubject = subjectSelect.value;
+      const subjects = [...new Set(allExams.map(exam => exam.subject).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+      subjectSelect.innerHTML = '<option value="">All Subjects</option>';
+      subjects.forEach(subject => {
+        const option = document.createElement('option');
+        option.value = subject;
+        option.textContent = subject;
+        subjectSelect.appendChild(option);
+      });
+      subjectSelect.value = subjects.includes(selectedSubject) ? selectedSubject : '';
+
       examSelect.innerHTML = '<option value="">All Exams</option>';
 
       allExams.forEach(exam => {
         const option = document.createElement('option');
         option.value = exam.id;
-        option.textContent = exam.title;
+        option.textContent = exam.subject ? `${exam.subject} · ${exam.title}` : exam.title;
         examSelect.appendChild(option);
       });
     }
@@ -446,7 +482,7 @@
 
       const html = exams.map(exam => `
         <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
-          <h4 style="font-weight: 600; margin-bottom: 10px; color: #1a202c;">${exam.title}</h4>
+          <h4 style="font-weight: 600; margin-bottom: 10px; color: #1a202c;">${exam.subject ? `<span style="display:inline-block;margin-right:6px;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#4338ca;font-size:11px;vertical-align:middle;">${exam.subject}</span>` : ''}${exam.title}</h4>
           <div style="color: #64748b; font-size: 0.9rem; margin-bottom: 10px;">
             <div>${exam.description || 'No description provided'}</div>
           </div>
@@ -676,7 +712,7 @@
       document.text('Student Results', 14, 16);
       let y = 28;
       results.forEach(result => {
-        const line = `${result.studentName} | ${result.examTitle} | ${result.score}/${result.total} | ${result.percentage}% | ${result.grade} | ${formatDate(result.date)}`;
+        const line = `${result.studentName} | ${result.subject || 'Subject not set'} | ${result.examTitle} | ${result.score}/${result.total} | ${result.percentage}% | ${result.grade} | ${formatDate(result.date)}`;
         const wrappedLines = document.splitTextToSize(line, 180);
         if (y + wrappedLines.length * 7 > 280) {
           document.addPage();
@@ -689,11 +725,12 @@
     }
 
     function exportToExcel() {
-      const columns = ['Student', 'Class', 'Exam', 'Score', 'Total', 'Percentage', 'Grade', 'Date'];
+      const columns = ['Student', 'Class', 'Subject', 'Exam', 'Score', 'Total', 'Percentage', 'Grade', 'Date'];
       const csvCell = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
       const rows = filteredResults.map(result => [
         result.studentName,
         result.class,
+        result.subject,
         result.examTitle,
         result.score,
         result.total,

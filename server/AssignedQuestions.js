@@ -11,6 +11,7 @@ const AssignedSchema = new mongoose.Schema({
  teacherID: { type: mongoose.Schema.Types.ObjectId, ref: 'Auth' }, // Reference to the teacher
    studentIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Auth' }], // Reference to the students
    examTitle: String,
+   subject: { type: String, trim: true, default: "" },
    questionIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Question' }],
    startTime: Date,
   endTime: Date,
@@ -25,7 +26,7 @@ const AssignedQuestion = mongoose.model('AssignedQuestion', AssignedSchema);
 // POST: Assign questions
 router.post("/api/assigned-questions", async (req, res) => {
   try {
-    const { teacherID, studentIDs, examTitle, questionIds, startTime, endTime, examTime, markPerQuestion, totalMarks } = req.body;
+    const { teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, totalMarks } = req.body;
 
  if (!teacherID || !studentIDs || !examTitle || !questionIds || questionIds.length === 0 || !startTime || !endTime || !markPerQuestion || !examTime) {
       return res.status(400).json({ error: "Teacher, Students, Questions, Start Time, End Time and Exam Time are required" });
@@ -33,7 +34,7 @@ router.post("/api/assigned-questions", async (req, res) => {
 
     
     const newAssignment = new AssignedQuestion({
-      teacherID, studentIDs, examTitle, questionIds, startTime, endTime, examTime, markPerQuestion, totalMarks
+      teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, totalMarks
     });
     await newAssignment.save();
 
@@ -151,13 +152,14 @@ router.get("/api/exams/student/:studentId", async (req, res) => {
       studentIDs: studentId
     })
     .populate("questionIds", "_id")
-    .select("examTitle startTime endTime examTime markPerQuestion totalMarks teacherID");
+    .select("examTitle subject startTime endTime examTime markPerQuestion totalMarks teacherID");
 
     // frontend friendly format
     const formatted = exams.map(exam => ({
       examId: exam._id,
       teacherID:exam.teacherID,
       examTitle: exam.examTitle,
+      subject: exam.subject || "",
       questionCount: exam.questionIds.length,
       totalMarks: exam.totalMarks,
       examTime: exam.examTime,

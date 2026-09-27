@@ -926,6 +926,9 @@ body:has(.student-dashboard) {
 .exams-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 16px; }
 .exam-card { border: 1px solid var(--dashboard-border); border-radius: 16px; background: #fff; }
 .exam-card:hover { transform: translateY(-3px); border-color: #9bb5ff; box-shadow: 0 12px 24px rgba(37, 68, 145, .1); }
+.exam-subject { display: inline-flex; margin-bottom: 8px; padding: 4px 9px; border-radius: 999px; background: #edf2ff; color: #3157d5; font-size: .75rem; font-weight: 700; }
+.question-text, .option-text { line-height: 1.75; overflow-wrap: anywhere; }
+.question-text .katex-display, .option-text .katex-display { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
 
 @media (max-width: 760px) {
     .quick-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 24px; }

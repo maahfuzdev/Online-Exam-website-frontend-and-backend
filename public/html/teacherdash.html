@@ -121,6 +121,9 @@
           <!-- Filter Bar -->
           <div class="filter-bar">
             <div class="filter-group">
+              <select class="filter-select" id="filterSubject" onchange="filterResults()">
+                <option value="">All Subjects</option>
+              </select>
               <select class="filter-select" id="filterExam" onchange="filterResults()">
                 <option value="">All Exams</option>
               </select>
@@ -149,6 +152,7 @@
               <thead>
                 <tr>
                   <th onclick="sortTable('student')">Student Name ▾</th>
+                  <th onclick="sortTable('subject')">Subject</th>
                   <th onclick="sortTable('exam')">Exam</th>
                   <th onclick="sortTable('score')">Score</th>
                   <th onclick="sortTable('percentage')">Percentage</th>
@@ -159,7 +163,7 @@
               </thead>
               <tbody id="resultsBody">
                 <tr>
-                  <td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">
+                  <td colspan="8" style="text-align: center; padding: 40px; color: #64748b;">
                     Loading student results...
                   </td>
                 </tr>
