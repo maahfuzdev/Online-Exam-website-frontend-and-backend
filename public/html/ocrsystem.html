@@ -1,323 +1,82 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Questions from PDF</title>
-  <!-- PDF.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  </script>
-  <!-- jsPDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- Font Awesome -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7fc">
+  <title>AI Question Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Custom CSS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <link rel="stylesheet" href="/css/ocr.css">
-  <!-- Custom JS -->
   <script defer src="/js/ocr.js"></script>
 </head>
-
 <body>
-  <div class="container">
-    <div class="header">
-      <h1><i class="fas fa-robot"></i> Create Questions from PDF</h1>
-      <p>Upload PDF → AI generates questions → Download Exam Paper</p>
-    </div>
+  <main class="studio-shell">
+    <header class="topbar">
+      <a class="back-link" href="/html/teacherdash.html"><i class="fa-solid fa-arrow-left"></i><span>Teacher dashboard</span></a>
+      <span class="topbar-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> AI question studio</span>
+    </header>
 
-    <div class="main-content">
-      <!-- Step Indicator -->
-      <div class="step-indicator">
-        <div class="step active" id="step1">
-          <div class="step-circle">1</div>
-          <div style="font-weight: 600;">Upload PDF</div>
-        </div>
-        <div class="step" id="step2">
-          <div class="step-circle">2</div>
-          <div style="font-weight: 600;">Configure</div>
-        </div>
-        <div class="step" id="step3">
-          <div class="step-circle">3</div>
-          <div style="font-weight: 600;">AI Processing</div>
-        </div>
-        <div class="step" id="step4">
-          <div class="step-circle">4</div>
-          <div style="font-weight: 600;">Download</div>
-        </div>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">LESS PREP. BETTER QUESTIONS.</span>
+        <h1>Turn your study material into an exam.</h1>
+        <p>Upload a PDF or image. Review the AI-generated questions, then save them to your question bank or build an exam.</p>
+      </div>
+      <div class="hero-art" aria-hidden="true"><i class="fa-regular fa-file-lines"></i><span><i class="fa-solid fa-sparkles"></i></span></div>
+    </section>
+
+    <section class="workspace">
+      <div class="stepper" aria-label="Question creation steps">
+        <div class="step active" data-step="1"><span>1</span><b>Upload</b></div><i></i>
+        <div class="step" data-step="2"><span>2</span><b>Generate</b></div><i></i>
+        <div class="step" data-step="3"><span>3</span><b>Review & save</b></div>
       </div>
 
-      <!-- Step 1: Upload PDF -->
-      <div id="step1Section" class="form-section">
-        <div class="section-title"><i class="fas fa-file-pdf"></i> Step 1: Upload Your PDF File</div>
-
-        <div class="info-box">
-          <i class="fas fa-info-circle"></i>
-          <strong>Upload a PDF file (book, notes, syllabus)</strong><br>
-          AI will read your PDF and automatically create questions.
+      <section class="panel upload-panel" id="uploadPanel">
+        <div class="panel-heading"><div><span class="eyebrow">STEP 01</span><h2>Add your material</h2><p>PDFs and images work, including scanned pages.</p></div><span class="heading-icon"><i class="fa-regular fa-file-pdf"></i></span></div>
+        <label class="dropzone" id="dropzone" for="sourceFile">
+          <input id="sourceFile" type="file" accept="application/pdf,image/png,image/jpeg,image/webp" hidden>
+          <span class="upload-symbol"><i class="fa-solid fa-arrow-up-from-bracket"></i></span>
+          <strong id="uploadTitle">Choose a PDF or image</strong>
+          <span id="uploadHint">Tap to browse or drag a file here</span>
+          <small>PDF, PNG, JPG, WEBP · Up to 10 MB</small>
+        </label>
+        <div class="file-chip hidden" id="fileChip"><i class="fa-regular fa-file-lines"></i><span id="fileName"></span><button type="button" id="removeFile" aria-label="Remove file"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="form-grid">
+          <label class="field">Subject<input id="subject" type="text" placeholder="e.g. Mathematics" maxlength="80" required></label>
+          <label class="field">Class<input id="className" type="text" placeholder="e.g. Class 9" maxlength="40" required></label>
+          <label class="field">Question language<select id="language"><option value="English">English</option><option value="Bengali">বাংলা</option><option value="Hindi">हिन्दी</option></select></label>
+          <label class="field">Number of questions<select id="count"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></label>
         </div>
+        <div class="notice"><i class="fa-solid fa-shield-halved"></i><span>Your material is processed to create questions. Review every answer before assigning an exam.</span></div>
+        <button type="button" class="primary-button full-button" id="generateButton"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate questions</button>
+        <div class="status-message hidden" id="statusMessage" role="status"></div>
+      </section>
 
-        <div class="form-group">
-          <div class="upload-area" id="uploadArea">
-            <div class="upload-icon">📚</div>
-            <h3 style="margin-bottom: 10px;">Upload PDF File</h3>
-            <p style="color: #64748b; text-align: center; max-width: 350px; margin: 0 auto; font-size: 0.9rem;">
-              Upload your PDF book or notes here<br>
-              Maximum size: 10MB
-            </p>
-          </div>
-          <input type="file" id="pdfInput" accept=".pdf" style="display: none;" onchange="handlePDFUpload(event)">
-        </div>
+      <section class="panel review-panel hidden" id="reviewPanel">
+        <div class="panel-heading review-heading"><div><span class="eyebrow">STEP 02 · REVIEW</span><h2>Check your questions</h2><p>Edit wording or correct answers before saving.</p></div><span class="question-count" id="questionCount">0 questions</span></div>
+        <div class="review-list" id="reviewList"></div>
+        <div class="status-message hidden" id="reviewStatus" role="status"></div>
+        <div class="review-actions"><button type="button" class="secondary-button" id="backButton"><i class="fa-solid fa-arrow-left"></i> Change source</button><button type="button" class="secondary-button save-button" id="saveButton"><i class="fa-regular fa-floppy-disk"></i> Save questions</button><button type="button" class="primary-button" id="createExamButton"><i class="fa-solid fa-circle-plus"></i> Create exam</button></div>
+        <p class="saved-note hidden" id="savedNote"><i class="fa-solid fa-circle-check"></i> Questions saved to your database.</p>
+      </section>
+    </section>
+  </main>
 
-        <div id="pdfPreview" class="hidden">
-          <div class="file-info">
-            <i class="fas fa-file-pdf" style="color: #ef4444; font-size: 2rem;"></i>
-            <div style="flex: 1;">
-              <div style="font-weight: 600;" id="pdfName"></div>
-              <div style="color: #64748b; font-size: 0.9rem; margin-top: 3px;" id="pdfSize"></div>
-              <div style="color: #4285f4; font-size: 0.9rem; margin-top: 3px;" id="pdfPages"></div>
-            </div>
-            <button class="btn btn-warning" onclick="removePDF()" style="padding: 8px 15px;">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="action-buttons">
-          <button class="btn btn-primary" onclick="goToStep(2)" id="nextStep1Btn" disabled>
-            Next <i class="fas fa-arrow-right"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Step 2: Configuration -->
-      <div id="step2Section" class="form-section hidden">
-        <div class="section-title"><i class="fas fa-cog"></i> Step 2: Configure Your Exam</div>
-
-        <div class="info-box">
-          <i class="fas fa-check-circle"></i>
-          <strong>Intelligent Question Generation</strong><br>
-          Creates meaningful questions from PDF content with smart fallback
-        </div>
-
-        <div id="detectedTopics" class="hidden">
-          <label class="form-label">🎯 Detected Topics from PDF</label>
-          <div style="background: #f0f9ff; padding: 12px; border-radius: 10px; margin-bottom: 15px;">
-            <div id="topicsList"></div>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div>
-            <div class="form-group">
-              <label class="form-label">🎯 Number of Questions</label>
-              <div class="count-control">
-                <button onclick="adjustQuestionCount(-5)" style="padding: 10px 15px;">
-                  <i class="fas fa-minus"></i> 5
-                </button>
-                <input type="number" id="questionCount" class="form-input" value="10" min="5" max="20"
-                  style="text-align: center; font-size: 1.1rem;">
-                <button onclick="adjustQuestionCount(5)" style="padding: 10px 15px;">
-                  <i class="fas fa-plus"></i> 5
-                </button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">📊 Question Type</label>
-              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button class="lang-btn active" onclick="selectType('mcq')">
-                  MCQ
-                </button>
-                <button class="lang-btn" onclick="selectType('short')">
-                  Short Answer
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div class="form-group">
-              <label class="form-label">🌐 Question Language</label>
-              <div class="language-selector">
-                <button class="lang-btn active" onclick="selectLanguage('English')">
-                  English
-                </button>
-                <button class="lang-btn" onclick="selectLanguage('Bengali')">
-                  Bengali
-                </button>
-                <button class="lang-btn" onclick="selectLanguage('Hindi')">
-                  Hindi
-                </button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">📝 Exam Title</label>
-              <input type="text" id="examTitle" class="form-input" placeholder="Example: Class 10 Math Final Exam">
-            </div>
-          </div>
-        </div>
-
-        <!-- Extracted Text Preview -->
-        <div id="extractedTextPreview" class="hidden">
-          <div class="form-group">
-            <label class="form-label">📄 Extracted Text from PDF (First 500 characters)</label>
-            <div
-              style="background: #f8fafc; padding: 12px; border-radius: 10px; max-height: 150px; overflow-y: auto; font-size: 0.9rem;">
-              <p id="extractedText" style="white-space: pre-wrap; font-family: monospace;"></p>
-            </div>
-          </div>
-        </div>
-
-        <div class="action-buttons">
-          <button class="btn" onclick="goToStep(1)">
-            <i class="fas fa-arrow-left"></i> Back
-          </button>
-          <button class="btn btn-primary" onclick="startAIProcessing()" id="processBtn">
-            <i class="fas fa-robot"></i> Generate Questions
-          </button>
-        </div>
-      </div>
-
-      <!-- Step 3: AI Processing -->
-      <div id="step3Section" class="form-section hidden">
-        <div class="section-title"><i class="fas fa-brain"></i> Step 3: Generating Questions</div>
-
-        <div style="text-align: center; padding: 25px;">
-          <div class="loading-spinner"></div>
-          <h3 style="margin: 15px 0; color: #1a202c;" id="processingStatus">
-            Analyzing PDF content...
-          </h3>
-
-          <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-          </div>
-
-          <div style="background: #f8fafc; padding: 15px; border-radius: 10px; margin: 15px 0;">
-            <div id="processingSteps">
-              <div style="margin: 8px 0; color: #4a5568;">
-                <i class="fas fa-spinner fa-spin" style="color: #4285f4;"></i>
-                Reading text from PDF...
-              </div>
-              <div style="margin: 8px 0; color: #4a5568;">
-                <i class="far fa-circle"></i>
-                Analyzing content...
-              </div>
-              <div style="margin: 8px 0; color: #4a5568;">
-                <i class="far fa-circle"></i>
-                Creating questions...
-              </div>
-              <div style="margin: 8px 0; color: #4a5568;">
-                <i class="far fa-circle"></i>
-                Formatting exam...
-              </div>
-            </div>
-          </div>
-
-          <div id="fallbackMode" class="fallback-mode hidden">
-            <i class="fas fa-exclamation-triangle"></i>
-            <strong>Using Intelligent Mode:</strong> Generating questions from PDF content...
-          </div>
-
-          <div id="aiResponsePreview" class="hidden">
-            <label class="form-label">🤖 AI Response</label>
-            <div class="ai-response-box" id="aiResponseText">
-              AI response will appear here...
-            </div>
-          </div>
-
-          <div id="errorMessage" class="error-message hidden">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span id="errorText"></span>
-          </div>
-        </div>
-
-        <div class="action-buttons">
-          <button class="btn" onclick="goToStep(2)">
-            <i class="fas fa-arrow-left"></i> Back
-          </button>
-          <button class="btn btn-primary" onclick="goToStep(4)" id="nextStep3Btn" disabled>
-            View Questions <i class="fas fa-arrow-right"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Step 4: Download/View -->
-      <div id="step4Section" class="form-section hidden">
-        <div class="section-title"><i class="fas fa-file-download"></i> Step 4: Download Exam Paper</div>
-
-        <div class="form-group">
-          <label class="form-label">📊 Generated Questions Summary</label>
-          <div style="background: #e8f0fe; padding: 15px; border-radius: 10px;">
-            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-              <div>
-                <div style="color: #64748b; font-size: 0.8rem;">Total Questions</div>
-                <div style="font-size: 1.8rem; font-weight: bold; color: #1a202c;" id="totalQuestionsCount">0</div>
-              </div>
-              <div>
-                <div style="color: #64748b; font-size: 0.8rem;">Total Marks</div>
-                <div style="font-size: 1.8rem; font-weight: bold; color: #1a202c;" id="totalMarksCount">0</div>
-              </div>
-              <div>
-                <div style="color: #64748b; font-size: 0.8rem;">Language</div>
-                <div style="font-size: 1.2rem; font-weight: bold; color: #1a202c;" id="finalLanguage">English</div>
-              </div>
-              <div>
-                <div style="color: #64748b; font-size: 0.8rem;">Question Type</div>
-                <div style="font-size: 1.2rem; font-weight: bold; color: #1a202c;" id="finalType">MCQ</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Questions Preview -->
-        <div class="form-group">
-          <label class="form-label">👁️ Questions Preview</label>
-          <div class="preview-box" id="questionsPreview">
-            <!-- Questions will be loaded here -->
-          </div>
-        </div>
-
-        <!-- Exam Preview -->
-        <div class="form-group">
-          <label class="form-label">📝 Exam Paper Preview</label>
-          <div class="exam-preview" id="examPreview">
-            <div class="preview-header">
-              <h2 id="previewExamTitle">Exam Title</h2>
-              <p id="previewExamDetails">Date: 2024-01-01 | Time: 3 Hours | Total Marks: 100</p>
-            </div>
-            <div id="previewQuestions">
-              <!-- Questions will be inserted here -->
-            </div>
-          </div>
-        </div>
-
-        <div class="export-options">
-          <button class="btn btn-success" onclick="downloadPDF()">
-            <i class="fas fa-file-pdf"></i> Download PDF
-          </button>
-          <button class="btn btn-warning" onclick="downloadAnswerKey()">
-            <i class="fas fa-key"></i> Answer Key
-          </button>
-          <button class="btn btn-primary" onclick="printExam()">
-            <i class="fas fa-print"></i> Print
-          </button>
-        </div>
-
-        <div class="action-buttons">
-          <button class="btn" onclick="goToStep(3)">
-            <i class="fas fa-arrow-left"></i> Back
-          </button>
-          <button class="btn btn-secondary" onclick="createNewExam()">
-            <i class="fas fa-plus"></i> New Exam
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <dialog class="exam-dialog" id="examDialog">
+    <form method="dialog" class="dialog-close-row"><button class="icon-button" value="cancel" aria-label="Close"><i class="fa-solid fa-xmark"></i></button></form>
+    <div class="dialog-heading"><span class="eyebrow">EXAM SETUP</span><h2>Create an exam</h2><p>Choose when students can take this exam.</p></div>
+    <form id="examForm">
+      <label class="field">Exam title<input id="examTitle" required maxlength="100" placeholder="e.g. Chapter 4 Assessment"></label>
+      <div class="form-grid"><label class="field">Starts at<input id="startTime" type="datetime-local" required></label><label class="field">Ends at<input id="endTime" type="datetime-local" required></label><label class="field">Duration (minutes)<input id="duration" type="number" min="1" max="600" value="30" required></label><label class="field">Marks per question<input id="marksPerQuestion" type="number" min="1" max="100" value="1" required></label></div>
+      <div class="student-picker"><div class="picker-title"><div><strong>Assign to students</strong><span id="studentCount">Loading students…</span></div><button type="button" class="text-button" id="toggleStudents">Select all</button></div><div class="student-list" id="studentList"></div></div>
+      <div class="status-message hidden" id="examStatus" role="status"></div>
+      <button class="primary-button full-button" id="publishExam" type="submit"><i class="fa-solid fa-paper-plane"></i> Create and assign exam</button>
+    </form>
+  </dialog>
 </body>
-
 </html>

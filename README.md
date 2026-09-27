@@ -147,8 +147,10 @@ Add:
 ```
 PORT=3000
 MONGODB_URI=mongodb://localhost:27017/online_exam_database
-JWT_SECRET=your_secret_key
+GEMINI_API_KEY=your_google_ai_studio_api_key
 ```
+
+Create a Gemini API key in [Google AI Studio](https://aistudio.google.com/app/apikey). The OCR question generator uses the Gemini 3.5 Flash-Lite API from the server; keep the key in `server/.env` and never add it to frontend code or Git.
 
 ---
 
