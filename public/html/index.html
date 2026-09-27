@@ -99,12 +99,11 @@
         </button>
         <span class="exam-step-connector"></span>
         <button type="button" class="exam-step" data-exam-step="2" onclick="showExamStep(2)">
-          <span class="exam-step-number">02</span><span><strong>Review</strong><small>Check question bank</small></span>
+          <span class="exam-step-number">02</span><span><strong>Review</strong><small>Browse saved questions</small></span>
         </button>
         <span class="exam-step-connector"></span>
         <button type="button" class="exam-step" data-exam-step="3" onclick="showExamStep(3)">
-          <span class="exam-step-number">03</span><span><strong>Schedule</strong><small>Assign to
-              students</small></span>
+          <span class="exam-step-number">03</span><span><strong>Assign</strong><small>Set exam and students</small></span>
         </button>
       </nav>
 
@@ -225,9 +224,7 @@
           </div>
 
           <div class="action-buttons">
-            <button class="btn btn-success" onclick="addQuestion(event)">➕ Add Question</button>
-            <button class="btn btn-warning" onclick="previewQuestion()">👁️ Preview Question</button>
-            <button class="btn btn-danger" onclick="clearForm()">🗑️ Clear Form</button>
+            <button class="btn btn-success" onclick="addQuestion(event)">Add question</button>
           </div>
         </div>
 
@@ -254,49 +251,20 @@
 
       <section class="exam-step-panel hidden" id="examStep2">
         <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-number" style="color: #667eea;" id="totalQuestions">0</div>
-            <div class="stat-label">Total Questions</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number" style="color: #10b981;" id="readyStatus">Not Ready</div>
-            <div class="stat-label">Quiz Status</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-number" style="color: #f59e0b;" id="mathQuestions">0</div>
-            <div class="stat-label">Math Questions</div>
-          </div>
+          <div class="stat-card"><div class="stat-number" id="totalQuestions">0</div><div class="stat-label">Saved questions</div></div>
+          <div class="stat-card"><div class="stat-number" id="readyStatus">Not Ready</div><div class="stat-label">Question status</div></div>
+          <div class="stat-card"><div class="stat-number" id="mathQuestions">0</div><div class="stat-label">Math questions</div></div>
         </div>
-
-        <div class="form-section">
-          <div class="section-title">
-            🎯 Quiz Management
-          </div>
-          <div class="action-buttons">
-            <button class="btn btn-teacher" onclick="publishQuiz()">🚀 Publish Quiz</button>
-            <button class="btn btn-primary" onclick="previewQuiz()">👁️ Preview Quiz</button>
-            <button class="btn btn-warning" onclick="exportQuizPDF()">Download Exam PDF</button>
-            <button class="btn btn-danger" onclick="clearAllQuestions()">🗑️ Clear All</button>
-          </div>
+        <div class="form-section review-intro-card">
+          <div class="section-title">Your question library</div>
+          <p class="bank-section-description">Browse saved questions by subject and class. Choose the questions for this exam in the assignment step.</p>
+          <button type="button" class="question-bank-launch review-bank-launch" onclick="openQuestionBank()">Browse question bank</button>
+          <div class="questions-list hidden" id="questionsList"><p style="text-align:center;color:#64748b;">No questions added yet.</p></div>
         </div>
-
-        <div class="form-section">
-          <div class="section-title">
-            📚 Questions Bank
-          </div>
-          <p class="bank-section-description">Find saved questions by subject and class, then review each question and its choices.</p>
-          <button type="button" class="question-bank-launch review-bank-launch" onclick="openQuestionBank()">
-            <span aria-hidden="true">▤</span> Open question bank
-          </button>
-          <div class="questions-list hidden" id="questionsList">
-            <p style="text-align: center; color: #64748b; font-style: italic;">No questions added yet...</p>
-          </div>
-        </div>
-
         <div class="workflow-actions">
           <button type="button" class="workflow-back" onclick="showExamStep(1)"><span aria-hidden="true">←</span> Back
             to builder</button>
-          <button type="button" class="workflow-next" onclick="showExamStep(3)">Set schedule <span
+          <button type="button" class="workflow-next" onclick="showExamStep(3)">Set up exam <span
               aria-hidden="true">→</span></button>
         </div>
       </section>
@@ -409,64 +377,6 @@
             </div>
           </div>
 
-          <!-- Duration Info Card -->
-          <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4 mb-6">
-            <div class="flex items-start gap-3">
-              <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-              <div>
-                <h4 class="text-sm font-semibold text-gray-800 mb-1">Time Settings Information</h4>
-                <ul class="text-xs text-gray-600 space-y-1">
-                  <li class="flex items-center gap-2">
-                    <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                    <span><span class="font-medium">Duration:</span> Total time students have to complete the
-                      exam</span>
-                  </li>
-                  <li class="flex items-center gap-2">
-                    <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                    <span><span class="font-medium">Start Time:</span> When the exam becomes available</span>
-                  </li>
-                  <li class="flex items-center gap-2">
-                    <div class="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                    <span><span class="font-medium">End Time:</span> When the exam automatically closes</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-
-
-
-
-
-          <style>
-            /* Custom styles for number input arrows */
-            input[type="number"]::-webkit-inner-spin-button,
-            input[type="number"]::-webkit-outer-spin-button {
-              opacity: 1;
-              height: 2em;
-              margin-right: 8px;
-            }
-
-            /* Custom datetime-local styling */
-            input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-              background: transparent;
-              bottom: 0;
-              color: transparent;
-              cursor: pointer;
-              height: auto;
-              left: 0;
-              position: absolute;
-              right: 0;
-              top: 0;
-              width: auto;
-            }
-          </style>
           <!-- Step 2 -->
           <h3
             style="font-size:21px; font-weight:700; color:#374151; margin:35px 0 20px; display:flex; gap:12px; align-items:center;">
@@ -475,85 +385,29 @@
             Select Students & Questions
           </h3>
 
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px;">
-
-            <!-- Students -->
-            <div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <label style="font-size:14px; font-weight:600; color:#4b5563;">Students</label>
-                <div style="display:flex; gap:10px;">
-                  <button onclick="selectAllStudents()"
-                    style="padding:6px 12px; border-radius:6px; background:#f3f4f6;">Select
-                    All</button>
-                  <button onclick="deselectAllStudents()"
-                    style="padding:6px 12px; border-radius:6px; background:#f3f4f6;">Deselect</button>
+          <div class="assignment-pickers">
+            <details class="assignment-picker">
+              <summary><span>Choose students</span><span class="picker-count" id="studentPickerCount">0 selected</span></summary>
+              <div class="picker-content">
+                <div class="picker-tools"><span>Students</span><button type="button" class="picker-select-all" onclick="selectAllStudents()">Select all</button></div>
+                <div id="studentsContainer" class="assignment-list"><div class="assignment-loading">Loading students…</div></div>
+                <div class="picker-total"><span id="selectedStudentsCount">0 selected</span><span id="totalStudentsCount">Total: 0</span></div>
+              </div>
+            </details>
+            <details class="assignment-picker">
+              <summary><span>Choose questions</span><span class="picker-count" id="questionPickerCount">0 selected</span></summary>
+              <div class="picker-content">
+                <div class="picker-tools"><span>Questions</span><button type="button" class="picker-select-all" onclick="selectAllQuestions()">Select all</button></div>
+                <div class="question-selection-filters">
+                  <select id="scheduleQuestionSubject" aria-label="Filter questions by subject" onchange="renderQuestionsList()"><option value="">All subjects</option></select>
+                  <select id="scheduleQuestionClass" aria-label="Filter questions by class" onchange="renderQuestionsList()"><option value="">All classes</option></select>
                 </div>
+                <div id="questionsContainer" class="assignment-list"><div class="assignment-loading">Loading questions…</div></div>
+                <div class="picker-total"><span id="selectedQuestionsCount">0 selected</span><span id="totalQuestionsCount">Total: 0</span></div>
               </div>
-
-              <div id="studentsContainer" style="
-                          height: 300px; border:1px solid #d1d5db;
-                          border-radius:12px; padding:10px; overflow-y:auto; background:#f9fafb;
-                      ">
-                <div style="text-align:center; padding:40px; color:#9ca3af;">Loading students...</div>
-              </div>
-
-              <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:13px; color:#6b7280;">
-                <span id="selectedStudentsCount">0 selected</span>
-                <span id="totalStudentsCount">Total: 0</span>
-              </div>
-            </div>
-
-            <!-- Questions -->
-            <div>
-              <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <label style="font-size:14px; font-weight:600; color:#4b5563;">Questions</label>
-                <div style="display:flex; gap:10px;">
-                  <button onclick="selectAllQuestions()"
-                    style="padding:6px 12px; border-radius:6px; background:#f3f4f6;">Select
-                    All</button>
-                  <button onclick="deselectAllQuestions()"
-                    style="padding:6px 12px; border-radius:6px; background:#f3f4f6;">Deselect</button>
-                </div>
-              </div>
-
-              <div class="question-selection-filters">
-                <select id="scheduleQuestionSubject" aria-label="Filter questions by subject" onchange="renderQuestionsList()"><option value="">All subjects</option></select>
-                <select id="scheduleQuestionClass" aria-label="Filter questions by class" onchange="renderQuestionsList()"><option value="">All classes</option></select>
-              </div>
-
-              <div id="questionsContainer" style="
-                          height: 300px; border:1px solid #d1d5db;
-                          border-radius:12px; padding:10px; overflow-y:auto; background:#f9fafb;
-                      ">
-                <div style="text-align:center; padding:40px; color:#9ca3af;">Loading questions...</div>
-              </div>
-
-              <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:13px; color:#6b7280;">
-                <span id="selectedQuestionsCount">0 selected</span>
-                <span id="totalQuestionsCount">Total: 0</span>
-              </div>
-            </div>
+            </details>
           </div>
-
-
-          <!-- Step 3 -->
-          <h3
-            style="font-size:21px; font-weight:700; color:#374151; margin:35px 0 25px; display:flex; gap:12px; align-items:center;">
-            <span
-              style="background:#8b5cf6; color:white; width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center;">3</span>
-            Create & Assign Exam
-          </h3>
-
-          <button onclick="createAndAssignExam()" style="
-                  width:100%; padding:18px; border:none; border-radius:14px;
-                  background: linear-gradient(135deg,#3b82f6,#1d4ed8);
-                  color:white; font-size:16px; font-weight:600;
-                  cursor:pointer; transition:0.3s; display:flex; justify-content:center; gap:12px;
-              "
-            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(59,130,246,0.35)'"
-            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-            📤 Create Exam & Assign
-          </button>
+          <button class="create-assignment-button" onclick="createAndAssignExam()">Create exam and assign</button>
 
           <p style="text-align:center; margin-top:12px; font-size:14px; color:#6b7280;">Students will immediately
             receive
@@ -562,68 +416,11 @@
         </div>
 
 
-        <!-- Created Exams List -->
-        <div style="
-              background:white; padding:30px; border-radius:20px;
-              border:1px solid #ececec; box-shadow:0 20px 60px rgba(0,0,0,0.06);
-          ">
-          <h3 style="font-size:22px; font-weight:700; color:#374151; margin-bottom:20px; display:flex; gap:10px;">
-            📝 Created Exams
-          </h3>
+        <details class="created-exams-panel">
+          <summary>Previously created exams <span>View list</span></summary>
+          <div id="examsList" style="min-height:90px;"><div style="text-align:center;padding:28px;color:#9ca3af;">No exams created yet.</div></div>
+        </details>
 
-          <div id="examsList" style="min-height:140px;">
-            <div style="text-align:center; padding:40px; color:#9ca3af;">
-              <div
-                style="width:60px; height:60px; border:2px dashed #d1d5db; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:24px;">
-                📝</div>
-              No exams created yet.
-            </div>
-          </div>
-        </div>
-
-
-
-
-
-
-
-
-
-
-        <!-- Teacher Dashboard এর যেকোনো স্থানে যোগ করুন -->
-
-
-        <div
-          style="background: #f8f9fa; padding: 16px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
-          <h3 style="font-weight: bold; font-size: 18px; margin-bottom: 10px; color: #2d3748;">📊 Database Status</h3>
-          <div id="dbStatus" style="display: flex; align-items: center; margin-bottom: 8px;">
-            <span style="animation: spin 1s linear infinite; margin-right: 8px;">🔄</span>
-            <span>Connecting to database...</span>
-          </div>
-          <div style="font-size: 14px; color: #4a5568;">
-            Questions in DB: <span id="dbQuestionCount" style="font-weight: bold;">0</span>
-          </div>
-        </div>
-
-        <style>
-          @keyframes spin {
-            0% {
-              transform: rotate(0deg);
-            }
-
-            100% {
-              transform: rotate(360deg);
-            }
-          }
-
-          .connected {
-            color: #059669 !important;
-          }
-
-          .disconnected {
-            color: #dc2626 !important;
-          }
-        </style>
         <div class="workflow-actions">
           <button type="button" class="workflow-back" onclick="showExamStep(2)"><span aria-hidden="true">←</span> Back
             to review</button>

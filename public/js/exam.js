@@ -270,6 +270,8 @@ function deselectAllQuestions() {
 function updateStudentsCount() {
     const selectedCount = document.getElementById('selectedStudentsCount');
     const totalCount = document.getElementById('totalStudentsCount');
+    const pickerCount = document.getElementById('studentPickerCount');
+    if (pickerCount) pickerCount.textContent = `${selectedStudents.size} selected`;
     
     if (selectedCount) {
         selectedCount.textContent = `${selectedStudents.size} students selected`;
@@ -286,6 +288,8 @@ function updateStudentsCount() {
 function updateQuestionsCount() {
     const selectedCount = document.getElementById('selectedQuestionsCount');
     const totalCount = document.getElementById('totalQuestionsCount');
+    const pickerCount = document.getElementById('questionPickerCount');
+    if (pickerCount) pickerCount.textContent = `${selectedQuestions.size} selected`;
     
     if (selectedCount) {
         selectedCount.textContent = `${selectedQuestions.size} questions selected`;

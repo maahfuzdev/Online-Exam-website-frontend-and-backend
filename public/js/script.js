@@ -543,9 +543,12 @@ async function loadQuestionsFromDB() {
       //count total questions in DB
         const count = questions.length;
         
-        document.getElementById('dbQuestionCount').textContent = count;
-        document.getElementById('dbQuestionCount').style.color = '#059669';
-        document.getElementById('dbQuestionCount').style.fontWeight = 'bold';
+        const dbQuestionCount = document.getElementById('dbQuestionCount');
+        if (dbQuestionCount) {
+            dbQuestionCount.textContent = count;
+            dbQuestionCount.style.color = '#059669';
+            dbQuestionCount.style.fontWeight = 'bold';
+        }
         
         // Convert DB format to app format
         quizQuestions = questions.map(q => ({

@@ -1589,3 +1589,73 @@
       .bank-question-meta { grid-column: 2; white-space: normal; }
       .bank-choice-list { grid-template-columns: 1fr; }
     }
+
+/* Compact, mobile-first manual exam assignment flow */
+#examStep3 > div[style*="background: white"] {
+  padding: clamp(15px, 3vw, 28px) !important;
+  margin-bottom: 18px !important;
+}
+#examStep3 > div:first-child {
+  padding: clamp(17px, 3vw, 26px) !important;
+  margin-bottom: 16px !important;
+}
+#examStep3 > div:first-child h2 { font-size: clamp(20px, 4vw, 26px) !important; }
+#examStep3 > div:first-child p { margin: 0; font-size: 13px !important; }
+#examStep3 .assignment-pickers { display: grid; gap: 10px; margin-top: 18px; }
+.assignment-picker, .created-exams-panel {
+  overflow: hidden;
+  border: 1px solid #dfe9e4;
+  border-radius: 9px;
+  background: #fff;
+}
+.assignment-picker > summary, .created-exams-panel > summary {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 15px;
+  color: #29443a;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+}
+.assignment-picker > summary::-webkit-details-marker,
+.created-exams-panel > summary::-webkit-details-marker { display: none; }
+.assignment-picker > summary::after { content: "+"; color: #0b826d; font-size: 20px; line-height: 1; }
+.assignment-picker[open] > summary::after { content: "−"; }
+.picker-count { margin-left: auto; color: #0b826d; font-size: 11px; font-weight: 700; }
+.picker-content { padding: 0 13px 13px; }
+.picker-tools, .picker-total { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 5px 0 9px; color: #63756d; font-size: 11px; }
+.picker-tools > span { font-weight: 700; }
+.picker-select-all { min-height: 36px; padding: 7px 11px; border: 1px solid #dce8e2; border-radius: 7px; background: #f8fbf9; color: #176653; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.assignment-list { height: min(260px, 34vh); overflow: auto; padding: 8px; border: 1px solid #e1eae5; border-radius: 7px; background: #fbfcfb; }
+.assignment-loading { padding: 30px 12px; color: #84938d; text-align: center; font-size: 12px; }
+.picker-total { margin: 9px 0 0; }
+.picker-total span:first-child { color: #0b826d; font-weight: 700; }
+#examStep3 .question-selection-filters { grid-template-columns: 1fr 1fr; margin-bottom: 8px; }
+#examStep3 .question-selection-filters select { min-height: 42px; font-size: 12px; }
+#createAssignmentButton, #examStep3 button[onclick="createAndAssignExam()"] { width: 100%; }
+#examStep3 .create-assignment-button {
+  display: flex; width: 100%; min-height: 50px; align-items: center; justify-content: center;
+  margin-top: 10px; padding: 13px 18px; border: 0; border-radius: 8px;
+  background: #0b826d; color: #fff; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer;
+}
+#examStep3 .create-assignment-button:hover { background: #086f5e; }
+#examStep3 .created-exams-panel { margin: 16px 0 0; }
+.created-exams-panel > summary { min-height: 48px; }
+.created-exams-panel > summary span { color: #82918b; font-size: 10px; font-weight: 600; }
+.created-exams-panel[open] > div { padding: 0 14px 12px; }
+#examStep2 .review-intro-card { padding: clamp(16px, 3vw, 24px); }
+#examStep2 .review-bank-launch { min-height: 44px; }
+
+@media (max-width: 700px) {
+  #examStep3 > div[style*="background: white"] { padding: 15px !important; }
+  #examStep3 .grid { grid-template-columns: 1fr !important; }
+  #examStep3 input { min-height: 46px; font-size: 16px; }
+  #examStep3 .assignment-list { height: min(250px, 36vh); }
+  #examStep3 h3 { margin-top: 22px !important; font-size: 17px !important; }
+  #examStep3 .create-assignment-button { position: sticky; bottom: 8px; z-index: 2; box-shadow: 0 5px 18px rgba(11, 130, 109, .22); }
+  #examStep2 .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
