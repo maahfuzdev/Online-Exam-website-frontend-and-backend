@@ -1144,3 +1144,84 @@ body:has(.student-dashboard) {
 .result-pending-card { padding: 22px; border: 1px solid #dce4ff; border-radius: 18px; background: linear-gradient(145deg, #f5f7ff, #fff); }
 .result-pending-card .exam-title { margin-bottom: 12px; color: #34447f; font-weight: 800; }
 .result-pending-card p { margin: 13px 0 0; color: #697694; font-size: 13px; line-height: 1.6; }
+
+/* Student result cards and full question review */
+.student-results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; }
+.student-result-card { position: relative; overflow: hidden; min-width: 0; padding: 20px; border: 1px solid #e2e8f0; border-radius: 17px; background: #fff; box-shadow: 0 5px 18px rgba(20, 37, 75, .055); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.student-result-card:hover { transform: translateY(-3px); border-color: #bdcaf0; box-shadow: 0 12px 28px rgba(20, 37, 75, .1); }
+.student-result-card::before { position: absolute; inset: 0 0 auto; height: 3px; background: linear-gradient(90deg, #5678e7, #8c70e8); content: ""; }
+.student-result-card.excellent::before { background: linear-gradient(90deg, #0e9f6e, #42c996); }
+.student-result-card.practice::before { background: linear-gradient(90deg, #ea695b, #f1a35c); }
+.student-result-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.student-result-icon { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 13px; background: #eef2ff; color: #3c58bc; font-size: 1.1rem; }
+.student-result-percent { padding: 6px 10px; border-radius: 999px; background: #eef3ff; color: #3456c7; font-size: .82rem; font-weight: 800; }
+.student-result-card.excellent .student-result-percent { background: #e9f9f1; color: #087443; }
+.student-result-card.practice .student-result-percent { background: #fff2e9; color: #b64d1f; }
+.student-result-card h3 { margin: 0; color: #182847; font-size: 1.08rem; line-height: 1.4; overflow-wrap: anywhere; }
+.student-result-date { display: flex; align-items: center; gap: 7px; margin: 7px 0 16px; color: #718096; font-size: .8rem; }
+.student-result-score { display: flex; align-items: baseline; justify-content: space-between; padding: 13px 0; border-top: 1px solid #edf0f5; border-bottom: 1px solid #edf0f5; color: #718096; font-size: .82rem; }
+.student-result-score strong { color: #263f8f; font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.student-result-score small { color: #8090a8; font-size: .9rem; font-weight: 650; }
+.student-result-counts { display: flex; justify-content: space-between; gap: 8px; padding: 14px 0; color: #718096; font-size: .73rem; }
+.student-result-counts span { display: grid; gap: 3px; }
+.student-result-counts b { color: #27364e; font-size: 1rem; }
+.student-review-button { display: inline-flex; width: 100%; min-height: 44px; align-items: center; justify-content: center; gap: 9px; padding: 10px 13px; border: 1px solid #d8e1f5; border-radius: 10px; background: #f5f7ff; color: #3153bd; font: inherit; font-size: .84rem; font-weight: 750; cursor: pointer; transition: background .16s ease, border-color .16s ease; }
+.student-review-button:hover { border-color: #b9c8ee; background: #eaf0ff; }
+.student-review-button .fa-arrow-right { margin-left: auto; }
+.past-result-review { width: auto; min-width: 170px; margin-top: 14px; }
+.student-empty-state { display: grid; justify-items: center; padding: 44px 20px; border: 1px dashed #cbd5e1; border-radius: 16px; background: #f9fbff; text-align: center; }
+.student-empty-state > span { display: grid; width: 52px; height: 52px; margin-bottom: 12px; place-items: center; border-radius: 16px; background: #eaf0ff; color: #3456c7; font-size: 1.25rem; }
+.student-empty-state h3 { margin: 0 0 6px; color: #203050; font-size: 1.05rem; }
+.student-empty-state p { max-width: 480px; margin: 0; color: #64748b; font-size: .88rem; line-height: 1.6; }
+.student-review-page { display: grid; gap: 16px; }
+.student-review-back { justify-self: start; display: inline-flex; min-height: 42px; align-items: center; gap: 9px; padding: 9px 13px; border: 1px solid #dfe6f0; border-radius: 10px; background: #fff; color: #40516c; font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer; }
+.student-review-back:hover { border-color: #aebfea; background: #f8faff; color: #2d4aa5; }
+.student-review-hero { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: clamp(18px, 4vw, 28px); border-radius: 17px; background: linear-gradient(120deg, #172b59, #3558b9); color: #fff; box-shadow: 0 10px 26px rgba(31, 57, 127, .16); }
+.student-review-kicker { display: inline-flex; align-items: center; gap: 8px; color: #dbe6ff; font-size: .76rem; font-weight: 750; letter-spacing: .07em; text-transform: uppercase; }
+.student-review-hero h3 { margin: 10px 0 5px; font-size: clamp(1.25rem, 3.2vw, 1.8rem); line-height: 1.25; overflow-wrap: anywhere; }
+.student-review-hero p { margin: 0; color: #c4d2f2; font-size: .84rem; }
+.student-review-score { display: grid; flex: 0 0 auto; justify-items: end; gap: 4px; }
+.student-review-score strong { font-size: clamp(1.35rem, 4vw, 2rem); font-variant-numeric: tabular-nums; }
+.student-review-score small { color: #ccdaf8; font-size: .9rem; }
+.student-review-score span { color: #dbe6ff; font-size: .78rem; }
+.student-review-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.student-review-summary span { display: flex; align-items: center; gap: 9px; min-width: 0; padding: 13px 15px; border: 1px solid #e5eaf2; border-radius: 12px; background: #fff; color: #64748b; font-size: .82rem; }
+.student-review-summary span:first-child i { color: #0b9661; }
+.student-review-summary span:nth-child(2) i { color: #d24d4d; }
+.student-review-summary span:nth-child(3) i { color: #718096; }
+.student-review-summary b { color: #203050; font-size: 1.05rem; }
+.student-review-list { display: grid; gap: 13px; }
+.student-review-question { min-width: 0; padding: clamp(15px, 3vw, 22px); border: 1px solid #e2e8f0; border-left: 4px solid #a7b3c6; border-radius: 14px; background: #fff; box-shadow: 0 4px 14px rgba(15, 23, 42, .035); }
+.student-review-question.is-correct { border-left-color: #18a66f; }
+.student-review-question.is-wrong { border-left-color: #dc5c5c; }
+.student-review-question.is-skipped { border-left-color: #e1a445; }
+.student-review-question > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.student-review-number { color: #253653; font-size: .9rem; font-weight: 800; }
+.student-review-status { display: inline-flex; align-items: center; gap: 6px; color: #64748b; font-size: .76rem; font-weight: 750; }
+.is-correct .student-review-status { color: #087443; }
+.is-wrong .student-review-status { color: #bd3636; }
+.is-skipped .student-review-status { color: #a16613; }
+.student-review-question-text { margin: 16px 0; color: #1e2f4c; font-size: 1.05rem; font-weight: 650; line-height: 1.75; overflow-wrap: anywhere; }
+.student-review-options { display: grid; gap: 8px; }
+.student-review-option { display: grid; grid-template-columns: 31px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-width: 0; padding: 10px 12px; border: 1px solid #e5eaf1; border-radius: 10px; background: #fbfcfe; color: #394960; }
+.student-review-option-letter { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid #dce3ee; border-radius: 8px; background: #fff; color: #697992; font-size: .78rem; font-weight: 800; }
+.student-review-option-text { min-width: 0; line-height: 1.65; overflow-wrap: anywhere; }
+.student-review-option-mark { color: #748197; font-size: .7rem; font-weight: 750; white-space: nowrap; }
+.student-review-option.option-correct { border-color: #a8e3c6; background: #effbf5; color: #145b3b; }
+.student-review-option.option-correct .student-review-option-letter { border-color: #7bcea5; background: #daf5e7; color: #087443; }
+.student-review-option.option-correct .student-review-option-mark { color: #087443; }
+.student-review-option.option-selected-wrong { border-color: #f0b4b4; background: #fff5f4; color: #8d3333; }
+.student-review-option.option-selected-wrong .student-review-option-letter { border-color: #e5a2a2; background: #ffe6e4; color: #b63838; }
+.student-review-question > footer { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 13px; padding-top: 12px; border-top: 1px solid #edf0f5; color: #5f6d82; font-size: .78rem; }
+.student-review-question > footer strong { color: #334155; }
+.student-review-question .katex-display { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+@media (max-width: 600px) {
+  .student-review-hero { align-items: flex-start; flex-direction: column; }
+  .student-review-score { justify-items: start; }
+  .student-review-summary { gap: 7px; }
+  .student-review-summary span { justify-content: center; flex-wrap: wrap; gap: 5px; padding: 10px 6px; font-size: .68rem; }
+  .student-review-option { grid-template-columns: 29px minmax(0, 1fr); gap: 8px; }
+  .student-review-option-mark { grid-column: 2; white-space: normal; }
+  .student-review-question > footer { flex-direction: column; gap: 7px; }
+  .past-result-review { width: 100%; }
+}

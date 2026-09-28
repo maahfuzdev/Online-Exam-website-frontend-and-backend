@@ -309,6 +309,7 @@ async function renderPastExams() {
                 </span>
               </div>
 
+              <button class="student-review-button past-result-review" type="button" onclick="event.stopPropagation(); switchTab('results'); openResultReview('${examId}')"><i class="fas fa-list-check"></i> Review answers</button>
 
             </div>
 
@@ -386,107 +387,67 @@ async function renderPastExams() {
 
       // Render student results
 function renderStudentResults() {
-    const container = document.getElementById('detailedResultsList');
-    if (!container) return;
+  const container = document.getElementById('detailedResultsList');
+  if (!container) return;
+  if (!studentResults.length) {
+    container.innerHTML = `<div class="student-empty-state"><span><i class="fas fa-chart-line"></i></span><h3>No results yet</h3><p>When you complete an exam and its result is released, your score and answer review will appear here.</p></div>`;
+    return;
+  }
 
-    // --- Helper function for color/status classes (Tailwind-like) ---
-    const getStatusClasses = (percentage) => {
-        if (percentage >= 80) {
-            // Excellent
-            return {
-                border: 'border-l-4 border-emerald-500',
-                bg: 'bg-emerald-50',
-                percentBg: 'bg-gradient-to-r from-emerald-500 to-teal-600',
-                percentText: 'text-white shadow-md'
-            };
-        } else if (percentage >= 60) {
-            // Good
-            return {
-                border: 'border-l-4 border-yellow-500',
-                bg: 'bg-yellow-50',
-                percentBg: 'bg-gradient-to-r from-yellow-500 to-orange-500',
-                percentText: 'text-white shadow-md'
-            };
-        } else {
-            // Needs Improvement
-            return {
-                border: 'border-l-4 border-red-500',
-                bg: 'bg-red-50',
-                percentBg: 'bg-gradient-to-r from-red-500 to-pink-600',
-                percentText: 'text-white shadow-md'
-            };
-        }
-    };
+  const sortedResults = [...studentResults].sort((a, b) => new Date(b.date || b.generatedAt || 0) - new Date(a.date || a.generatedAt || 0));
+  container.innerHTML = `<div class="student-results-grid">${sortedResults.map((result, index) => {
+    const score = Number(result.score || 0);
+    const total = Number(result.totalMarks || 0);
+    const percentage = Number(result.percentage || 0);
+    const tone = percentage >= 80 ? 'excellent' : percentage >= 50 ? 'steady' : 'practice';
+    const id = escapeStudentHtml(result.examID?._id || result.examID || `result-${index}`);
+    return `<article class="student-result-card ${tone}">
+      <div class="student-result-card-head"><span class="student-result-icon"><i class="fas fa-file-circle-check"></i></span><span class="student-result-percent">${percentage.toFixed(1)}%</span></div>
+      <h3>${escapeStudentHtml(result.examTitle || 'Exam result')}</h3>
+      <p class="student-result-date"><i class="far fa-calendar"></i> ${escapeStudentHtml(formatDate(new Date(result.date || result.generatedAt || Date.now())))}</p>
+      <div class="student-result-score"><span>Score</span><strong>${score.toFixed(2)} <small>/ ${total.toFixed(2)}</small></strong></div>
+      <div class="student-result-counts"><span><b>${Number(result.correctAnswers || 0)}</b> Correct</span><span><b>${Number(result.wrongAnswers || 0)}</b> Wrong</span><span><b>${Number(result.skippedQuestion || 0)}</b> Skipped</span></div>
+      <button class="student-review-button" type="button" onclick="openResultReview('${id}')"><i class="fas fa-list-check"></i> Review answers <i class="fas fa-arrow-right"></i></button>
+    </article>`;
+  }).join('')}</div>`;
+}
 
-    if (studentResults.length === 0) {
-        container.innerHTML = `
-            <div class="flex flex-col items-center justify-center py-16 px-6 bg-gradient-to-br from-indigo-50 to-purple-100 rounded-2xl border border-indigo-200 text-center shadow-lg">
-                <div class="w-16 h-16 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full flex items-center justify-center mb-4 shadow-xl">
-                    <i class="fas fa-chart-bar text-2xl text-white"></i>
-                </div>
-                <h3 class="text-xl font-bold text-gray-700 mb-2">No Results Available</h3>
-                <p class="text-gray-500 max-w-md">Complete some exams to see your detailed results and performance analysis here.</p>
-            </div>
-        `;
-        return;
-    }
+function openResultReview(examId) {
+  const result = studentResults.find(item => String(item.examID?._id || item.examID) === String(examId));
+  const container = document.getElementById('detailedResultsList');
+  if (!result || !container) return;
+  const review = Array.isArray(result.answerReview) ? result.answerReview : [];
+  const questionsHtml = review.length ? review.map((item, index) => {
+    const options = Array.isArray(item.options) ? item.options : [];
+    const correct = Number(item.correctOption);
+    const selected = item.selectedOption === null || item.selectedOption === undefined ? null : Number(item.selectedOption);
+    const answerLabel = value => Number.isInteger(value) && value >= 0 && value < options.length ? String.fromCharCode(65 + value) : '';
+    return `<article class="student-review-question ${item.isCorrect ? 'is-correct' : selected === null ? 'is-skipped' : 'is-wrong'}">
+      <header><span class="student-review-number">Question ${index + 1}</span><span class="student-review-status"><i class="fas ${item.isCorrect ? 'fa-circle-check' : selected === null ? 'fa-circle-minus' : 'fa-circle-xmark'}"></i>${item.isCorrect ? 'Correct' : selected === null ? 'Skipped' : 'Incorrect'}</span></header>
+      <div class="student-review-question-text review-math"></div>
+      <div class="student-review-options">${options.map((option, optionIndex) => {
+        const isCorrect = optionIndex === correct;
+        const isSelectedWrong = optionIndex === selected && !isCorrect;
+        return `<div class="student-review-option ${isCorrect ? 'option-correct' : ''} ${isSelectedWrong ? 'option-selected-wrong' : ''}"><span class="student-review-option-letter">${String.fromCharCode(65 + optionIndex)}</span><span class="student-review-option-text review-math"></span><span class="student-review-option-mark">${isCorrect ? '<i class="fas fa-check"></i> Correct answer' : isSelectedWrong ? '<i class="fas fa-user-check"></i> Your answer' : ''}</span></div>`;
+      }).join('')}</div>
+      <footer><span><strong>Your answer:</strong> ${selected === null ? 'Not answered' : `Option ${answerLabel(selected)}`}</span><span><strong>Correct answer:</strong> Option ${answerLabel(correct)}</span></footer>
+    </article>`;
+  }).join('') : `<div class="student-empty-state"><span><i class="fas fa-circle-info"></i></span><h3>Answer review unavailable</h3><p>This result was saved before question-by-question answer review became available.</p></div>`;
 
-    let html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">'; // Modern grid layout
-
-    studentResults.forEach(result => {
-        const status = getStatusClasses(result.percentage);
-
-        // Score and Time formatting (Assuming you have a formatTime helper)
-        const scoreDisplay = `${result.score}/${result.totalMarks}`;
-        const timeDisplay = formatTime(result.timeTaken);
-
-        html += `
-            <div class="result-card p-6 rounded-2xl shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl ${status.bg} border border-gray-100 ${status.border} ">
-
-                <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-lg font-extrabold text-gray-800">${result.examTitle}</h3>
-                    <span class="text-sm font-bold px-4 py-1.5 rounded-full ${status.percentBg} ${status.percentText}">
-                        ${result.percentage}%
-                    </span>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 border-b border-t border-gray-200 py-4 mb-4">
-                    <div class="flex flex-col items-start">
-                        <div class="text-sm font-semibold text-gray-500 flex items-center mb-1">
-                            <i class="fas fa-star text-amber-500 mr-2"></i> Score
-                        </div>
-                        <div class="text-2xl font-black text-indigo-600">${scoreDisplay}</div>
-                    </div>
-                    <div class="flex flex-col items-start border-l border-gray-200 pl-4">
-                        <div class="text-sm font-semibold text-gray-500 flex items-center mb-1">
-                            <i class="fas fa-clock text-blue-500 mr-2"></i> Time Taken
-                        </div>
-                        <div class="text-2xl font-black text-indigo-600">${timeDisplay}</div>
-                    </div>
-                </div>
-
-                <div class="flex justify-around items-center mt-5">
-                    <div class="text-center">
-                        <div class="text-xl font-extrabold text-emerald-600">${result.correctAnswers}</div>
-                        <div class="text-xs font-medium text-gray-500">Correct</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-xl font-extrabold text-red-600">${result.wrongAnswers}</div>
-                        <div class="text-xs font-medium text-gray-500">Wrong</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-xl font-extrabold text-indigo-600">${result.skippedQuestion}</div>
-                        <div class="text-xs font-medium text-gray-500">Skipped</div>
-                    </div>
-                </div>
-
-
-            </div>
-        `;
+  container.innerHTML = `<div class="student-review-page">
+    <button type="button" class="student-review-back" onclick="renderStudentResults()"><i class="fas fa-arrow-left"></i> All results</button>
+    <section class="student-review-hero"><div><span class="student-review-kicker"><i class="fas fa-book-open"></i> Answer review</span><h3>${escapeStudentHtml(result.examTitle || 'Exam result')}</h3><p>${escapeStudentHtml(formatDate(new Date(result.date || result.generatedAt || Date.now())))} <span>·</span> ${review.length} questions</p></div><div class="student-review-score"><strong>${Number(result.score || 0).toFixed(2)}<small> / ${Number(result.totalMarks || 0).toFixed(2)}</small></strong><span>${Number(result.percentage || 0).toFixed(1)}% score</span></div></section>
+    <div class="student-review-summary"><span><i class="fas fa-check"></i><b>${Number(result.correctAnswers || 0)}</b> Correct</span><span><i class="fas fa-xmark"></i><b>${Number(result.wrongAnswers || 0)}</b> Wrong</span><span><i class="fas fa-minus"></i><b>${Number(result.skippedQuestion || 0)}</b> Skipped</span></div>
+    <div class="student-review-list">${questionsHtml}</div>
+  </div>`;
+  container.querySelectorAll('.student-review-question').forEach((card, questionIndex) => {
+    const question = review[questionIndex];
+    renderStudentQuestionText(card.querySelector('.student-review-question-text'), question.questionText);
+    card.querySelectorAll('.student-review-option-text').forEach((element, optionIndex) => {
+      renderStudentQuestionText(element, question.options[optionIndex]);
     });
-
-    html += '</div>';
-    container.innerHTML = html;
+  });
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
         // Switch tabs
