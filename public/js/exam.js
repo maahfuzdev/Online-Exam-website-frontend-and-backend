@@ -6,6 +6,158 @@ let selectedStudents = new Set();
 let selectedQuestions = new Set();
 let editingExamId = null;
 let extendingLiveExam = false;
+let bulkQuestions = [];
+let bulkParseErrors = [];
+
+function openBulkQuestionCreator() {
+    document.getElementById('questionTypeChooser')?.classList.add('hidden');
+    document.getElementById('questionCreatorForm')?.classList.add('hidden');
+    const form = document.getElementById('bulkQuestionCreator');
+    form?.classList.remove('hidden');
+    const subject = document.getElementById('questionSubject')?.value.trim();
+    const className = document.getElementById('questionClass')?.value.trim();
+    if (subject && !document.getElementById('bulkQuestionSubject').value) document.getElementById('bulkQuestionSubject').value = subject;
+    if (className && !document.getElementById('bulkQuestionClass').value) document.getElementById('bulkQuestionClass').value = className;
+    form?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeBulkQuestionCreator() {
+    document.getElementById('bulkQuestionCreator')?.classList.add('hidden');
+    document.getElementById('questionTypeChooser')?.classList.remove('hidden');
+}
+
+function parseBulkQuestionText(source) {
+    const text = String(source || '').replace(/\r\n?/g, '\n').replace(/\\[ \t]*\n/g, '\n').replace(/[\u00a0\u2000-\u200b]/g, ' ');
+    const answerPattern = /^[ \t]*\*{0,2}\s*(?:উত্তর|answer)\s*[:：]\s*([a-d])\s*[).]?[^\n]*(?:\n|$)/gim;
+    const answerLines = [...text.matchAll(answerPattern)];
+    if (!answerLines.length) return { questions: [], errors: ['No answer lines found. Add an answer line such as “উত্তর: b) Correct choice” after each question.'] };
+
+    const questions = [];
+    const errors = [];
+    let blockStart = 0;
+    answerLines.forEach((answerLine, index) => {
+        const block = text.slice(blockStart, answerLine.index).replace(/\*\*/g, '').trim();
+        blockStart = answerLine.index + answerLine[0].length;
+        if (!block) {
+            errors.push(`Question ${index + 1}: question text or choices are missing.`);
+            return;
+        }
+        const optionPattern = /(^|[\s\u2000-\u200b])([a-d])\s*[).]\s*/gi;
+        const markers = [...block.matchAll(optionPattern)].map(match => ({
+            label: match[2].toUpperCase(),
+            start: match.index + match[1].length,
+            contentStart: match.index + match[0].length
+        }));
+        const labels = markers.map(marker => marker.label).join('');
+        if (labels !== 'ABCD') {
+            errors.push(`Question ${index + 1}: expected four choices labelled a), b), c), d) in that order; found ${labels || 'none'}.`);
+            return;
+        }
+        const questionText = block.slice(0, markers[0].start).trim().replace(/^\d+\s*[.)]\s*/, '');
+        const options = markers.map((marker, choiceIndex) => block.slice(marker.contentStart, markers[choiceIndex + 1]?.start ?? block.length).trim());
+        if (!questionText || options.some(option => !option)) {
+            errors.push(`Question ${index + 1}: question text and all four choices must have content.`);
+            return;
+        }
+        questions.push({ questionText, options, correctAnswer: answerLine[1].toUpperCase() });
+    });
+    if (questions.length > 100) errors.push(`This batch has ${questions.length} valid questions. The maximum is 100 at a time.`);
+    return { questions, errors };
+}
+
+function parseBulkQuestions() {
+    const input = document.getElementById('bulkQuestionInput').value;
+    const parsed = parseBulkQuestionText(input);
+    bulkQuestions = parsed.questions;
+    bulkParseErrors = parsed.errors;
+    const preview = document.getElementById('bulkQuestionPreview');
+    const saveRow = document.getElementById('bulkQuestionSaveRow');
+    const status = document.getElementById('bulkQuestionStatus');
+    preview.classList.remove('hidden');
+    saveRow.classList.toggle('hidden', !bulkQuestions.length || parsed.errors.length > 0);
+    status.classList.toggle('has-errors', parsed.errors.length > 0);
+    status.textContent = parsed.errors.length
+        ? `${parsed.errors.length} item${parsed.errors.length === 1 ? '' : 's'} need attention. Fix the format and parse again.`
+        : `${bulkQuestions.length} question${bulkQuestions.length === 1 ? '' : 's'} found. Review and edit them before saving.`;
+    document.getElementById('bulkQuestionSaveCount').textContent = `${bulkQuestions.length} questions ready to save`;
+    renderBulkQuestionPreview(parsed.errors);
+}
+
+function renderBulkQuestionPreview(errors = []) {
+    const preview = document.getElementById('bulkQuestionPreview');
+    if (!preview) return;
+    const errorMarkup = errors.length ? `<div class="bulk-parse-errors"><strong><i class="fas fa-circle-exclamation"></i> Check the pasted format</strong><ul>${errors.map(error => `<li>${escapeHtml(error)}</li>`).join('')}</ul></div>` : '';
+    const questionMarkup = bulkQuestions.map((question, index) => `
+      <article class="bulk-preview-card" data-bulk-index="${index}">
+        <header><strong>Question ${index + 1}</strong><button type="button" class="bulk-remove-question" onclick="removeBulkQuestion(${index})" aria-label="Remove question ${index + 1}"><i class="fas fa-trash-can"></i></button></header>
+        <label>Question text<textarea class="form-input" data-bulk-field="question" rows="2">${escapeHtml(question.questionText)}</textarea></label>
+        <div class="bulk-preview-options">${question.options.map((option, optionIndex) => `<label><span>${String.fromCharCode(65 + optionIndex)}</span><input class="form-input" data-bulk-field="option" data-option-index="${optionIndex}" value="${escapeHtml(option)}"></label>`).join('')}</div>
+        <label class="bulk-correct-answer">Correct answer<select class="form-input" data-bulk-field="answer">${['A', 'B', 'C', 'D'].map(letter => `<option value="${letter}" ${letter === question.correctAnswer ? 'selected' : ''}>${letter}${letter === question.correctAnswer ? ' — Correct' : ''}</option>`).join('')}</select></label>
+      </article>`).join('');
+    preview.innerHTML = `${errorMarkup}${questionMarkup}`;
+}
+
+function removeBulkQuestion(index) {
+    bulkQuestions.splice(index, 1);
+    document.getElementById('bulkQuestionSaveCount').textContent = `${bulkQuestions.length} questions ready to save`;
+    document.getElementById('bulkQuestionSaveRow').classList.toggle('hidden', !bulkQuestions.length || bulkParseErrors.length > 0);
+    document.getElementById('bulkQuestionStatus').textContent = bulkParseErrors.length
+        ? `${bulkParseErrors.length} item${bulkParseErrors.length === 1 ? '' : 's'} still need attention. Fix the pasted format and parse again.`
+        : `${bulkQuestions.length} question${bulkQuestions.length === 1 ? '' : 's'} ready. Review and edit them before saving.`;
+    renderBulkQuestionPreview(bulkParseErrors);
+}
+
+function collectBulkQuestionEdits() {
+    document.querySelectorAll('.bulk-preview-card').forEach(card => {
+        const index = Number(card.dataset.bulkIndex);
+        if (!bulkQuestions[index]) return;
+        bulkQuestions[index].questionText = card.querySelector('[data-bulk-field="question"]').value.trim();
+        bulkQuestions[index].options = [...card.querySelectorAll('[data-bulk-field="option"]')].map(input => input.value.trim());
+        bulkQuestions[index].correctAnswer = card.querySelector('[data-bulk-field="answer"]').value;
+    });
+}
+
+async function saveBulkQuestions() {
+    const subject = document.getElementById('bulkQuestionSubject').value.trim();
+    const className = document.getElementById('bulkQuestionClass').value.trim();
+    const status = document.getElementById('bulkQuestionStatus');
+    if (!subject || !className) { status.textContent = 'Enter the subject and class before saving.'; status.classList.add('has-errors'); return; }
+    if (bulkParseErrors.length) { status.textContent = 'Fix the format errors and parse the questions again before saving.'; status.classList.add('has-errors'); return; }
+    collectBulkQuestionEdits();
+    if (!bulkQuestions.length || bulkQuestions.some(question => !question.questionText || question.options.length !== 4 || question.options.some(option => !option))) {
+        status.textContent = 'Every question needs text and four non-empty choices.'; status.classList.add('has-errors'); return;
+    }
+    const teacherId = localStorage.getItem('userId');
+    const button = document.getElementById('saveBulkQuestionsButton');
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving questions…';
+    try {
+        const response = await fetch('/api/questions/bulk', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ teacherId, subject, class: className, questions: bulkQuestions })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || 'Could not save the questions.');
+        status.textContent = `${payload.questions?.length || bulkQuestions.length} questions saved to your question bank.`;
+        status.classList.remove('has-errors');
+        showMessage(`${payload.questions?.length || bulkQuestions.length} questions saved successfully.`, 'success');
+        await loadExamQuestions();
+        document.getElementById('bulkQuestionCreator').classList.add('hidden');
+        document.getElementById('questionTypeChooser').classList.remove('hidden');
+        document.getElementById('bulkQuestionInput').value = '';
+        document.getElementById('bulkQuestionPreview').innerHTML = '';
+        document.getElementById('bulkQuestionPreview').classList.add('hidden');
+        document.getElementById('bulkQuestionSaveRow').classList.add('hidden');
+        bulkQuestions = [];
+        bulkParseErrors = [];
+    } catch (error) {
+        status.textContent = error.message || 'Could not save the questions.';
+        status.classList.add('has-errors');
+    } finally {
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-cloud-arrow-up"></i> Save all questions';
+    }
+}
 
 // Initialize exam creator
 async function initExamCreator() {

@@ -133,7 +133,35 @@
             <span><strong>General</strong><small>Text question, with formula tools available if needed</small></span>
             <span class="question-type-arrow">→</span>
           </button>
+          <button type="button" class="question-type-card bulk-question-type-card" onclick="openBulkQuestionCreator()">
+            <span class="question-type-icon bulk"> <i class="fas fa-paste"></i> </span>
+            <span><strong>Paste many questions</strong><small>Paste MCQs with A–D choices and answer keys</small></span>
+            <span class="question-type-arrow">→</span>
+          </button>
         </div>
+
+        <section class="form-section bulk-question-creator hidden" id="bulkQuestionCreator" aria-labelledby="bulkQuestionHeading">
+          <div class="creator-form-heading">
+            <div><span class="creator-eyebrow">BATCH QUESTION IMPORT</span><h3 id="bulkQuestionHeading">Paste a question set</h3><p class="creator-help">We’ll split the questions, choices and correct answers, then let you review them before saving.</p></div>
+            <button type="button" class="creator-back-button" onclick="closeBulkQuestionCreator()">Back to question types</button>
+          </div>
+          <div class="question-metadata-grid">
+            <div><label class="form-label" for="bulkQuestionSubject">Subject</label><input id="bulkQuestionSubject" class="form-input" type="text" placeholder="e.g., Physics" required></div>
+            <div><label class="form-label" for="bulkQuestionClass">Class / Grade</label><input id="bulkQuestionClass" class="form-input" type="text" placeholder="e.g., Class 11" required></div>
+          </div>
+          <label class="form-label" for="bulkQuestionInput">Paste your MCQs</label>
+          <p class="creator-help">Each question needs four choices labelled a)–d) and an answer line such as <strong>উত্তর: b) Correct choice</strong>. Questions may be numbered or unnumbered. Supports Bangla, English and LaTeX.</p>
+          <textarea id="bulkQuestionInput" class="form-input bulk-question-input" rows="12" placeholder="Paste each question, its a)–d) choices, then an answer line such as উত্তর: b) Correct choice"></textarea>
+          <div class="bulk-question-actions">
+            <span id="bulkQuestionStatus" class="bulk-question-status" role="status">Paste questions to get started. Supports up to 100 per batch.</span>
+            <button type="button" class="btn btn-primary" onclick="parseBulkQuestions()"><i class="fas fa-wand-magic-sparkles"></i> Parse and review</button>
+          </div>
+          <div id="bulkQuestionPreview" class="bulk-question-preview hidden"></div>
+          <div class="bulk-question-save-row hidden" id="bulkQuestionSaveRow">
+            <span id="bulkQuestionSaveCount"></span>
+            <button type="button" class="btn btn-success" id="saveBulkQuestionsButton" onclick="saveBulkQuestions()"><i class="fas fa-cloud-arrow-up"></i> Save all questions</button>
+          </div>
+        </section>
 
         <div class="form-section question-creator-form hidden" id="questionCreatorForm">
           <div class="creator-form-heading">

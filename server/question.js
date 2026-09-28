@@ -94,8 +94,8 @@ router.post("/api/questions/bulk", async (req, res) => {
         if (!mongoose.isValidObjectId(teacherId)) return res.status(400).json({ error: "Please sign in again as a teacher." });
         const teacher = await Auth.findOne({ _id: teacherId, role: "teacher" }).select("_id");
         if (!teacher) return res.status(403).json({ error: "A teacher account is required." });
-        if (!subject?.trim() || !questionClass?.trim() || !Array.isArray(questions) || !questions.length || questions.length > 20) {
-            return res.status(400).json({ error: "Subject, class, and 1 to 20 questions are required." });
+        if (!subject?.trim() || !questionClass?.trim() || !Array.isArray(questions) || !questions.length || questions.length > 100) {
+            return res.status(400).json({ error: "Subject, class, and 1 to 100 questions are required." });
         }
         const valid = questions.every(q => typeof q.questionText === "string" && q.questionText.trim() && Array.isArray(q.options) && q.options.length === 4 && q.options.every(option => typeof option === "string" && option.trim()) && /^[A-D]$/.test(q.correctAnswer));
         if (!valid) return res.status(400).json({ error: "Each question needs text, four options, and a correct answer." });
