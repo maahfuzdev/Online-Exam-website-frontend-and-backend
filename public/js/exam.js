@@ -42,7 +42,7 @@ function parseBulkQuestionText(source) {
             errors.push(`Question ${index + 1}: question text or choices are missing.`);
             return;
         }
-        const optionPattern = /(^|[\s\u2000-\u200b—–])([a-d])\s*[).]\s*/gi;
+        const optionPattern = /(^|[\s\u2000-\u200b—–?!।,:;])([a-d])\s*[).]\s*/gi;
         const markers = [...block.matchAll(optionPattern)].map(match => ({
             label: match[2].toUpperCase(),
             start: match.index + match[1].length,
