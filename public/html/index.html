@@ -493,7 +493,7 @@
             <details class="assignment-picker">
               <summary><span>Choose questions</span><span class="picker-count" id="questionPickerCount">0 selected</span></summary>
               <div class="picker-content">
-                <div class="picker-tools"><span>Questions</span><button type="button" class="picker-select-all" onclick="selectAllQuestions()">Select all</button></div>
+                <div class="picker-tools"><span>Questions</span><button type="button" class="picker-select-all" onclick="selectAllQuestions()" title="Select only questions currently shown by the filters">Select all shown</button></div>
                 <div class="question-selection-filters">
                   <select id="scheduleQuestionSubject" aria-label="Filter questions by subject" onchange="renderQuestionsList()"><option value="">All subjects</option></select>
                   <select id="scheduleQuestionClass" aria-label="Filter questions by class" onchange="renderQuestionsList()"><option value="">All classes</option></select>

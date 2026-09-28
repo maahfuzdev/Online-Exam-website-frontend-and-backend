@@ -329,6 +329,16 @@ function renderStudentsList() {
     container.innerHTML = html;
 }
 
+function getFilteredQuestionIndices() {
+    const subjectFilter = document.getElementById('scheduleQuestionSubject')?.value || '';
+    const classFilter = document.getElementById('scheduleQuestionClass')?.value || '';
+    const search = document.getElementById('scheduleQuestionSearch')?.value.trim().toLocaleLowerCase() || '';
+    return quizQuestions.map((question, index) => ({ question, index })).filter(({ question }) => {
+        const text = `${question.questionText || question.question || ''} ${question.subject || ''} ${question.class || ''}`.toLocaleLowerCase();
+        return (!subjectFilter || question.subject === subjectFilter) && (!classFilter || question.class === classFilter) && text.includes(search);
+    }).map(({ index }) => index);
+}
+
 function renderQuestionsList() {
     const container = document.getElementById('questionsContainer');
     if (!container) return;
@@ -345,13 +355,8 @@ function renderQuestionsList() {
         return;
     }
 
-    const subjectFilter = document.getElementById('scheduleQuestionSubject')?.value || '';
-    const classFilter = document.getElementById('scheduleQuestionClass')?.value || '';
-    const search = document.getElementById('scheduleQuestionSearch')?.value.trim().toLocaleLowerCase() || '';
-    const visibleQuestions = quizQuestions.map((question, index) => ({ question, index })).filter(({ question }) => {
-        const text = `${question.questionText || question.question || ''} ${question.subject || ''} ${question.class || ''}`.toLocaleLowerCase();
-        return (!subjectFilter || question.subject === subjectFilter) && (!classFilter || question.class === classFilter) && text.includes(search);
-    });
+    const visibleQuestionIndices = new Set(getFilteredQuestionIndices());
+    const visibleQuestions = quizQuestions.map((question, index) => ({ question, index })).filter(({ index }) => visibleQuestionIndices.has(index));
 
     if (!visibleQuestions.length) {
         container.innerHTML = '<div style="padding:32px 14px;text-align:center;color:#77877f;font-size:12px;">No questions match these filters.</div>';
@@ -460,9 +465,7 @@ function deselectAllStudents() {
 
 // Select all questions
 function selectAllQuestions() {
-    quizQuestions.forEach((_, index) => {
-        selectedQuestions.add(index);
-    });
+    getFilteredQuestionIndices().forEach(index => selectedQuestions.add(index));
     renderQuestionsList();
     updateQuestionsCount();
 }
