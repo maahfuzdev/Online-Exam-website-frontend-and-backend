@@ -27,8 +27,13 @@ function closeBulkQuestionCreator() {
 }
 
 function parseBulkQuestionText(source) {
-    const text = String(source || '').replace(/\r\n?/g, '\n').replace(/\\[ \t]*\n/g, '\n').replace(/[\u00a0\u2000-\u200b]/g, ' ');
-    const answerPattern = /[*_\`#>•-]*[ \t]*(?:(?:সঠিক|correct)\s*)?(?:উত্তর|answer)\s*[:：=\-–]\s*([a-d])\s*[).]?[^\n]*(?:\n|$)/gim;
+    const text = String(source || '')
+        .replace(/\r\n?/g, '\n')
+        .replace(/\\[ \t]*\n/g, '\n')
+        .replace(/[\u00a0\u2000-\u200b]/g, ' ')
+        .replace(/[\u200c\u200d\ufeff]/g, '')
+        .replace(/\*\*/g, '');
+    const answerPattern = /(?:correct(?:\s*answer)?|answer|ans\.?|সঠিক\s*উত্তর|উত্তর)\s*[:：=–—.-]?\s*(?:option\s*)?[\[(]?\s*([a-dকখগঘ])\s*[\])]?/gim;
     const answerLines = [...text.matchAll(answerPattern)];
     if (!answerLines.length) return { questions: [], errors: ['No answer lines found. Add an answer line such as “উত্তর: b) Correct choice” after each question.'] };
 
@@ -37,29 +42,32 @@ function parseBulkQuestionText(source) {
     let blockStart = 0;
     answerLines.forEach((answerLine, index) => {
         const block = text.slice(blockStart, answerLine.index).replace(/\*\*/g, '').trim();
-        blockStart = answerLine.index + answerLine[0].length;
+        const answerLineEnd = text.indexOf('\n', answerLine.index + answerLine[0].length);
+        blockStart = answerLineEnd < 0 ? text.length : answerLineEnd + 1;
         if (!block) {
             errors.push(`Question ${index + 1}: question text or choices are missing.`);
             return;
         }
-        const optionPattern = /(^|[\s\u2000-\u200b—–?!।,:;])([a-d])\s*[).]\s*/gi;
+        const optionPattern = /(^|[\s\u2000-\u200b—–?!।,:;])(?:\(([a-dকখগঘ])\)|([a-dকখগঘ])\s*[).:：\-–])\s*/gi;
+        const labelMap = { a: 'A', b: 'B', c: 'C', d: 'D', 'ক': 'A', 'খ': 'B', 'গ': 'C', 'ঘ': 'D' };
         const markers = [...block.matchAll(optionPattern)].map(match => ({
-            label: match[2].toUpperCase(),
+            label: labelMap[(match[2] || match[3]).toLowerCase()],
             start: match.index + match[1].length,
             contentStart: match.index + match[0].length
         }));
         const labels = markers.map(marker => marker.label).join('');
         if (labels !== 'ABCD') {
-            errors.push(`Question ${index + 1}: expected four choices labelled a), b), c), d) in that order; found ${labels || 'none'}.`);
+            errors.push(`Question ${index + 1}: choices were not recognized. Use four labels in order, such as a)–d), (a)–(d), A.–D., A:–D:, or ক)–ঘ).`);
             return;
         }
-        const questionText = block.slice(0, markers[0].start).trim().replace(/^\d+\s*[.)]\s*/, '');
+        const questionText = block.slice(0, markers[0].start).trim().replace(/^(?:(?:question|প্রশ্ন)\s*)?\(?\d+\)?\s*[.)।:\-]\s*/i, '');
         const options = markers.map((marker, choiceIndex) => block.slice(marker.contentStart, markers[choiceIndex + 1]?.start ?? block.length).trim());
         if (!questionText || options.some(option => !option)) {
             errors.push(`Question ${index + 1}: question text and all four choices must have content.`);
             return;
         }
-        questions.push({ questionText, options, correctAnswer: answerLine[1].toUpperCase() });
+        const answerMap = { a: 'A', b: 'B', c: 'C', d: 'D', 'ক': 'A', 'খ': 'B', 'গ': 'C', 'ঘ': 'D' };
+        questions.push({ questionText, options, correctAnswer: answerMap[answerLine[1].toLowerCase()] });
     });
     if (questions.length > 100) errors.push(`This batch has ${questions.length} valid questions. The maximum is 100 at a time.`);
     return { questions, errors };
