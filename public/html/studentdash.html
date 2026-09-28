@@ -30,15 +30,30 @@
     <!-- Student Dashboard -->
     <div id="studentDashboard" class="student-dashboard">
         <div class="dashboard-header">
-            <button class="back-btn" onclick="showLandingPage()">
-                <i class="fas fa-arrow-left"></i> Back
-            </button>
-            <h1 class="dashboard-title">🎓 Student Dashboard</h1>
-            <p class="dashboard-subtitle">Welcome, <span id="studentName">John Doe</span>!</p>
+            <div class="student-topbar">
+                <a class="student-brand" href="#studentDashboard" aria-label="Student dashboard home">
+                    <span class="student-brand-mark"><i class="fas fa-book-open"></i></span>
+                    <span><strong>LEARNSPACE</strong><small>STUDENT PORTAL</small></span>
+                </a>
+                <button class="back-btn" onclick="showLandingPage()"><i class="fas fa-arrow-left"></i> Back to home</button>
+            </div>
+            <div class="student-hero-main">
+                <div class="student-hero-copy">
+                    <span class="student-hero-eyebrow"><i class="fas fa-sparkles"></i> YOUR LEARNING OVERVIEW</span>
+                    <h1 class="dashboard-title">Welcome back,<br><span id="studentName">Student</span></h1>
+                    <p class="dashboard-subtitle">Keep your learning moving forward. Your exams, progress and results are all in one place.</p>
+                    <button class="student-hero-cta" type="button" onclick="switchTab('activeExams')"><i class="fas fa-arrow-right"></i> Explore available exams</button>
+                </div>
+                <div class="student-hero-visual" aria-hidden="true">
+                    <div class="hero-visual-orbit orbit-a"></div><div class="hero-visual-orbit orbit-b"></div>
+                    <div class="hero-visual-card"><span class="hero-visual-icon"><i class="fas fa-graduation-cap"></i></span><strong>Learn at your pace</strong><small>One question at a time</small><div class="hero-visual-progress"><span></span></div><div class="hero-visual-foot"><span><i class="fas fa-circle-check"></i> Keep it up</span><i class="fas fa-arrow-trend-up"></i></div></div>
+                    <span class="hero-float-icon float-one"><i class="fas fa-bookmark"></i></span><span class="hero-float-icon float-two"><i class="fas fa-star"></i></span>
+                </div>
+            </div>
 
             <div class="quick-stats">
                 <div class="stat-card">
-                    <span class="stat-icon">📝</span>
+                    <span class="stat-icon"><i class="fas fa-bolt"></i></span>
                     <div class="stat-info">
                         <div class="stat-number" id="activeExamsCount">0</div>
                         <div class="stat-label">Active Exams</div>
@@ -46,7 +61,7 @@
                 </div>
 
                 <div class="stat-card">
-                    <span class="stat-icon">✅</span>
+                    <span class="stat-icon"><i class="fas fa-circle-check"></i></span>
                     <div class="stat-info">
                         <div class="stat-number" id="completedExamsCount">0</div>
                         <div class="stat-label">Completed Exams</div>
@@ -54,7 +69,7 @@
                 </div>
 
                 <div class="stat-card">
-                    <span class="stat-icon">❌</span>
+                    <span class="stat-icon"><i class="fas fa-calendar-xmark"></i></span>
                     <div class="stat-info">
                         <div class="stat-number" id="absentExamsCount">0</div>
                         <div class="stat-label">Absence</div>
@@ -62,7 +77,7 @@
                 </div>
 
                 <div class="stat-card">
-                    <span class="stat-icon">⭐</span>
+                    <span class="stat-icon"><i class="fas fa-chart-line"></i></span>
                     <div class="stat-info">
                         <div class="stat-number" id="averageScore">—</div>
                         <div class="stat-label">Average Score</div>
@@ -74,21 +89,20 @@
 
         <!-- Dashboard Tabs -->
         <div class="dashboard-tabs">
-            <button class="tab-btn active" onclick="switchTab('activeExams')" id="tabActiveExams">
-                <i class="fas fa-clipboard-list"></i> Active Exams
+            <button class="tab-btn active" onclick="switchTab('activeExams')" id="tabActiveExams" aria-controls="activeExamsSection" aria-selected="true">
+                <i class="fas fa-bolt"></i><span>Available exams</span>
             </button>
-            <button class="tab-btn" onclick="switchTab('pastExams')" id="tabPastExams">
-                <i class="fas fa-history"></i> Past Exams
+            <button class="tab-btn" onclick="switchTab('pastExams')" id="tabPastExams" aria-controls="pastExamsSection" aria-selected="false">
+                <i class="fas fa-clock-rotate-left"></i><span>Exam history</span>
             </button>
-            <button class="tab-btn" onclick="switchTab('results')" id="tabResults">
-                <i class="fas fa-chart-bar"></i> Results
+            <button class="tab-btn" onclick="switchTab('results')" id="tabResults" aria-controls="resultsSection" aria-selected="false">
+                <i class="fas fa-chart-pie"></i><span>My results</span>
             </button>
         </div>
 
         <!-- Active Exams Section -->
         <div id="activeExamsSection" class="dashboard-section">
-            <h2><i class="fas fa-clipboard-list"></i> Active Exams</h2>
-            <p class="section-subtitle">Exams currently available for you to take</p>
+            <div class="dashboard-section-heading"><div><span class="section-eyebrow">READY WHEN YOU ARE</span><h2><i class="fas fa-bolt"></i> Available exams</h2><p class="section-subtitle">Choose an exam and continue your learning journey.</p></div><span class="section-count"><i class="fas fa-list-check"></i> <b id="sectionActiveCount">0</b> available</span></div>
             <div id="activeExamsList" class="exams-grid">
                 <!-- Active exams will be loaded here -->
             </div>
@@ -96,8 +110,7 @@
 
         <!-- Past Exams Section -->
         <div id="pastExamsSection" class="dashboard-section hidden">
-            <h2><i class="fas fa-history"></i> Past Exams</h2>
-            <p class="section-subtitle">Exams you have already completed</p>
+            <div class="dashboard-section-heading"><div><span class="section-eyebrow">YOUR JOURNEY SO FAR</span><h2><i class="fas fa-clock-rotate-left"></i> Exam history</h2><p class="section-subtitle">Review completed exams and check attendance.</p></div></div>
             <div id="pastExamsList" class="exams-grid">
                 <!-- Past exams will be loaded here -->
             </div>
@@ -105,8 +118,7 @@
 
         <!-- Results Section -->
         <div id="resultsSection" class="dashboard-section hidden">
-            <h2><i class="fas fa-chart-bar"></i> Detailed Results</h2>
-            <p class="section-subtitle">View your performance in all exams</p>
+            <div class="dashboard-section-heading"><div><span class="section-eyebrow">PROGRESS THAT ADDS UP</span><h2><i class="fas fa-chart-pie"></i> My results</h2><p class="section-subtitle">See your scores and review each question with the correct answer.</p></div></div>
             <div id="detailedResultsList">
                 <!-- Results will be loaded here -->
             </div>

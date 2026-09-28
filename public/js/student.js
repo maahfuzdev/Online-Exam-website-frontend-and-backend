@@ -136,6 +136,8 @@ function renderActiveExams() {
   document.getElementById("activeExamsCount").textContent =
 
     activeExams.length;
+  const sectionActiveCount = document.getElementById('sectionActiveCount');
+  if (sectionActiveCount) sectionActiveCount.textContent = activeExams.length;
 
 
 
@@ -460,14 +462,16 @@ function openResultReview(examId) {
             // Deactivate all tabs
             document.querySelectorAll('.tab-btn').forEach(tab => {
                 tab.classList.remove('active');
+                tab.setAttribute('aria-selected', 'false');
             });
 
             // Show selected section
             document.getElementById(tabName + 'Section').classList.remove('hidden');
 
             // Activate selected tab
-            document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1))
-                .classList.add('active');
+            const activeTab = document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+            activeTab.classList.add('active');
+            activeTab.setAttribute('aria-selected', 'true');
         }
 
         // Start an exam
