@@ -28,7 +28,7 @@ function closeBulkQuestionCreator() {
 
 function parseBulkQuestionText(source) {
     const text = String(source || '').replace(/\r\n?/g, '\n').replace(/\\[ \t]*\n/g, '\n').replace(/[\u00a0\u2000-\u200b]/g, ' ');
-    const answerPattern = /^[ \t]*\*{0,2}\s*(?:উত্তর|answer)\s*[:：]\s*([a-d])\s*[).]?[^\n]*(?:\n|$)/gim;
+    const answerPattern = /^[ \t]*(?:\\[ \t]*)?[*_\`#>•-]*[ \t]*(?:(?:সঠিক|correct)\s*)?(?:উত্তর|answer)\s*[:：=\-–]\s*([a-d])\s*[).]?[^\n]*(?:\n|$)/gim;
     const answerLines = [...text.matchAll(answerPattern)];
     if (!answerLines.length) return { questions: [], errors: ['No answer lines found. Add an answer line such as “উত্তর: b) Correct choice” after each question.'] };
 
