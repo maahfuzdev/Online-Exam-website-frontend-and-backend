@@ -1,9 +1,21 @@
-function goToManualExamCreation() {
+function openTeacherWorkspace(step) {
   localStorage.setItem('showteacher', 'true');
+  localStorage.setItem('teacherWorkspaceStep', String(step));
   window.location.href = '/html/index.html';
 }
 
+function goToManualQuestionCreation() {
+  openTeacherWorkspace(1);
+}
+
+function goToManualExamCreation() {
+  goToManualQuestionCreation();
+}
+
+function openExamCreation() {
+  openTeacherWorkspace(2);
+}
+
 function showOCRSystem() {
-  alert('Redirecting to OCR exam creation page...');
   window.location.href = '/html/ocrsystem.html';
 }

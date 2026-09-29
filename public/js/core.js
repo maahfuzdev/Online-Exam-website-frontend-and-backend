@@ -68,7 +68,11 @@ function init() {
       // The dashboard is shown after the page's load event, so exam.js's
       // load-time initializer cannot populate the exam creator here.
       if (typeof initExamCreator === 'function') {
-        initExamCreator();
+        const requestedStep = Number(localStorage.getItem('teacherWorkspaceStep'));
+        localStorage.removeItem('teacherWorkspaceStep');
+        Promise.resolve(initExamCreator()).then(() => {
+          if ([1, 2, 3].includes(requestedStep) && typeof showExamStep === 'function') showExamStep(requestedStep);
+        });
       }
     }
 

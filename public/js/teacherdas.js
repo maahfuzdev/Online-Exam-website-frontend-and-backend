@@ -3,6 +3,7 @@
     let allStudents = [];
     let allExams = [];
     let allResults = [];
+    let allQuestions = [];
     let filteredResults = [];
     let currentPage = 1;
     const pageSize = 10;
@@ -32,11 +33,14 @@
 
     // Tab switching
     function switchTab(tabName) {
+      if (tabName === 'exams') return openExamCreation();
       currentTab = tabName;
       const sectionDetails = {
         dashboard: ['OVERVIEW', 'Teacher dashboard', 'Monitor student performance and manage exams.'],
         results: ['ASSESSMENT', 'Student results', 'Review, filter, and export assessment results.'],
-        exams: ['ASSESSMENT SETUP', 'Exam management', 'Create exams and review current assignments.'],
+        exams: ['ASSESSMENT SETUP', 'Exam creation', 'Select saved questions, then schedule and assign an exam.'],
+        questionCreation: ['QUESTION WORKSPACE', 'Question creation', 'Create reusable questions manually or with OCR.'],
+        questionBank: ['QUESTION LIBRARY', 'Question bank', 'Browse and filter your saved questions.'],
         analytics: ['INSIGHTS', 'Performance analytics', 'Explore score distributions and top performers.'],
         students: ['PEOPLE', 'Student management', 'Maintain student accounts and review progress.']
       };
@@ -47,10 +51,7 @@
 
       // Update tab buttons
       document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.textContent.includes(tabName.charAt(0).toUpperCase() + tabName.slice(1))) {
-          btn.classList.add('active');
-        }
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
       });
 
       // Hide all tabs
@@ -78,6 +79,9 @@
         case 'students':
           loadStudentsList();
           break;
+        case 'questionBank':
+          renderTeacherQuestionBank();
+          break;
       }
     }
 
@@ -93,6 +97,10 @@
           id: student._id,
           class: student.class || ''
         }));
+
+        const questionsResponse = await fetch(`/api/questions/${teacherId}`);
+        if (!questionsResponse.ok) throw new Error('Failed to load question bank');
+        allQuestions = await questionsResponse.json();
 
         const examsResponse = await fetch(`/assignments/api/assigned-questions/teacher/${teacherId}`);
         if (!examsResponse.ok) throw new Error('Failed to load exams');
@@ -128,6 +136,7 @@
         allStudents = [];
         allExams = [];
         allResults = [];
+        allQuestions = [];
         renderStats();
         populateExamFilter();
         loadResults();
@@ -136,6 +145,68 @@
         loadStudentsList();
         document.getElementById('recentActivity').textContent = `Could not load dashboard data: ${error.message}`;
       }
+    }
+
+    function renderTeacherQuestionBank() {
+      const container = document.getElementById('teacherQuestionBankList');
+      if (!container) return;
+      const subjectSelect = document.getElementById('bankSubjectFilter');
+      const classSelect = document.getElementById('bankClassFilter');
+      const selectedSubject = subjectSelect.value;
+      const selectedClass = classSelect.value;
+      const subjects = [...new Set(allQuestions.map(question => question.subject).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+      const classes = [...new Set(allQuestions.map(question => question.class).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      subjectSelect.replaceChildren(new Option('All Subjects', ''), ...subjects.map(value => new Option(value, value)));
+      classSelect.replaceChildren(new Option('All Classes', ''), ...classes.map(value => new Option(value, value)));
+      subjectSelect.value = subjects.includes(selectedSubject) ? selectedSubject : '';
+      classSelect.value = classes.includes(selectedClass) ? selectedClass : '';
+
+      const search = document.getElementById('bankSearch').value.trim().toLocaleLowerCase();
+      const answerType = document.getElementById('bankTypeFilter').value;
+      const questions = allQuestions.filter(question => {
+        const type = question.answerType || 'mcq';
+        const searchable = [question.questionText, question.subject, question.class, ...(question.options || [])].join(' ').toLocaleLowerCase();
+        return (!subjectSelect.value || question.subject === subjectSelect.value) &&
+          (!classSelect.value || question.class === classSelect.value) &&
+          (!answerType || type === answerType) && searchable.includes(search);
+      });
+
+      container.replaceChildren();
+      if (!questions.length) {
+        const empty = document.createElement('div');
+        empty.className = 'form-section';
+        empty.textContent = allQuestions.length ? 'No questions match these filters.' : 'Your question bank is empty. Create questions from Question Creation.';
+        container.appendChild(empty);
+        return;
+      }
+
+      const count = document.createElement('p');
+      count.style.color = '#64748b';
+      count.textContent = `${questions.length} saved question${questions.length === 1 ? '' : 's'}`;
+      container.appendChild(count);
+      questions.forEach(question => {
+        const card = document.createElement('article');
+        card.className = 'form-section';
+        card.style.margin = '0';
+        const details = document.createElement('p');
+        details.style.cssText = 'margin:0 0 10px;color:#64748b;font-size:.85rem';
+        details.textContent = `${question.subject || 'Subject not set'} · ${question.class || 'Class not set'} · ${(question.answerType || 'mcq') === 'written' ? 'Written' : 'MCQ'}`;
+        const text = document.createElement('div');
+        text.style.cssText = 'font-weight:600;color:#1a202c;line-height:1.6;white-space:pre-wrap';
+        text.textContent = question.questionText || 'Question text unavailable';
+        card.append(details, text);
+        if ((question.answerType || 'mcq') === 'mcq' && Array.isArray(question.options)) {
+          const options = document.createElement('div');
+          options.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:14px;color:#475569';
+          question.options.forEach((option, index) => {
+            const item = document.createElement('div');
+            item.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
+            options.appendChild(item);
+          });
+          card.appendChild(options);
+        }
+        container.appendChild(card);
+      });
     }
 
     // Render statistics

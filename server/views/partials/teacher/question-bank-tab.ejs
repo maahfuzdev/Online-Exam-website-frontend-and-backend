@@ -1,0 +1,13 @@
+<div id="questionBankTab" class="tab-content hidden">
+  <div class="section-title">Question Bank</div>
+  <p style="color:#64748b;margin:0 0 20px">Browse your saved questions. Filter by subject, class, question type, or search text.</p>
+  <div class="filter-bar">
+    <div class="filter-group">
+      <select class="filter-select" id="bankSubjectFilter" aria-label="Filter questions by subject" onchange="renderTeacherQuestionBank()"><option value="">All Subjects</option></select>
+      <select class="filter-select" id="bankClassFilter" aria-label="Filter questions by class" onchange="renderTeacherQuestionBank()"><option value="">All Classes</option></select>
+      <select class="filter-select" id="bankTypeFilter" aria-label="Filter questions by answer type" onchange="renderTeacherQuestionBank()"><option value="">All Types</option><option value="mcq">MCQ</option><option value="written">Written</option></select>
+      <input class="filter-select" id="bankSearch" type="search" placeholder="Search questions..." aria-label="Search question bank" oninput="renderTeacherQuestionBank()">
+    </div>
+  </div>
+  <div id="teacherQuestionBankList" style="display:grid;gap:14px;margin-top:18px"><p style="color:#64748b">Loading questions...</p></div>
+</div>
