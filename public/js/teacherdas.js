@@ -238,11 +238,26 @@
 
     // Load and render results
     function loadResults() {
+      populateResultClassFilter();
       filteredResults = [...allResults];
       applyFilters();
       sortResults();
       renderResultsTable();
       updatePagination();
+    }
+
+    function populateResultClassFilter() {
+      const select = document.getElementById('filterClass');
+      if (!select) return;
+      const selectedClass = select.value;
+      const classes = [...new Set([
+        ...allStudents.map(student => student.class),
+        ...allResults.map(result => result.class)
+      ].map(value => String(value || '').trim()).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+      select.replaceChildren(new Option('All Classes', ''));
+      classes.forEach(className => select.add(new Option(className, className)));
+      if (classes.includes(selectedClass)) select.value = selectedClass;
     }
 
     // Apply filters to results
@@ -256,7 +271,7 @@
       filteredResults = allResults.filter(result => {
         const matchesSubject = !subjectFilter || (result.subject || '') === subjectFilter;
         const matchesExam = !examFilter || result.examId == examFilter;
-        const matchesClass = !classFilter || result.class == classFilter;
+        const matchesClass = !classFilter || String(result.class || '').trim() === classFilter;
         const matchesGrade = !gradeFilter || result.grade === gradeFilter;
         const matchesSearch = !searchFilter ||
           result.studentName.toLowerCase().includes(searchFilter) ||
