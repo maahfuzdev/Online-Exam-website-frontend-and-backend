@@ -1,0 +1,48 @@
+  <!-- Quiz Interface -->
+  <div id="quizContainer" class="quiz-container hidden">
+    <div id="previewMode" class="preview-mode hidden">
+      ðŸ” PREVIEW MODE - This is how students will see the quiz
+    </div>
+
+    <div class="quiz-header">
+      <h1 class="quiz-title">ðŸ† Quiz Time</h1>
+      <div class="progress-section">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">Question 1 of 1</div>
+      </div>
+    </div>
+
+    <div id="quizContent">
+      <div class="question-section">
+        <div class="question-text" id="currentQuestion">Your question will appear here</div>
+        <div class="choices-container" id="choicesContainer">
+          <button class="choice-option" onclick="selectAnswer(0)">Choice A</button>
+          <button class="choice-option" onclick="selectAnswer(1)">Choice B</button>
+          <button class="choice-option" onclick="selectAnswer(2)">Choice C</button>
+          <button class="choice-option" onclick="selectAnswer(3)">Choice D</button>
+        </div>
+      </div>
+
+      <div class="quiz-controls">
+        <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()">â¬…ï¸ Previous</button>
+        <div class="score-display" id="scoreDisplay">Score: 0/0</div>
+        <div class="timer-display" id="timerDisplay">Time: 30s</div>
+        <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next âž¡ï¸</button>
+      </div>
+    </div>
+
+    <div id="resultsSection" class="results-section hidden">
+      <h2 style="color: var(--text-dark); margin-bottom: 20px; font-size: 2.5rem; font-weight: 800;">
+        ðŸŽ‰ Quiz Completed!
+      </h2>
+      <div class="final-score" id="finalScore">0/0</div>
+      <div class="result-message" id="resultMessage">Great job completing the quiz!</div>
+      <div id="detailedResults" style="margin: 20px 0;"></div>
+      <div class="action-buttons">
+        <button class="btn btn-success" onclick="restartQuiz()">ðŸ”„ Take Again</button>
+        <button class="btn btn-primary" onclick="backToDashboard()">ðŸ“Š Back to Dashboard</button>
+      </div>
+    </div>
+  </div>

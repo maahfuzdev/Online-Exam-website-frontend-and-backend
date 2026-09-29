@@ -1,0 +1,39 @@
+        <div id="dashboardTab" class="tab-content">
+          <div class="section-title">
+            ðŸ“Š Performance Overview
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-number" style="color: #667eea;" id="totalStudents">0</div>
+              <div class="stat-label">Total Students</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" style="color: #10b981;" id="totalExams">0</div>
+              <div class="stat-label">Exams Conducted</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" style="color: #f59e0b;" id="avgScore">0%</div>
+              <div class="stat-label">Average Score</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" style="color: #ef4444;" id="pendingExams">0</div>
+              <div class="stat-label">Pending Exams</div>
+            </div>
+          </div>
+
+          <!-- Performance Chart -->
+          <div class="chart-container">
+            <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">ðŸ“ˆ Overall Performance Trend</h3>
+            <canvas id="performanceChart" height="100"></canvas>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="section-title" style="margin-top: 40px;">
+            âš¡ Recent Activity
+          </div>
+          <div id="recentActivity" style="background: #f8fafc; padding: 20px; border-radius: 12px; min-height: 100px;">
+            <p style="text-align: center; color: #64748b; font-style: italic;">Loading recent activity...</p>
+          </div>
+        </div>

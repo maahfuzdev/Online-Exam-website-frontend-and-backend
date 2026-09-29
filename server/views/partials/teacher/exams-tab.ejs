@@ -1,0 +1,73 @@
+        <!-- Exams Tab -->
+        <div id="examsTab" class="tab-content hidden">
+          <div class="section-title">
+            ðŸ“š Exam Management
+          </div>
+
+          <!-- Exam Creation Options -->
+          <div class="form-section">
+            <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">âž• Create New Exam</h3>
+            <p style="color: #64748b; margin-bottom: 30px; line-height: 1.6;">
+              Choose how you want to create your exam. You can either manually create questions or use OCR technology to
+              scan
+              questions from physical papers.
+            </p>
+
+            <div
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 30px;">
+
+              <!-- Manual Exam Creation Card -->
+              <div
+                style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 2px solid #e2e8f0; text-align: center; transition: all 0.3s;">
+                <div style="font-size: 3.5rem; margin-bottom: 20px;">âœï¸</div>
+                <h4 style="font-size: 1.5rem; font-weight: 700; color: #1a202c; margin-bottom: 15px;">
+                  Manual Exam Creation
+                </h4>
+                <p style="color: #64748b; margin-bottom: 25px; line-height: 1.6;">
+                  Manually create and customize each question with full control over content, marks, and difficulty
+                  level.
+                </p>
+                <ul style="text-align: left; color: #4a5568; margin-bottom: 30px; padding-left: 20px;">
+                  <li style="margin-bottom: 10px;">Create questions one by one</li>
+                  <li style="margin-bottom: 10px;">Add images and formulas</li>
+                  <li style="margin-bottom: 10px;">Set time limits per question</li>
+                  <li>Preview before publishing</li>
+                </ul>
+                <button class="btn btn-teacher" onclick="goToManualExamCreation()" style="width: 100%; padding: 15px;">
+                  ðŸ“ Create Manually
+                </button>
+              </div>
+
+              <!-- OCR Exam Creation Card -->
+              <div
+                style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 2px solid #e2e8f0; text-align: center; transition: all 0.3s;">
+                <div style="font-size: 3.5rem; margin-bottom: 20px;">ðŸ“¸</div>
+                <h4 style="font-size: 1.5rem; font-weight: 700; color: #1a202c; margin-bottom: 15px;">
+                  OCR Exam Creation
+                </h4>
+                <p style="color: #64748b; margin-bottom: 25px; line-height: 1.6;">
+                  Scan physical question papers using OCR technology to automatically extract and digitize questions.
+                </p>
+                <ul style="text-align: left; color: #4a5568; margin-bottom: 30px; padding-left: 20px;">
+                  <li style="margin-bottom: 10px;">Upload scanned question papers</li>
+                  <li style="margin-bottom: 10px;">Automatic text recognition</li>
+                  <li style="margin-bottom: 10px;">Edit extracted content</li>
+                  <li>Save time and effort</li>
+                </ul>
+                <button class="btn btn-primary" onclick="showOCRSystem()" style="width: 100%; padding: 15px;">
+                  ðŸ“· Create with OCR
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <div style="margin-top: 40px;">
+            <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">ðŸ—‚ï¸ Assigned Exams</h3>
+            <div id="teacherExamsList"
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+              <p style="color: #64748b;">Loading exams...</p>
+            </div>
+          </div>
+
+        </div>

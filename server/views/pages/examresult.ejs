@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Results</title>
+  <link rel="stylesheet" href="/css/examresult.css">
+</head>
+
+<body>
+  <div class="container">
+    <!-- Back Button -->
+    <button class="back-btn" onclick="goBack()">
+      â† Back to Exams
+    </button>
+
+    <!-- Results Header -->
+    <div class="results-header">
+      <div class="results-header-content">
+        <div>
+          <div class="results-title" id="resultExamTitle">Loading...</div>
+          <div class="results-meta" id="resultExamMeta">
+            <div class="meta-item">
+              <span>ðŸ•</span>
+              <span id="examDate">-</span>
+            </div>
+            <div class="meta-item">
+              <span>ðŸ‘¥</span>
+              <span id="examStudents">- Students</span>
+            </div>
+            <div class="meta-item">
+              <span>â“</span>
+              <span id="examQuestions">- Questions</span>
+            </div>
+          </div>
+        </div>
+        <div class="avg-score">
+          <div class="avg-score-label">Average Score</div>
+          <div class="avg-score-value" id="avgScore">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Message (hidden by default) -->
+    <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+    <!-- Results Table -->
+    <div class="results-table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Student Name</th>
+            <th>Score</th>
+            <th>Percentage</th>
+            <th>Grade</th>
+            <th>Correct</th>
+            <th>Wrong</th>
+            <th>Skipped</th>
+            <th>Time Taken</th>
+          </tr>
+        </thead>
+        <tbody id="resultsTableBody">
+          <tr>
+            <td colspan="9" class="loading">
+              <div class="loading-spinner"></div>
+              Loading exam results...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="/js/examresult.js"></script>
+</body>
+
+</html>

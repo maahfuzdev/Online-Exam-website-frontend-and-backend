@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Quiz System - Teacher & Student</title>
+
+
+  <!-- KaTeX CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+  <!-- KaTeX JS -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+  <!-- KaTeX auto-render extension -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+
+  <!-- pdfmake-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/question-tools.js"></script>
+  <script src="/js/question-bank.js"></script>
+  <script src="/js/quiz.js"></script>
+  <script src="/js/app-init.js"></script>
+  <script src="/js/exam.js"></script>
+
+  <!--tailwind css -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!--Bootstrap CSS -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/styles.css">
+
+
+</head>
+
+<body>
+
+  <div class="floating-elements"></div>
+
+  <%- include("../partials/index/landing") %>
+  <%- include("../partials/index/teacher-workspace") %>
+  <%- include("../partials/index/student-quiz-dashboard") %>
+  <%- include("../partials/index/quiz-interface") %>
+  <script src="/js/manual-exam-steps.js"></script>
+
+</body>
+
+</html>

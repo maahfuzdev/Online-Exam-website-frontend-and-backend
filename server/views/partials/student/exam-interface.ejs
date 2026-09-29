@@ -1,0 +1,86 @@
+    <!-- Exam Interface -->
+    <div id="examContainer" class="exam-container hidden">
+        <!-- Exam Header -->
+        <div class="exam-header">
+            <div class="exam-info">
+                <h1 id="examTitleDisplay">Mathematics Final Exam</h1>
+                <div class="exam-meta">
+                    <span class="exam-meta-item" id="examQuestionsCount">10 Questions</span>
+                    <span class="exam-meta-item" id="examTotalMarks">Total: 100 marks</span>
+                    <span class="exam-meta-item exam-timer" id="examTimeRemaining" aria-live="polite">â±ï¸ Time: 01:30:00</span>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary submit-exam-btn" onclick="confirmSubmitExam()">Submit exam</button>
+        </div>
+
+        <!-- Exam Timer Alert -->
+        <div id="timeWarning" class="time-warning hidden">
+            âš ï¸ <span id="timeWarningText">Time is running out!</span>
+        </div>
+
+        <!-- Exam Progress -->
+        <div class="exam-progress">
+            <div class="progress-bar">
+                <div id="examProgressFill" class="progress-fill" style="width: 10%;"></div>
+            </div>
+            <div class="progress-info">
+                <span id="currentQuestionNumber">Question 1</span>
+                <span id="examProgressText" aria-live="polite">0/10 answered</span>
+            </div>
+        </div>
+
+        <!-- Questions Navigation -->
+        <div id="questionsNav" class="questions-nav">
+            <!-- Questions numbers will be dynamically added here -->
+        </div>
+
+        <!-- Question Display Area -->
+        <div class="question-display-area">
+            <div class="question-card" id="currentQuestionCard">
+                <div class="question-header">
+                    <h3 id="questionNumberDisplay">Question 1</h3>
+                    <span class="marks-badge" id="questionMarks">10 marks</span>
+                </div>
+
+                <div class="question-content">
+                    <div class="question-text" id="questionTextDisplay">
+
+                    </div>
+
+                    <!-- Options/Answer Area -->
+                    <div class="answer-section">
+                        <!-- Multiple Choice -->
+                        <div id="mcqOptions" class="mcq-options" role="radiogroup" aria-label="Answer choices" onkeydown="handleMCQKeydown(event)">
+                            <button type="button" class="option-row" role="radio" aria-checked="false" tabindex="0" onclick="selectMCQOption(0)">
+                                <span class="option-label">A</span>
+                                <span class="option-text" id="optionA">3.14</span>
+                            </button>
+                            <button type="button" class="option-row" role="radio" aria-checked="false" tabindex="0" onclick="selectMCQOption(1)">
+                                <span class="option-label">B</span>
+                                <span class="option-text" id="optionB">3.15</span>
+                            </button>
+                            <button type="button" class="option-row" role="radio" aria-checked="false" tabindex="0" onclick="selectMCQOption(2)">
+                                <span class="option-label">C</span>
+                                <span class="option-text" id="optionC">3.16</span>
+                            </button>
+                            <button type="button" class="option-row" role="radio" aria-checked="false" tabindex="0" onclick="selectMCQOption(3)">
+                                <span class="option-label">D</span>
+                                <span class="option-text" id="optionD">3.17</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question-navigation">
+                    <button type="button" class="btn btn-outline" onclick="previousQuestionExam()" id="prevQuestionBtn">
+                        â† Previous
+                    </button>
+                    <div class="answer-status" id="answerStatus">Not answered</div>
+                    <button type="button" class="btn btn-primary" onclick="nextQuestionExam()" id="nextQuestionBtn">
+                        Next â†’
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>

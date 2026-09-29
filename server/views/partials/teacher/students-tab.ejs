@@ -1,0 +1,63 @@
+        <!-- Students Tab -->
+        <div id="studentsTab" class="tab-content hidden">
+          <div class="section-title">
+            ðŸ‘¥ Student Management
+          </div>
+
+          <!-- Add Student Form -->
+          <div class="form-section">
+            <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">âž• Add New Student</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-input" id="studentName" placeholder="Enter student name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="studentEmail" placeholder="student@example.com">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Initial Password</label>
+                <input type="password" class="form-input" id="studentPassword" placeholder="At least 6 characters"
+                  minlength="6">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Class</label>
+                <select class="form-input" id="studentClass">
+                  <option value="">Select Class</option>
+                  <option value="10">Class 10</option>
+                  <option value="11">Class 11</option>
+                  <option value="12">Class 12</option>
+                </select>
+              </div>
+            </div>
+            <div class="action-buttons">
+              <button class="btn btn-teacher" id="studentSubmitButton" onclick="addStudent()">ðŸ‘¤ Add Student</button>
+              <button class="btn" onclick="clearStudentForm()">ðŸ—‘ï¸ Clear</button>
+            </div>
+          </div>
+
+          <!-- Students List -->
+          <div style="margin-top: 40px;">
+            <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">ðŸ“‹ All Students</h3>
+            <div style="overflow-x: auto;">
+              <table class="results-table">
+                <thead>
+                  <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Class</th>
+                    <th>Exams Taken</th>
+                    <th>Avg. Score</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="studentsList">
+                  <!-- Students will be loaded here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>

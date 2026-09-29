@@ -1,0 +1,59 @@
+    <!-- Results Interface -->
+    <div id="resultsContainer" class="results-container hidden">
+        <div class="results-header">
+            <h1>ðŸ“Š Exam Results</h1>
+            <button class="btn btn-outline" onclick="backToDashboard()">
+                â† Back to Dashboard
+            </button>
+        </div>
+
+        <div class="results-summary">
+            <div id="resultReleaseNotice" class="result-release-notice hidden" role="status"></div>
+            <div class="main-score">
+                <div class="score-display" id="finalScoreDisplay"></div>
+                <div class="score-label">Final Score</div>
+                <div class="score-details" id="scoreDetails">85/100</div>
+            </div>
+
+            <div class="result-stats">
+                <div class="stat-item">
+                    <span class="stat-icon">âœ…</span>
+                    <div>
+                        <div class="stat-value" id="correctAnswers">8</div>
+                        <div class="stat-label">Correct</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">âŒ</span>
+                    <div>
+                        <div class="stat-value" id="wrongAnswers">2</div>
+                        <div class="stat-label">Wrong</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">â±ï¸</span>
+                    <div>
+                        <div class="stat-value" id="timeTaken">45:30</div>
+                        <div class="stat-label">Time Taken</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">â­ï¸</span>
+                    <div>
+                        <div class="stat-value" id="skipedAnswer"></div>
+                        <div class="stat-label">Skipped</div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Results -->
+        <div class="detailed-results">
+            <h2>ðŸ“‹ Question-wise Analysis</h2>
+            <div id="questionAnalysis" class="question-analysis">
+                <!-- Question analysis will be dynamically added here -->
+            </div>
+        </div>
+
+    </div>
