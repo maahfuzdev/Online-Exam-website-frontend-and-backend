@@ -59,16 +59,51 @@ async function listWrittenAnswersForTeacher(req, res) {
   const exam = await assignedExamRepository.findOne({ _id: examID, teacherID, studentIDs: studentID }).select('_id');
   if (!exam) return res.status(404).json({ error: 'Exam not found in your exam list.' });
   if (!await resultRepository.exists({ examID, studentID })) return res.status(409).json({ error: 'Written answers are available after the student submits the exam.' });
-  const answers = await WrittenAnswer.find({ examID, studentID }).select('questionID questionIndex questionText fileName contentType uploadedAt').sort({ questionIndex: 1 });
-  res.json(answers.map(answer => ({
-    questionID: answer.questionID,
-    questionIndex: answer.questionIndex,
-    questionText: answer.questionText,
-    fileName: answer.fileName,
-    contentType: answer.contentType,
-    uploadedAt: answer.uploadedAt,
-    url: `/results/api/written-answers/${examID}/${studentID}/${answer.questionID}/file?teacherID=${teacherID}`
-  })));
+  const [answers, result] = await Promise.all([
+    WrittenAnswer.find({ examID, studentID }).select('questionID fileName contentType uploadedAt'),
+    resultRepository.findOne({ examID, studentID })
+  ]);
+  const filesByQuestion = new Map(answers.map(answer => [String(answer.questionID), answer]));
+  res.json((result.answerReview || []).filter(item => item.answerType === 'written').map((item, index) => {
+    const file = filesByQuestion.get(String(item.questionID));
+    return {
+      questionID: item.questionID,
+      questionIndex: (result.answerReview || []).indexOf(item),
+      questionText: item.questionText,
+      fileName: file?.fileName || '',
+      contentType: file?.contentType || '',
+      uploadedAt: file?.uploadedAt || null,
+      marksAwarded: item.marksAwarded ?? null,
+      maxMarks: item.maxMarks,
+      url: file ? `/results/api/written-answers/${examID}/${studentID}/${item.questionID}/file?teacherID=${teacherID}` : null
+    };
+  }));
+}
+
+async function gradeWrittenAnswer(req, res) {
+  const { examID, studentID, questionID } = req.params;
+  const { teacherID } = req.query;
+  const rawMarks = req.body?.marks;
+  const marks = Number(rawMarks);
+  if (![examID, studentID, questionID, teacherID].every(mongoose.isValidObjectId) || rawMarks === '' || rawMarks == null || !Number.isFinite(marks) || marks < 0) {
+    return res.status(400).json({ error: 'Enter a valid mark of zero or more.' });
+  }
+  const exam = await assignedExamRepository.findOne({ _id: examID, teacherID, studentIDs: studentID }).populate('questionIds');
+  if (!exam) return res.status(404).json({ error: 'Exam not found in your exam list.' });
+  const result = await resultRepository.findOne({ examID, studentID, teacherID });
+  if (!result) return res.status(404).json({ error: 'Student result not found.' });
+  const index = (result.answerReview || []).findIndex(item => String(item.questionID) === String(questionID) && item.answerType === 'written');
+  if (index < 0) return res.status(404).json({ error: 'Written question not found in this result.' });
+  const maximum = Number(result.answerReview[index].maxMarks ?? exam.markPerQuestion) || 0;
+  if (marks > maximum) return res.status(400).json({ error: `Marks cannot exceed ${maximum}.` });
+  result.answerReview[index].marksAwarded = marks;
+  const writtenItems = result.answerReview.filter(item => item.answerType === 'written');
+  result.manualMarks = writtenItems.reduce((sum, item) => sum + (Number(item.marksAwarded) || 0), 0);
+  result.manualGradingPending = writtenItems.some(item => item.marksAwarded == null);
+  result.score = (Number(result.mcqScore) || 0) + result.manualMarks;
+  result.percentage = result.totalMarks > 0 ? (result.score / result.totalMarks) * 100 : 0;
+  await result.save();
+  res.json({ success: true, score: result.score, totalMarks: result.totalMarks, percentage: result.percentage, manualGradingPending: result.manualGradingPending });
 }
 
 async function getWrittenAnswerFile(req, res) {
@@ -104,7 +139,7 @@ async function submitStudentResult(req, res) {
         success: true,
         submitted: true,
         message: "This exam has already been submitted.",
-        result: visible ? existingResult : null,
+        result: visible && !existingResult.manualGradingPending ? existingResult : null,
         resultVisibility: exam.resultVisibility || "immediate",
         resultsReleased: Boolean(exam.resultsReleased)
       });
@@ -121,8 +156,10 @@ async function submitStudentResult(req, res) {
     );
     if (invalidAnswer) return res.status(400).json({ success: false, message: "One or more submitted answers are invalid." });
 
-    const scoring = scoreExamAnswers(exam.questionIds, answers, exam);
+        const scoring = scoreExamAnswers(exam.questionIds, answers, exam);
     const { answerReview, correctCount, wrongCount, skippedCount, score, totalMarks, percentage } = scoring;
+    const hasWrittenQuestions = exam.questionIds.some(question => question.answerType === 'written');
+    const adjustedTotalMarks = (Number(exam.markPerQuestion) || 0) * exam.questionIds.length;
 
     const newResult = new Result({
       studentID,
@@ -134,8 +171,11 @@ async function submitStudentResult(req, res) {
       wrongAnswers: wrongCount,
       skippedQuestion: skippedCount,
       score,
-      totalMarks,
-      percentage,
+      totalMarks: adjustedTotalMarks || totalMarks,
+      mcqScore: score,
+      manualMarks: 0,
+      manualGradingPending: hasWrittenQuestions,
+      percentage: adjustedTotalMarks > 0 ? score / adjustedTotalMarks * 100 : percentage,
       timeTaken,
       date: new Date(),
       answerReview
@@ -148,8 +188,10 @@ async function submitStudentResult(req, res) {
     res.status(201).json({
       success: true,
       submitted: true,
-      message: visible ? "Result saved successfully" : "Your submission is saved. The teacher's release rule will determine when you can see your result.",
-      result: visible ? newResult : null,
+      message: hasWrittenQuestions
+        ? "Your submission is saved. The teacher must finish marking written answers before the final result is available."
+        : visible ? "Result saved successfully" : "Your submission is saved. The teacher's release rule will determine when you can see your result.",
+      result: visible && !hasWrittenQuestions ? newResult : null,
       resultVisibility: exam.resultVisibility || "immediate",
       resultsReleased: Boolean(exam.resultsReleased)
     });
@@ -207,7 +249,7 @@ async function getStudentExamResult(req, res) {
   try {
     const { studentID, examID } = req.params;
 
-    const results = await resultRepository.find({ studentID, examID });
+    const results = await resultRepository.find({ studentID, examID, manualGradingPending: { $ne: true } });
     const exam = await findAssignedExam(examID);
     if (!canStudentViewResult(exam)) {
       return res.status(403).json({ success: false, message: "The teacher has not released this result yet.", count: 0, data: [] });
@@ -215,8 +257,8 @@ async function getStudentExamResult(req, res) {
 
     res.status(200).json({
       success: true,
-      count: results.length,
-      data: results
+      count: results.filter(result => !result.manualGradingPending).length,
+      data: results.filter(result => !result.manualGradingPending)
     });
 
   } catch (error) {
@@ -235,7 +277,7 @@ async function listResultsByExam(req, res) {
     const exam = await findAssignedExam(examID);
     if (!exam) return res.status(404).json({ error: "Exam not found." });
     if (!canStudentViewResult(exam)) return res.status(403).json({ error: "Results are not available yet." });
-    const results = await resultRepository.find({ examID }).populate("studentID", "name");
+    const results = await resultRepository.find({ examID, manualGradingPending: { $ne: true } }).populate("studentID", "name");
     res.json(results);
   } catch (error) {
     console.error("Error fetching student result:", error);
@@ -266,6 +308,7 @@ async function listTeacherResults(req, res) {
         class: result.studentID?.class || "",
         examId: result.examID?._id || result.examID,
         writtenAnswersEnabled: Boolean(result.examID?.writtenAnswersEnabled),
+        manualGradingPending: Boolean(result.manualGradingPending),
         examTitle: result.examTitle || "Exam",
         subject: result.examID?.subject || "",
         score: result.score ?? 0,
@@ -289,6 +332,7 @@ module.exports = {
   listResultsByExam: asyncHandler(listResultsByExam),
   listTeacherResults: asyncHandler(listTeacherResults),
   saveWrittenAnswer: asyncHandler(saveWrittenAnswer),
+  gradeWrittenAnswer: asyncHandler(gradeWrittenAnswer),
   listWrittenAnswersForTeacher: asyncHandler(listWrittenAnswersForTeacher),
   getWrittenAnswerFile: asyncHandler(getWrittenAnswerFile)
 };

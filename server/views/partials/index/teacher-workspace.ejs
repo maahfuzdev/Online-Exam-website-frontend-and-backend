@@ -93,6 +93,7 @@
             <div><label class="form-label" for="questionSubject">Subject</label><input id="questionSubject" class="form-input" type="text" placeholder="e.g., Mathematics" required></div>
             <div><label class="form-label" for="questionClass">Class / Grade</label><input id="questionClass" class="form-input" type="text" placeholder="e.g., Class 10" required></div>
           </div>
+          <div class="form-group"><label class="form-label" for="answerTypeSelect">Answer type</label><select id="answerTypeSelect" class="form-input" onchange="toggleQuestionAnswerType()"><option value="mcq">MCQ</option><option value="written">Written answer</option></select><p class="creator-help">Written questions have no answer key. Students upload a photo or PDF, and you award marks manually.</p></div>
 
           <div class="form-group">
             <label class="form-label" for="questionInput">Question</label>
@@ -197,7 +198,7 @@
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" id="mcqChoicesGroup">
             <label class="form-label"> Answer Choices</label>
             <p class="creator-help">Enter four options. LaTeX formulas are supported; tap the correct answer letter.</p>
             <div class="choices-grid">
@@ -403,6 +404,7 @@
           </h3>
 
           <div class="assignment-pickers">
+            <div class="form-group exam-type-selector"><label class="form-label" for="examType">Exam type</label><select id="examType" class="form-input" onchange="changeExamType()"><option value="mcq">MCQ exam</option><option value="written">Written exam</option></select><p class="creator-help" id="examTypeHelp">Only MCQ questions will appear in the question picker.</p></div>
             <details class="assignment-picker">
               <summary><span>Choose students</span><span class="picker-count" id="studentPickerCount">0 selected</span></summary>
               <div class="picker-content">

@@ -6,6 +6,7 @@ const AssignedSchema = new mongoose.Schema({
    examTitle: String,
    subject: { type: String, trim: true, default: "" },
    questionIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Question' }],
+   examType: { type: String, enum: ["mcq", "written"], default: "mcq" },
    startTime: Date,
   endTime: Date,
    examTime: Number, // in minutes

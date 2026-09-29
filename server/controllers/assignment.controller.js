@@ -12,22 +12,25 @@ const asyncHandler = require("../middleware/async-handler");
 
 async function createAssignedExam(req, res) {
   try {
-    const { teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, totalMarks, negativeMarkingEnabled = false, negativeMarkPerWrong = 0, resultVisibility = "immediate", writtenAnswersEnabled = false } = req.body;
+    const { teacherID, studentIDs, examTitle, subject, questionIds, examType, startTime, endTime, examTime, markPerQuestion, totalMarks, negativeMarkingEnabled = false, negativeMarkPerWrong = 0, resultVisibility = "immediate", writtenAnswersEnabled = false } = req.body;
 
     const validation = validateExamInput({ teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, negativeMarkingEnabled, negativeMarkPerWrong, resultVisibility });
     if (validation) return res.status(400).json({ error: validation });
-    const [teacher, studentCount, questionCount] = await Promise.all([
+    const [teacher, studentCount, questionCount, selectedQuestions] = await Promise.all([
       authRepository.findOne({ _id: teacherID, role: "teacher" }).select("_id"),
       authRepository.countDocuments({ _id: { $in: studentIDs }, role: "student" }),
-      questionRepository.countDocuments({ _id: { $in: questionIds }, teacher: teacherID })
+      questionRepository.countDocuments({ _id: { $in: questionIds }, teacher: teacherID }),
+      questionRepository.find({ _id: { $in: questionIds }, teacher: teacherID }).select("answerType")
     ]);
     if (!teacher) return res.status(403).json({ error: "A teacher account is required." });
     if (studentCount !== new Set(studentIDs.map(String)).size) return res.status(400).json({ error: "One or more selected students are invalid." });
     if (questionCount !== new Set(questionIds.map(String)).size) return res.status(400).json({ error: "One or more selected questions are invalid." });
+    const resolvedExamType = examType || (selectedQuestions.every(question => question.answerType === "written") ? "written" : "mcq");
+    if (!["mcq", "written"].includes(resolvedExamType) || selectedQuestions.some(question => (question.answerType || "mcq") !== resolvedExamType)) return res.status(400).json({ error: "All selected questions must match the chosen exam type." });
 
     const newAssignment = new AssignedQuestion({
       teacherID, studentIDs, examTitle: examTitle.trim(), subject: subject.trim(), questionIds, startTime, endTime, examTime, markPerQuestion,
-      totalMarks: questionIds.length * Number(markPerQuestion), negativeMarkingEnabled, negativeMarkPerWrong: negativeMarkingEnabled ? Number(negativeMarkPerWrong) : 0, resultVisibility, writtenAnswersEnabled: Boolean(writtenAnswersEnabled)
+      totalMarks: questionIds.length * Number(markPerQuestion), examType: resolvedExamType, negativeMarkingEnabled, negativeMarkPerWrong: negativeMarkingEnabled ? Number(negativeMarkPerWrong) : 0, resultVisibility, writtenAnswersEnabled: Boolean(writtenAnswersEnabled) || resolvedExamType === "written"
     });
     await newAssignment.save();
 
@@ -42,7 +45,7 @@ async function createAssignedExam(req, res) {
 async function updateAssignedExam(req, res) {
   try {
     const { examId } = req.params;
-    const { teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, negativeMarkingEnabled = false, negativeMarkPerWrong = 0, resultVisibility = "immediate", writtenAnswersEnabled = false } = req.body;
+    const { teacherID, studentIDs, examTitle, subject, questionIds, examType, startTime, endTime, examTime, markPerQuestion, negativeMarkingEnabled = false, negativeMarkPerWrong = 0, resultVisibility = "immediate", writtenAnswersEnabled = false } = req.body;
     if (!mongoose.isValidObjectId(examId)) return res.status(400).json({ error: "Invalid exam ID." });
     const validation = validateExamInput({ teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, negativeMarkingEnabled, negativeMarkPerWrong, resultVisibility });
     if (validation) return res.status(400).json({ error: validation });
@@ -66,14 +69,17 @@ async function updateAssignedExam(req, res) {
       if (!onlyChangesWindow) return res.status(409).json({ error: "While an exam is live, you can only change its closing time to a future time." });
     }
 
-    const [teacher, studentCount, questionCount] = await Promise.all([
+    const [teacher, studentCount, questionCount, selectedQuestions] = await Promise.all([
       authRepository.findOne({ _id: teacherID, role: "teacher" }).select("_id"),
       authRepository.countDocuments({ _id: { $in: studentIDs }, role: "student" }),
-      questionRepository.countDocuments({ _id: { $in: questionIds }, teacher: teacherID })
+      questionRepository.countDocuments({ _id: { $in: questionIds }, teacher: teacherID }),
+      questionRepository.find({ _id: { $in: questionIds }, teacher: teacherID }).select("answerType")
     ]);
     if (!teacher) return res.status(403).json({ error: "A teacher account is required." });
     if (studentCount !== new Set(studentIDs.map(String)).size) return res.status(400).json({ error: "One or more selected students are invalid." });
     if (questionCount !== new Set(questionIds.map(String)).size) return res.status(400).json({ error: "One or more selected questions are invalid." });
+    const resolvedExamType = examType || (selectedQuestions.every(question => question.answerType === "written") ? "written" : "mcq");
+    if (!["mcq", "written"].includes(resolvedExamType) || selectedQuestions.some(question => (question.answerType || "mcq") !== resolvedExamType)) return res.status(400).json({ error: "All selected questions must match the chosen exam type." });
     const hasResults = await resultRepository.exists({ examID: exam._id });
     if (hasResults) {
       if (!sameQuestionIds || !sameStudentIds || Number(markPerQuestion) !== Number(exam.markPerQuestion) || Boolean(negativeMarkingEnabled) !== Boolean(exam.negativeMarkingEnabled) || (negativeMarkingEnabled && Number(negativeMarkPerWrong) !== Number(exam.negativeMarkPerWrong))) {
@@ -86,7 +92,8 @@ async function updateAssignedExam(req, res) {
       startTime: new Date(startTime), endTime: new Date(endTime), examTime: Number(examTime), markPerQuestion: Number(markPerQuestion),
       totalMarks: questionIds.length * Number(markPerQuestion), negativeMarkingEnabled: Boolean(negativeMarkingEnabled),
       negativeMarkPerWrong: negativeMarkingEnabled ? Number(negativeMarkPerWrong) : 0, resultVisibility,
-      writtenAnswersEnabled: Boolean(writtenAnswersEnabled),
+      examType: resolvedExamType,
+      writtenAnswersEnabled: Boolean(writtenAnswersEnabled) || resolvedExamType === "written",
       resultsReleased: resultVisibility === "teacher_release" ? exam.resultsReleased : false
     });
     await exam.save();
@@ -269,6 +276,7 @@ async function getExamForStudent(req, res) {
     questionText: question.questionText,
     options: question.options,
     questionType: question.questionType,
+    answerType: question.answerType || "mcq",
     subject: question.subject
   })));
 
@@ -345,7 +353,7 @@ async function listExamsForTeacher(req, res) {
         const { teacherId } = req.params;
         const exams = await assignedExamRepository.find({ teacherID: teacherId })
             .populate("studentIDs", "name email")
-            .populate("questionIds", "questionText");
+    .populate("questionIds", "questionText answerType");
         res.json(exams);
     } catch (err) {
         console.error(err);

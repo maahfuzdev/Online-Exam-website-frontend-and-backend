@@ -191,11 +191,12 @@ function filterQuestionBank() {
   container.innerHTML = questions.map(question => {
     const options = question.choices || question.options || [];
     const questionText = question.question || question.questionText || '';
+    const isWritten = question.answerType === 'written';
     const isMathQuestion = question.questionType === 'mathematical' || question.hasMath || hasMathContent(questionText);
     const correctIndex = typeof question.correct === 'number'
       ? question.correct
       : String(question.correctAnswer || 'A').charCodeAt(0) - 65;
-    const choices = ['A', 'B', 'C', 'D'].map((letter, index) => `
+    const choices = isWritten ? '<li>This question is marked manually from the student\'s uploaded answer.</li>' : ['A', 'B', 'C', 'D'].map((letter, index) => `
       <li class="${index === correctIndex ? 'bank-correct-choice' : ''}">
         <span>${letter}</span><div>${autoWrapMath(options[index] || '')}</div>
       </li>`).join('');
@@ -203,6 +204,7 @@ function filterQuestionBank() {
       <details class="question-bank-item">
         <summary>
           <span class="bank-question-type ${isMathQuestion ? 'math' : ''}">${isMathQuestion ? 'Mathematical' : 'General'}</span>
+          <span class="bank-question-type ${isWritten ? 'written' : 'mcq'}">${isWritten ? 'Written' : 'MCQ'}</span>
           <span class="bank-question-prompt">${autoWrapMath(questionText)}</span>
           <span class="bank-question-meta">${escapeHtml(question.subject || 'Unsorted')} · ${escapeHtml(question.class || 'Class not set')}</span>
         </summary>

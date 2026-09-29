@@ -25,6 +25,9 @@ const resultSchema = new mongoose.Schema({
   totalQuestions: Number,
 
   score: Number,
+  mcqScore: Number,
+  manualMarks: { type: Number, default: 0 },
+  manualGradingPending: { type: Boolean, default: false },
 
   totalMarks: Number,
 
@@ -43,7 +46,10 @@ const resultSchema = new mongoose.Schema({
     options: [String],
     selectedOption: Number,
     correctOption: Number,
-    isCorrect: Boolean
+    isCorrect: Boolean,
+    answerType: { type: String, enum: ["mcq", "written"], default: "mcq" },
+    maxMarks: Number,
+    marksAwarded: Number
   }],
 
   date: Date,

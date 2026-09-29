@@ -15,7 +15,7 @@ let writtenAnswerFiles = {};
 let pendingWrittenUploads = {};
 
 function hasStudentResponse(index) {
-  return studentAnswers[index] !== undefined || (writtenAnswersEnabled && writtenAnswerFiles[index]?.status === 'uploaded');
+  return studentAnswers[index] !== undefined || ((writtenAnswersEnabled || quizQuestions1[index]?.answerType === 'written') && writtenAnswerFiles[index]?.status === 'uploaded');
 }
 
 function saveWrittenAnswerMetadata() {
@@ -36,8 +36,9 @@ function renderWrittenAnswerUpload(index) {
   const feedback = document.getElementById('writtenAnswerFeedback');
   const input = document.getElementById('writtenAnswerFile');
   if (!section || !feedback) return;
-  section.classList.toggle('hidden', !writtenAnswersEnabled);
-  if (!writtenAnswersEnabled) return;
+  const uploadAvailable = writtenAnswersEnabled || quizQuestions1[index]?.answerType === 'written';
+  section.classList.toggle('hidden', !uploadAvailable);
+  if (!uploadAvailable) return;
   const answer = writtenAnswerFiles[index];
   feedback.replaceChildren();
   if (!answer) {
@@ -203,11 +204,12 @@ async function loadStudentExams() {
     _id: q._id,
     question: q.questionText,
     choices: q.options,
-    correct: null
+    correct: null,
+    answerType: q.answerType || 'mcq'
   }));
 
   currentQuestionIndex = 0;
-  writtenAnswersEnabled = localStorage.getItem('writtenAnswersEnabled') === 'true';
+  writtenAnswersEnabled = localStorage.getItem('writtenAnswersEnabled') === 'true' || quizQuestions1.some(question => question.answerType === 'written');
   writtenAnswerFiles = JSON.parse(localStorage.getItem(studentExamStorageKey('writtenAnswers', examId)) || '{}');
   pendingWrittenUploads = {};
   const savedAnswers = JSON.parse(localStorage.getItem(studentExamStorageKey('examAnswers', examId)) || '{}');
@@ -818,6 +820,9 @@ function updateMCQUI() {
     status.className = 'answer-status answered';
   } else if (writtenAnswersEnabled && writtenAnswerFiles[currentQuestionIndex]?.status === 'uploading') {
     status.textContent = 'Uploading written answer…';
+    status.className = 'answer-status';
+  } else if (quizQuestions1[currentQuestionIndex]?.answerType === 'written') {
+    status.textContent = 'Upload your written answer';
     status.className = 'answer-status';
   } else {
     status.textContent = 'Choose one answer';

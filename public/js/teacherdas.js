@@ -349,13 +349,13 @@
               <td>${result.subject || '—'}</td>
               <td>${result.examTitle}</td>
               <td>
-                <div style="font-weight: 600; color: #1a202c;">${result.score}/${result.total}</div>
+                <div style="font-weight: 600; color: #1a202c;">${result.score}/${result.total}</div>${result.manualGradingPending ? '<small>Written marking pending</small>' : ''}
               </td>
               <td>
                 <div style="font-weight: 600; color: #667eea;">${result.percentage}%</div>
               </td>
               <td>
-                <span class="grade-badge ${gradeClass}">${result.grade}</span>
+                <span class="grade-badge ${gradeClass}">${result.manualGradingPending ? 'Pending' : result.grade}</span>
               </td>
               <td>${formatDate(result.date)}</td>
               <td>
@@ -817,14 +817,43 @@
           openLink.textContent = answer.contentType === 'application/pdf' ? 'Open PDF' : 'Open image';
           fileRow.append(fileName, openLink);
           card.append(title, question);
-          if (answer.contentType.startsWith('image/')) {
+          if (answer.contentType?.startsWith('image/')) {
             const image = document.createElement('img');
             image.className = 'written-answer-review-image';
             image.src = answer.url;
             image.alt = `Student answer to question ${Number(answer.questionIndex) + 1}`;
             card.appendChild(image);
           }
-          card.appendChild(fileRow);
+          if (answer.url) card.appendChild(fileRow);
+          else {
+            const missing = document.createElement('p');
+            missing.textContent = 'No answer file was uploaded. You can award zero marks or enter a score after review.';
+            card.appendChild(missing);
+          }
+          const gradeRow = document.createElement('div');
+          gradeRow.className = 'written-answer-grade-row';
+          const markInput = document.createElement('input');
+          markInput.type = 'number'; markInput.min = '0'; markInput.max = String(answer.maxMarks); markInput.step = '0.01';
+          markInput.value = answer.marksAwarded ?? '';
+          markInput.placeholder = `0 to ${answer.maxMarks}`;
+          markInput.setAttribute('aria-label', `Marks for question ${Number(answer.questionIndex) + 1}`);
+          const saveMark = document.createElement('button');
+          saveMark.type = 'button'; saveMark.className = 'btn btn-primary'; saveMark.textContent = 'Save marks';
+          const gradeStatus = document.createElement('span'); gradeStatus.setAttribute('role', 'status');
+          saveMark.onclick = async () => {
+            saveMark.disabled = true;
+            try {
+              const gradeResponse = await fetch(`/results/api/written-answers/${encodeURIComponent(examId)}/${encodeURIComponent(studentId)}/${encodeURIComponent(answer.questionID)}/grade?teacherID=${encodeURIComponent(teacherID)}`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ marks: markInput.value })
+              });
+              const gradePayload = await gradeResponse.json().catch(() => ({}));
+              if (!gradeResponse.ok) throw new Error(gradePayload.error || 'Could not save marks.');
+              gradeStatus.textContent = gradePayload.manualGradingPending ? 'Saved. Other written answers still need marking.' : `Saved. Final score: ${gradePayload.score}/${gradePayload.totalMarks} (${Math.round(gradePayload.percentage)}%).`;
+            } catch (error) { gradeStatus.textContent = error.message; }
+            finally { saveMark.disabled = false; }
+          };
+          gradeRow.append(markInput, document.createTextNode(` / ${answer.maxMarks} marks `), saveMark, gradeStatus);
+          card.appendChild(gradeRow);
           content.appendChild(card);
         });
       } catch (error) {

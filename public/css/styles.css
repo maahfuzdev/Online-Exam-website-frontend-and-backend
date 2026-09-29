@@ -1766,6 +1766,8 @@
 #examStep3 > div:first-child h2 { font-size: clamp(20px, 4vw, 26px) !important; }
 #examStep3 > div:first-child p { margin: 0; font-size: 13px !important; }
 #examStep3 .assignment-pickers { display: grid; gap: 10px; margin-top: 18px; }
+.exam-type-selector { margin: 0; padding: 15px; border: 1px solid #dfe9e4; border-radius: 9px; background: #f8fbf9; }
+.exam-type-selector .form-input { max-width: 360px; }
 .assignment-picker, .created-exams-panel {
   overflow: hidden;
   border: 1px solid #dfe9e4;

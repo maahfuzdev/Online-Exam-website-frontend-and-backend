@@ -16,7 +16,7 @@ async function visibleResultsForStudent(results) {
   const examIds = [...new Set(results.map(result => String(result.examID)).filter(Boolean))];
   const exams = await assignedExamRepository.findByIds(examIds, "endTime resultVisibility resultsReleased");
   const examById = new Map(exams.map(exam => [String(exam._id), exam]));
-  return results.filter(result => canStudentViewResult(examById.get(String(result.examID))));
+  return results.filter(result => !result.manualGradingPending && canStudentViewResult(examById.get(String(result.examID))));
 }
 
 module.exports = { findAssignedExam, canStudentViewResult, visibleResultsForStudent };

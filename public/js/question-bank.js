@@ -31,6 +31,7 @@ function loadFromLocalStorage() {
 
 // Updated addQuestion function
 function addQuestion(event) {
+    const answerType = document.getElementById('answerTypeSelect')?.value || 'mcq';
     const questionText = document.getElementById('questionInput').value.trim();
     const subject = document.getElementById('questionSubject').value.trim();
     const questionClass = document.getElementById('questionClass').value.trim();
@@ -39,12 +40,12 @@ function addQuestion(event) {
     const choice3 = document.getElementById('choice3').value.trim();
     const choice4 = document.getElementById('choice4').value.trim();
 
-    if (!questionText || !choice1 || !choice2 || !choice3 || !choice4) {
+    if (!questionText || (answerType === 'mcq' && (!choice1 || !choice2 || !choice3 || !choice4))) {
         alert('⚠️ Please fill in all fields!');
         return;
     }
 
-    if (correctAnswer === null) {
+    if (answerType === 'mcq' && correctAnswer === null) {
         alert('⚠️ Please select the correct answer!');
         return;
     }
@@ -56,11 +57,12 @@ function addQuestion(event) {
 
     const question = {
         question: questionText,
-        choices: [choice1, choice2, choice3, choice4],
-        correct: correctAnswer,
+        choices: answerType === 'mcq' ? [choice1, choice2, choice3, choice4] : [],
+        correct: answerType === 'mcq' ? correctAnswer : null,
         subject,
         class: questionClass,
         questionType: selectedQuestionType,
+        answerType,
         hasMath: selectedQuestionType === 'mathematical' && (hasMathContent(questionText) || [choice1, choice2, choice3, choice4].some(choice => hasMathContent(choice)))
     };
 
@@ -75,8 +77,9 @@ function addQuestion(event) {
       body: JSON.stringify({
             teacherId: teacherId,
             questionText: questionText,
-            options: [choice1, choice2, choice3, choice4],
-            correctAnswer: String.fromCharCode(65 + correctAnswer),
+            options: answerType === 'mcq' ? [choice1, choice2, choice3, choice4] : [],
+            correctAnswer: answerType === 'mcq' ? String.fromCharCode(65 + correctAnswer) : undefined,
+            answerType,
             subject,
             class: questionClass,
             questionType: selectedQuestionType
@@ -117,6 +120,11 @@ function addQuestion(event) {
         btn.innerHTML = '✅ Saved Locally!';
         setTimeout(() => btn.innerHTML = originalText, 1500);
     });
+}
+
+function toggleQuestionAnswerType() {
+    const written = document.getElementById('answerTypeSelect')?.value === 'written';
+    document.getElementById('mcqChoicesGroup')?.classList.toggle('hidden', written);
 }
 
 
@@ -166,12 +174,13 @@ async function loadQuestionsFromDB() {
         quizQuestions = questions.map(q => ({
             _id: q._id,
             question: q.questionText,
-            choices: q.options,
-            correct: q.correctAnswer.charCodeAt(0) - 65,
+            choices: q.options || [],
+            correct: q.answerType === 'written' ? null : String(q.correctAnswer || 'A').charCodeAt(0) - 65,
+            answerType: q.answerType || 'mcq',
             subject: q.subject || '',
             class: q.class || '',
-            questionType: q.questionType || (hasMathContent(q.questionText) || q.options.some(option => hasMathContent(option)) ? 'mathematical' : 'general'),
-            hasMath: q.questionType === 'mathematical' || hasMathContent(q.questionText) || q.options.some(option => hasMathContent(option))
+            questionType: q.questionType || (hasMathContent(q.questionText) || (q.options || []).some(option => hasMathContent(option)) ? 'mathematical' : 'general'),
+            hasMath: q.questionType === 'mathematical' || hasMathContent(q.questionText) || (q.options || []).some(option => hasMathContent(option))
         }));
 
         updateTeacherStats();
@@ -200,6 +209,8 @@ async function loadQuestionsFromDB() {
       document.getElementById('choice3').value = '';
       document.getElementById('choice4').value = '';
       correctAnswer = null;
+      if (document.getElementById('answerTypeSelect')) document.getElementById('answerTypeSelect').value = 'mcq';
+      toggleQuestionAnswerType();
       document.getElementById('correctIndicator').textContent = 'No correct answer selected';
       document.querySelectorAll('.correct-marker').forEach(marker => {
         marker.classList.add('inactive');
@@ -272,6 +283,7 @@ async function loadQuestionsFromDB() {
         const choices = ['A', 'B', 'C', 'D'];
         const questionText = q.question || q.questionText || '';
         const questionIsMath = q.questionType === 'mathematical' || q.hasMath || hasMathContent(questionText);
+        const answerLabel = q.answerType === 'written' ? 'Written; manually marked' : `Correct answer: ${choices[typeof q.correct === 'number' ? q.correct : String(q.correctAnswer || 'A').charCodeAt(0) - 65]}`;
         const mathIndicator = questionIsMath ? '🧮 ' : '📝 ';
         const questionPreviewText = questionText.length > 80 ? `${questionText.substring(0, 80)}...` : questionText;
         const questionPreview = questionIsMath
@@ -283,7 +295,7 @@ async function loadQuestionsFromDB() {
                             ${mathIndicator}Q${index + 1}: ${questionPreview}
                         </div>
                         <div class="question-meta">
-                            ${escapeHtml(q.subject || 'Unsorted')} · ${escapeHtml(q.class || 'Class not set')} | Correct answer: ${choices[typeof q.correct === 'number' ? q.correct : String(q.correctAnswer || 'A').charCodeAt(0) - 65]} | ${questionIsMath ? 'Mathematical' : 'General'}
+                            ${escapeHtml(q.subject || 'Unsorted')} · ${escapeHtml(q.class || 'Class not set')} | ${answerLabel} | ${questionIsMath ? 'Mathematical' : 'General'} · ${q.answerType === 'written' ? 'Written' : 'MCQ'}
                             <button onclick="removeQuestion(${index})" style="float: right; background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">Remove</button>
                         </div>
                     </div>

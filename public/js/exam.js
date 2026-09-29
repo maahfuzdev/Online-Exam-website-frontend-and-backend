@@ -330,13 +330,25 @@ function renderStudentsList() {
 }
 
 function getFilteredQuestionIndices() {
+    const examType = document.getElementById('examType')?.value || 'mcq';
     const subjectFilter = document.getElementById('scheduleQuestionSubject')?.value || '';
     const classFilter = document.getElementById('scheduleQuestionClass')?.value || '';
     const search = document.getElementById('scheduleQuestionSearch')?.value.trim().toLocaleLowerCase() || '';
     return quizQuestions.map((question, index) => ({ question, index })).filter(({ question }) => {
         const text = `${question.questionText || question.question || ''} ${question.subject || ''} ${question.class || ''}`.toLocaleLowerCase();
-        return (!subjectFilter || question.subject === subjectFilter) && (!classFilter || question.class === classFilter) && text.includes(search);
+        return (question.answerType || 'mcq') === examType && (!subjectFilter || question.subject === subjectFilter) && (!classFilter || question.class === classFilter) && text.includes(search);
     }).map(({ index }) => index);
+}
+
+function changeExamType() {
+    const examType = document.getElementById('examType')?.value || 'mcq';
+    selectedQuestions = new Set([...selectedQuestions].filter(index => (quizQuestions[index]?.answerType || 'mcq') === examType));
+    const help = document.getElementById('examTypeHelp');
+    if (help) help.textContent = examType === 'written'
+        ? 'Only Written questions will appear. Students submit an image or PDF and the teacher marks it manually.'
+        : 'Only MCQ questions will appear in the question picker.';
+    renderQuestionsList();
+    updateQuestionsCount();
 }
 
 function renderQuestionsList() {
@@ -369,6 +381,7 @@ function renderQuestionsList() {
 
         const text = question.questionText || question.question || "";
         const isMathQuestion = question.questionType === 'mathematical' || question.hasMath || hasMathContent(text);
+        const answerTypeLabel = question.answerType === 'written' ? 'Written' : 'MCQ';
         const isSelected = selectedQuestions.has(index);
 
         const questionPreview = text.length > 80
@@ -396,6 +409,7 @@ function renderQuestionsList() {
                           color: ${isMathQuestion ? '#087865' : '#4338ca'}; font-weight: 500;">
                         ${isMathQuestion ? 'Mathematical' : 'General'}
                     </span>
+                    <span style="font-size: 12px; padding: 2px 8px; border-radius: 4px; background: ${question.answerType === 'written' ? '#fff4df' : '#eff6ff'}; color: ${question.answerType === 'written' ? '#a35b00' : '#315bd6'}; font-weight: 600;">${answerTypeLabel}</span>
                     <span style="margin-left:6px;color:#71817c;font-size:11px;">${escapeHtml(question.subject || 'Unsorted')} · ${escapeHtml(question.class || 'Class not set')}</span>
                 </div>
 
@@ -509,7 +523,7 @@ function updateQuestionsCount() {
     }
     
     if (totalCount) {
-        totalCount.textContent = `Total: ${quizQuestions.length}`;
+        totalCount.textContent = `Total: ${getFilteredQuestionIndices().length}`;
     }
 }
 
@@ -525,6 +539,7 @@ async function createAndAssignExam() {
     const negativeMarkPerWrong = negativeMarkingEnabled ? Number(document.getElementById('negativeMarkPerWrong').value) : 0;
     const resultVisibility = document.getElementById('resultVisibility').value;
     const writtenAnswersEnabled = document.getElementById('writtenAnswersEnabled').checked;
+    const examType = document.getElementById('examType').value;
 
     // Validation
     if (!examTitle) return showMessage("Please enter exam title", "error");
@@ -564,6 +579,7 @@ async function createAndAssignExam() {
     if (negativeMarkingEnabled && (!negativeMarkPerWrong || negativeMarkPerWrong <= 0)) return showMessage("Set a deduction greater than zero", "error");
     if (selectedStudents.size === 0) return showMessage("Please select at least one student", "error");
     if (selectedQuestions.size === 0) return showMessage("Please select at least one question", "error");
+    if ([...selectedQuestions].some(index => (quizQuestions[index]?.answerType || 'mcq') !== examType)) return showMessage("Selected questions must match the exam type.", "error");
 
     // Get teacher ID (আপনার authentication system থেকে)
     const teacherID = localStorage.getItem('userId');
@@ -577,6 +593,7 @@ async function createAndAssignExam() {
         examTitle:examTitle,
         subject,
         questionIds: Array.from(selectedQuestions).map(index => quizQuestions[index]._id), // Convert indices to ObjectIds
+        examType,
         startTime: new Date(startTime),
         endTime: new Date(endTime),
         examTime: Number(totalTime),
@@ -723,6 +740,9 @@ function editExam(examId, extendOnly = false) {
     document.getElementById('negativeMarkingEnabled').checked = Boolean(exam.negativeMarkingEnabled);
     document.getElementById('negativeMarkPerWrong').value = Number(exam.negativeMarkPerWrong || 0.25);
     document.getElementById('resultVisibility').value = exam.resultVisibility || 'immediate';
+    const savedExamType = exam.examType || ((exam.questionIds || []).length && exam.questionIds.every(question => question.answerType === 'written') ? 'written' : 'mcq');
+    document.getElementById('examType').value = savedExamType;
+    document.getElementById('examType').disabled = extendOnly;
     document.getElementById('writtenAnswersEnabled').checked = Boolean(exam.writtenAnswersEnabled);
     ['examTitle', 'examSubject', 'totalTime', 'marksPerQuestion', 'startTime', 'negativeMarkingEnabled', 'negativeMarkPerWrong', 'resultVisibility', 'writtenAnswersEnabled'].forEach(id => {
         document.getElementById(id).disabled = extendOnly;
@@ -739,6 +759,7 @@ function editExam(examId, extendOnly = false) {
         if (assignedQuestions.has(String(question._id))) indices.push(index);
         return indices;
     }, []));
+    changeExamType();
     renderStudentsList();
     renderQuestionsList();
     updateStudentsCount();
@@ -808,6 +829,8 @@ function resetExamForm() {
     document.getElementById('negativeMarkingEnabled').checked = false;
     document.getElementById('negativeMarkPerWrong').value = '0.25';
     document.getElementById('resultVisibility').value = 'immediate';
+    document.getElementById('examType').value = 'mcq';
+    document.getElementById('examType').disabled = false;
     document.getElementById('writtenAnswersEnabled').checked = false;
     document.getElementById('saveExamButton').textContent = 'Create exam and assign';
     document.getElementById('cancelEditExamButton').classList.add('hidden');
@@ -820,6 +843,7 @@ function resetExamForm() {
     
     selectedStudents.clear();
     selectedQuestions.clear();
+    changeExamType();
     
     renderStudentsList();
     renderQuestionsList();

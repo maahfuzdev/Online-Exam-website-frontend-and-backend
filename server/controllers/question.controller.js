@@ -20,13 +20,14 @@ async function saveQuestionsBulk(req, res) {
         if (!subject?.trim() || !questionClass?.trim() || !Array.isArray(questions) || !questions.length || questions.length > 100) {
             return res.status(400).json({ error: "Subject, class, and 1 to 100 questions are required." });
         }
-        const valid = questions.every(q => typeof q.questionText === "string" && q.questionText.trim() && Array.isArray(q.options) && q.options.length === 4 && q.options.every(option => typeof option === "string" && option.trim()) && /^[A-D]$/.test(q.correctAnswer));
-        if (!valid) return res.status(400).json({ error: "Each question needs text, four options, and a correct answer." });
+        const valid = questions.every(q => typeof q.questionText === "string" && q.questionText.trim() && (!q.answerType || q.answerType === "mcq") && Array.isArray(q.options) && q.options.length === 4 && q.options.every(option => typeof option === "string" && option.trim()) && /^[A-D]$/.test(q.correctAnswer));
+        if (!valid) return res.status(400).json({ error: "Each MCQ needs text, four options, and a correct answer." });
         const saved = await questionRepository.insertMany(questions.map(q => ({
             teacher: teacherId,
             questionText: q.questionText.trim(),
             options: q.options.map(option => option.trim()),
             correctAnswer: q.correctAnswer,
+            answerType: "mcq",
             subject: subject.trim(),
             class: questionClass.trim(),
             questionType: inferQuestionType(subject, q.questionText, q.options)
@@ -41,17 +42,21 @@ async function saveQuestionsBulk(req, res) {
 
 async function createQuestion(req, res) {
     try {
-        const { teacherId, questionText, options, correctAnswer, subject, class: questionClass, questionType } = req.body;
+        const { teacherId, questionText, options, correctAnswer, subject, class: questionClass, questionType, answerType = "mcq" } = req.body;
 
-        if (!questionText || !options || options.length !== 4 || !correctAnswer) {
-            return res.status(400).json({ error: "Invalid data" });
+        if (!teacherId || typeof questionText !== "string" || !questionText.trim() || !["mcq", "written"].includes(answerType)) {
+            return res.status(400).json({ error: "A question and valid answer type are required." });
+        }
+        if (answerType === "mcq" && (!Array.isArray(options) || options.length !== 4 || options.some(option => !String(option).trim()) || !/^[A-D]$/.test(correctAnswer || ""))) {
+            return res.status(400).json({ error: "MCQ questions require four options and a correct answer." });
         }
 
         const newQuestion = new Question({
             teacher: teacherId,
             questionText,
-            options,
-            correctAnswer,
+            options: answerType === "mcq" ? options : [],
+            correctAnswer: answerType === "mcq" ? correctAnswer : undefined,
+            answerType,
             subject,
             class: questionClass,
             questionType: normalizeQuestionType(questionType)
