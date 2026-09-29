@@ -548,7 +548,7 @@ async function createAndAssignExam() {
             if (updatedExam && payload.endTime) updatedExam.endTime = payload.endTime;
             localStorage.setItem('exams', JSON.stringify(exams));
             renderExamsList();
-            showMessage('Exam closing time extended successfully.', 'success');
+            showMessage('Exam closing time changed successfully.', 'success');
             resetExamForm();
             await loadExistingExams();
         } catch (error) {
@@ -607,7 +607,7 @@ async function createAndAssignExam() {
         }
 
         // Success message
-        showMessage(editingExamId ? (extendingLiveExam ? 'Exam closing time extended successfully.' : `Exam "${examTitle}" updated successfully!`) : `Exam "${examTitle}" created successfully!`, "success");
+        showMessage(editingExamId ? (extendingLiveExam ? 'Exam closing time changed successfully.' : `Exam "${examTitle}" updated successfully!`) : `Exam "${examTitle}" created successfully!`, "success");
         
         // Reset form
         resetExamForm();
@@ -694,7 +694,7 @@ function renderExamsList() {
           <div class="exam-management-top"><div><span class="exam-management-subject">${escapeHtml(exam.subject || 'Subject not set')}</span><h4>${escapeHtml(exam.examTitle || 'Untitled exam')}</h4></div><span class="exam-status-pill ${statusClass}">${status}</span></div>
           <div class="exam-management-meta"><span><strong>Schedule</strong>${formatDate(startDate)} – ${formatDate(endDate)}</span><span><strong>Students</strong>${exam.studentIDs?.length || 0} assigned</span><span><strong>Questions</strong>${exam.questionIds?.length || 0} · ${Number(exam.totalMarks || 0)} marks</span></div>
           <div class="exam-management-policies"><span class="exam-policy-badge">${negativeSummary}</span><span class="exam-policy-badge">${policyLabels[exam.resultVisibility || 'immediate']}</span></div>
-          <div class="exam-management-actions">${releaseAction}<button class="exam-edit-action" type="button" onclick="editExam('${exam._id}', ${status === 'Live'})">${status === 'Live' ? 'Extend closing time' : 'Edit / reschedule'}</button>${resultButton}<button class="exam-delete-action" type="button" ${liveLock} onclick="deleteExam('${exam._id}')">Delete</button></div>
+          <div class="exam-management-actions">${releaseAction}<button class="exam-edit-action" type="button" onclick="editExam('${exam._id}', ${status === 'Live'})">${status === 'Live' ? 'Change closing time' : 'Edit / reschedule'}</button>${resultButton}<button class="exam-delete-action" type="button" ${liveLock} onclick="deleteExam('${exam._id}')">Delete</button></div>
         </article>`;
     }).join('');
     container.innerHTML = `<div class="exam-management-grid">${cards}</div>`;
@@ -741,7 +741,7 @@ function editExam(examId, extendOnly = false) {
     updateStudentsCount();
     updateQuestionsCount();
 
-    document.getElementById('saveExamButton').textContent = extendOnly ? 'Extend exam closing time' : 'Save exam changes';
+    document.getElementById('saveExamButton').textContent = extendOnly ? 'Save closing time' : 'Save exam changes';
     document.getElementById('cancelEditExamButton').classList.remove('hidden');
     showExamStep(3);
     document.getElementById('examTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });

@@ -53,14 +53,15 @@ async function updateAssignedExam(req, res) {
     const sameQuestionIds = questionIds.length === exam.questionIds.length && questionIds.every(id => exam.questionIds.some(existing => String(existing) === String(id)));
     const sameStudentIds = studentIDs.length === exam.studentIDs.length && studentIDs.every(id => exam.studentIDs.some(existing => String(existing) === String(id)));
     if (isLive) {
-      const onlyExtendsWindow = new Date(startTime).getTime() === new Date(exam.startTime).getTime() &&
-        new Date(endTime).getTime() > new Date(exam.endTime).getTime() &&
+      const onlyChangesWindow = new Date(startTime).getTime() === new Date(exam.startTime).getTime() &&
+        new Date(endTime).getTime() !== new Date(exam.endTime).getTime() &&
+        new Date(endTime).getTime() > now.getTime() &&
         Number(examTime) === Number(exam.examTime) && examTitle.trim() === exam.examTitle && subject.trim() === exam.subject &&
         sameQuestionIds && sameStudentIds && Number(markPerQuestion) === Number(exam.markPerQuestion) &&
         Boolean(negativeMarkingEnabled) === Boolean(exam.negativeMarkingEnabled) &&
         (!negativeMarkingEnabled || Number(negativeMarkPerWrong) === Number(exam.negativeMarkPerWrong)) &&
         resultVisibility === (exam.resultVisibility || "immediate");
-      if (!onlyExtendsWindow) return res.status(409).json({ error: "While an exam is live, you can only extend its closing time." });
+      if (!onlyChangesWindow) return res.status(409).json({ error: "While an exam is live, you can only change its closing time to a future time." });
     }
 
     const [teacher, studentCount, questionCount] = await Promise.all([
@@ -108,10 +109,10 @@ async function extendExamWindow(req, res) {
     if (!exam) return res.status(404).json({ error: "Exam not found in your exam list." });
     const now = new Date();
     if (now < exam.startTime || now > exam.endTime) {
-      return res.status(409).json({ error: "The exam is no longer live, so its closing time cannot be extended." });
+      return res.status(409).json({ error: "The exam is no longer live, so its closing time cannot be changed." });
     }
-    if (newEndTime <= exam.endTime || newEndTime <= now) {
-      return res.status(400).json({ error: "Choose a closing time later than the current closing time." });
+    if (newEndTime <= now) {
+      return res.status(400).json({ error: "Choose a closing time in the future." });
     }
 
     const updatedExam = await assignedExamRepository.findOneAndUpdate(
@@ -120,10 +121,10 @@ async function extendExamWindow(req, res) {
       { new: true, runValidators: true }
     );
     if (!updatedExam) return res.status(409).json({ error: "The exam schedule changed. Refresh the exam list and try again." });
-    res.json({ message: "Exam closing time extended successfully.", endTime: updatedExam.endTime });
+    res.json({ message: "Exam closing time changed successfully.", endTime: updatedExam.endTime });
   } catch (err) {
-    console.error("Error extending exam closing time:", err);
-    res.status(500).json({ error: "Could not extend this exam's closing time." });
+    console.error("Error changing exam closing time:", err);
+    res.status(500).json({ error: "Could not change this exam's closing time." });
   }
 
 }
