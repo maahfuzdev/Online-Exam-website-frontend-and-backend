@@ -10,10 +10,14 @@ let bulkQuestions = [];
 let bulkParseErrors = [];
 
 function openBulkQuestionCreator() {
-    document.getElementById('questionTypeChooser')?.classList.add('hidden');
-    document.getElementById('questionCreatorForm')?.classList.add('hidden');
+    if (typeof setQuestionCreatorView === 'function') setQuestionCreatorView('bulk');
+    else {
+      document.querySelector('#examStep1 .question-creator-launcher')?.classList.add('hidden');
+      document.getElementById('questionTypeChooser')?.classList.add('hidden');
+      document.getElementById('questionCreatorForm')?.classList.add('hidden');
+    }
     const form = document.getElementById('bulkQuestionCreator');
-    form?.classList.remove('hidden');
+    if (typeof setQuestionCreatorView !== 'function') form?.classList.remove('hidden');
     const subject = document.getElementById('questionSubject')?.value.trim();
     const className = document.getElementById('questionClass')?.value.trim();
     if (subject && !document.getElementById('bulkQuestionSubject').value) document.getElementById('bulkQuestionSubject').value = subject;
@@ -22,8 +26,12 @@ function openBulkQuestionCreator() {
 }
 
 function closeBulkQuestionCreator() {
-    document.getElementById('bulkQuestionCreator')?.classList.add('hidden');
-    document.getElementById('questionTypeChooser')?.classList.remove('hidden');
+    if (typeof setQuestionCreatorView === 'function') setQuestionCreatorView('chooser');
+    else {
+      document.getElementById('bulkQuestionCreator')?.classList.add('hidden');
+      document.querySelector('#examStep1 .question-creator-launcher')?.classList.add('hidden');
+      document.getElementById('questionTypeChooser')?.classList.remove('hidden');
+    }
 }
 
 function parseBulkQuestionText(source) {
@@ -150,8 +158,11 @@ async function saveBulkQuestions() {
         status.classList.remove('has-errors');
         showMessage(`${payload.questions?.length || bulkQuestions.length} questions saved successfully.`, 'success');
         await loadExamQuestions();
-        document.getElementById('bulkQuestionCreator').classList.add('hidden');
-        document.getElementById('questionTypeChooser').classList.remove('hidden');
+        if (typeof setQuestionCreatorView === 'function') setQuestionCreatorView('chooser');
+        else {
+          document.getElementById('bulkQuestionCreator').classList.add('hidden');
+          document.getElementById('questionTypeChooser').classList.remove('hidden');
+        }
         document.getElementById('bulkQuestionInput').value = '';
         document.getElementById('bulkQuestionPreview').innerHTML = '';
         document.getElementById('bulkQuestionPreview').classList.add('hidden');

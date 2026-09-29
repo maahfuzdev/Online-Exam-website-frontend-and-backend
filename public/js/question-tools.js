@@ -101,44 +101,52 @@ function insertMathAtCursor(element, mathCode) {
 
 function toggleQuestionTypeChooser() {
   const chooser = document.getElementById('questionTypeChooser');
+  if (!chooser) return;
+  setQuestionCreatorView(chooser.classList.contains('hidden') ? 'chooser' : 'closed');
+}
+
+function setQuestionCreatorView(view) {
+  const launcher = document.querySelector('#examStep1 .question-creator-launcher');
+  const chooser = document.getElementById('questionTypeChooser');
   const form = document.getElementById('questionCreatorForm');
-  const willOpen = chooser.classList.contains('hidden');
-  if (willOpen) form.classList.add('hidden');
-  chooser.classList.toggle('hidden');
+  const bulk = document.getElementById('bulkQuestionCreator');
+  if (!chooser || !form || !bulk) return;
+
+  chooser.classList.toggle('hidden', view !== 'chooser');
+  form.classList.toggle('hidden', view !== 'mathematical' && view !== 'general');
+  bulk.classList.toggle('hidden', view !== 'bulk');
+  if (launcher) launcher.classList.toggle('hidden', view !== 'closed');
+  form.dataset.questionType = view === 'mathematical' || view === 'general' ? view : '';
+  form.classList.toggle('mathematical-question', view === 'mathematical');
 }
 
 function beginQuestionCreation(type) {
   selectedQuestionType = type === 'mathematical' ? 'mathematical' : 'general';
   const form = document.getElementById('questionCreatorForm');
-  form.classList.toggle('mathematical-question', selectedQuestionType === 'mathematical');
-  document.getElementById('questionTypeChooser').classList.add('hidden');
-  form.classList.remove('hidden');
+  setQuestionCreatorView(selectedQuestionType);
   document.getElementById('questionTypeHeading').textContent =
     selectedQuestionType === 'mathematical' ? 'Mathematical question' : 'General question';
   document.getElementById('questionInput').placeholder = selectedQuestionType === 'mathematical'
     ? 'Write your question and add formulas like \\(x^2\\), or use Formula tools.'
     : 'Write your question in plain text. Add a formula with Formula tools if needed.';
-  document.querySelector('#examStep1 .creator-help').textContent = selectedQuestionType === 'mathematical'
+  const questionHelp = form.querySelector('label[for="questionInput"] + .creator-help');
+  if (questionHelp) questionHelp.textContent = selectedQuestionType === 'mathematical'
     ? 'Type LaTeX between \\( ... \\) or use Formula tools. The preview shows how it will look to students.'
     : 'You can include LaTeX between \\( ... \\) in a text question too.';
-  const optionHelp = document.querySelectorAll('#examStep1 .creator-help')[1];
-  document.querySelectorAll('#questionCreatorForm .form-label')[3].textContent = selectedQuestionType === 'mathematical'
-    ? 'Answer choices'
-    : 'Answer choices';
+  const optionHelp = form.querySelectorAll('.creator-help')[2];
   optionHelp.textContent = selectedQuestionType === 'mathematical'
     ? 'Add formulas as LaTeX between \\( ... \\), or insert them with Formula tools. Then mark the correct answer.'
     : 'Enter four answer options. LaTeX is supported here too; mark the correct answer letter.';
   ['choice1', 'choice2', 'choice3', 'choice4'].forEach((id, index) => {
     document.getElementById(id).placeholder = selectedQuestionType === 'mathematical'
-      ? `Choice ${String.fromCharCode(65 + index)}`
+      ? `Formula choice ${String.fromCharCode(65 + index)}`
       : `Choice ${String.fromCharCode(65 + index)}`;
   });
   form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function backToQuestionTypeChooser() {
-  document.getElementById('questionCreatorForm').classList.add('hidden');
-  document.getElementById('questionTypeChooser').classList.remove('hidden');
+  setQuestionCreatorView('chooser');
 }
 
 function closeQuestionBank() {

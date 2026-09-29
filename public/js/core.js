@@ -87,13 +87,18 @@ function init() {
           bankIntro.querySelector('#questionsList')?.classList.add('hidden');
         }
       }
-      // The dashboard is shown after the page's load event, so exam.js's
-      // load-time initializer cannot populate the exam creator here.
+      const requestedStep = Number(localStorage.getItem('teacherWorkspaceStep'));
+      localStorage.removeItem('teacherWorkspaceStep');
+      if (workspaceMode === 'questions') {
+        if (typeof showExamStep === 'function') showExamStep(1);
+        if (typeof setQuestionCreatorView === 'function') setQuestionCreatorView('chooser');
+        return;
+      }
+      // The dashboard is shown after the page's load event, so initialize only
+      // the exam workspace when its fields are needed.
       if (typeof initExamCreator === 'function') {
-        const requestedStep = Number(localStorage.getItem('teacherWorkspaceStep'));
-        localStorage.removeItem('teacherWorkspaceStep');
         Promise.resolve(initExamCreator()).then(() => {
-          const step = workspaceMode === 'questions' ? 1 : (workspaceMode === 'exam' ? ([2, 3].includes(requestedStep) ? requestedStep : 2) : requestedStep);
+          const step = workspaceMode === 'exam' ? ([2, 3].includes(requestedStep) ? requestedStep : 2) : requestedStep;
           if ([1, 2, 3].includes(step) && typeof showExamStep === 'function') showExamStep(step);
         });
       }
