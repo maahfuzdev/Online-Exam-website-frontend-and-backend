@@ -667,8 +667,17 @@ async function startExam(examId, mpq, duration, startTime, teacherID, examTitle,
     }
     document.getElementById('studentDashboard').classList.add('hidden');
     document.getElementById('examContainer').classList.remove('hidden');
+    localStorage.setItem(studentExamStorageKey('inProgress', examId), 'true');
 
-    loadAssignedQuestions(examId);
+    try {
+      await loadAssignedQuestions(examId);
+    } catch (error) {
+      localStorage.removeItem(studentExamStorageKey('inProgress', examId));
+      document.getElementById('examContainer').classList.add('hidden');
+      document.getElementById('studentDashboard').classList.remove('hidden');
+      alert('Could not load the exam questions. Please check your connection and try again.');
+      return;
+    }
     // ✅ exam wise
     remainingTime(duration);
   }
@@ -772,6 +781,9 @@ async function startExam(examId, mpq, duration, startTime, teacherID, examTitle,
         }
 
         function loadQuestion(index) {
+            currentQuestionIndex = index;
+            const activeExamId = localStorage.getItem('currentExamId');
+            if (activeExamId) localStorage.setItem(studentExamStorageKey('currentQuestionIndex', activeExamId), String(index));
             // For demo, just update the UI
             document.getElementById('questionNumberDisplay').textContent = `Question ${index + 1}`;
             document.getElementById('currentQuestionNumber').textContent = `Question ${index + 1}`;
@@ -930,6 +942,7 @@ if (submitted) {
   // send result to backend
   pendingResultSave = sendResultToDB(timeTaken).then(payload => {
     localStorage.setItem(studentExamStorageKey('submitted', examid), "true");
+    localStorage.removeItem(studentExamStorageKey('inProgress', examid));
     const normalizedExamId = String(payload.result?.examID?._id || payload.result?.examID || examid);
     if (!submittedExamIds.includes(normalizedExamId)) submittedExamIds.push(normalizedExamId);
     if (!attemptedExamIds.includes(normalizedExamId)) attemptedExamIds.push(normalizedExamId);
@@ -1099,12 +1112,12 @@ const stuResult = {
 
 //exam dynamic timing
 
-function remainingTime(duration) {
+function remainingTime(duration, savedEndTime = null) {
   // exam start time = এখনকার সময়
   const start = new Date().getTime(); // timestamp in ms
   const Duration = duration * 60 * 1000; // convert minutes to ms
 
-  const endexamTime = start + Duration;
+  const endexamTime = Number(savedEndTime) || start + Duration;
   localStorage.setItem("endexamTime", endexamTime);
 
   const timerElement = document.getElementById("examTimeRemaining");
@@ -1185,9 +1198,36 @@ function remainingTime(duration) {
 //             alert(`Viewing detailed analysis for exam: ${examId}`);
 //         }
 
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function () {
-          initStudentDashboard();
+async function restoreActiveExamAfterMobileReturn() {
+  const examId = localStorage.getItem('currentExamId');
+  if (!examId || localStorage.getItem(studentExamStorageKey('inProgress', examId)) !== 'true') return;
+  if (localStorage.getItem(studentExamStorageKey('submitted', examId)) === 'true') {
+    localStorage.removeItem(studentExamStorageKey('inProgress', examId));
+    return;
+  }
+  const duration = Number(localStorage.getItem('duration'));
+  const endTime = Number(localStorage.getItem('endexamTime'));
+  if (!duration || !endTime) return;
+
+  try {
+    await loadAssignedQuestions(examId);
+    const savedIndex = Number(localStorage.getItem(studentExamStorageKey('currentQuestionIndex', examId)) || 0);
+    currentQuestionIndex = Math.min(Math.max(savedIndex, 0), Math.max(quizQuestions1.length - 1, 0));
+    document.getElementById('studentDashboard').classList.add('hidden');
+    document.getElementById('examContainer').classList.remove('hidden');
+    loadQuestion(currentQuestionIndex);
+    remainingTime(duration, endTime);
+  } catch (error) {
+    console.error('Could not restore the active exam after returning from camera:', error);
+    alert('The exam could not be restored. Check your connection and reopen the student dashboard.');
+  }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function () {
+          initStudentDashboard().then(restoreActiveExamAfterMobileReturn).catch(error => {
+            console.error('Could not initialize student dashboard:', error);
+          });
           //student name display
 
           let studentName = localStorage.getItem('userName');
