@@ -1,6 +1,6 @@
 # 📝 Online Examination System
 
-A **production-ready full-stack Online Examination Platform** built to conduct exams digitally with automated evaluation, role-based access, and real-time result processing.
+A full-stack online examination platform for teachers to create and assign exams and for students to take timed quizzes and review their results.
 
 Designed as a scalable academic assessment system supporting both **Students** and **Teachers/Admins**.
 
@@ -16,7 +16,7 @@ This system enables institutions or instructors to:
 * Automatically evaluate MCQ answers
 * Store and analyze results securely
 
-The application follows **modern full-stack architecture** using Node.js, Express, MongoDB, and responsive frontend technologies.
+The application uses Node.js, Express, MongoDB, EJS-rendered pages, and browser-based JavaScript and CSS. It is a project starter and should be configured and reviewed for your deployment environment before production use.
 
 ---
 
@@ -98,19 +98,18 @@ The application follows **modern full-stack architecture** using Node.js, Expres
 
 ### 👨‍🏫 Teacher/Admin Module
 
-* Create exams dynamically
-* Add/edit/delete MCQ questions
-* Assign exams to students
-* View submissions
-* Analyze performance results
+* Create exams and add questions manually, in batches, or from scanned documents with Gemini-powered question generation
+* Assign exams to students and manage student records
+* Review submissions, filter and export results, and view performance analytics
+* View calculated grades using the shared scale: A+ (80%+), A (70–79%), B (60–69%), C (50–59%), D (40–49%), and F (below 40%)
 
 ### ⚙️ System Features
 
 * Role-based access control
 * Automated scoring engine
 * Persistent exam records
-* Responsive UI design
-* Modular backend routing architecture
+* Responsive interface for desktop and mobile
+* Modular Express routes, controllers, services, repositories, and Mongoose models
 
 ---
 
@@ -120,17 +119,19 @@ The application follows **modern full-stack architecture** using Node.js, Expres
 
 ```bash
 git clone https://github.com/maahfuzdev/Online-Exam-website-frontend-and-backend.git
-cd "online exam app backend and frontend"
+cd Online-Exam-website-frontend-and-backend
 ```
 
 ---
 
-### 2️⃣ Backend Setup
+### 2️⃣ Install Dependencies
 
 ```bash
 cd server
 npm install
 ```
+
+Requires a supported Node.js release and a reachable MongoDB database. The default local database is `mongodb://localhost:27017/online_exam_database`.
 
 ---
 
@@ -150,15 +151,17 @@ MONGODB_URI=mongodb://localhost:27017/online_exam_database
 GEMINI_API_KEY=your_google_ai_studio_api_key
 ```
 
-Create a Gemini API key in [Google AI Studio](https://aistudio.google.com/app/apikey). The OCR question generator uses the Gemini 3.5 Flash-Lite API from the server; keep the key in `server/.env` and never add it to frontend code or Git.
+`PORT` and `MONGODB_URI` have defaults and can be omitted for a local setup. `GEMINI_API_KEY` is needed only for AI-assisted question generation from documents. Create a key in [Google AI Studio](https://aistudio.google.com/app/apikey); keep it in `server/.env` and out of frontend code and Git.
 
 ---
 
 ### 4️⃣ Start Server
 
 ```bash
-npx nodemon index.js
+npm run dev
 ```
+
+For a regular start without automatic restarts, use `npm start`.
 
 ---
 
@@ -176,48 +179,30 @@ http://localhost:3000
 
 
 
-Main project structure (excluding Git metadata):
+Main project structure (dependency folders and generated files omitted):
 
-```bash
+```text
 online exam app backend and frontend/
 ├── .github/
-│   └── appmod/
 ├── public/
 │   ├── css/
-│   │   ├── ocr.css
-│   │   ├── student.css
-│   │   ├── styles.css
-│   │   └── teacherdas.css
-│   ├── html/
-│   │   ├── authentication.html
-│   │   ├── examresult.html
-│   │   ├── index.html
-│   │   ├── ocrsystem.html
-│   │   ├── studentdash.html
-│   │   └── teacherdash.html
 │   └── js/
-│       ├── exam.js
-│       ├── ocr.js
-│       ├── script.js
-│       ├── student.js
-│       └── teacherdas.js
 ├── server/
-│   ├── .env
-│   ├── .gitignore
-│   ├── AssignedQuestions.js
-│   ├── authentication.js
+│   ├── app.js
 │   ├── index.js
-│   ├── node_modules/
-│   ├── package-lock.json
-│   ├── package.json
-│   ├── question.js
-│   ├── Results.js
-│   ├── Submissions.js
-│   └── README.md (if added later)
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── repositories/
+│   ├── routes/
+│   ├── services/
+│   └── views/
 ├── README.md
-├── .dist/
-└── .git/
+└── server/package.json
 ```
+
+`server/app.js` configures Express and page rendering; `server/index.js` is the npm entry point. EJS page templates and reusable partials are under `server/views/`, while static browser assets are served from `public/`. See [server/README.md](server/README.md) for the backend layout and [server/views/README.md](server/views/README.md) for the view structure.
 
 ---
 
