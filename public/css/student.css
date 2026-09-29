@@ -1195,12 +1195,14 @@ body:has(.student-dashboard) {
 .student-review-question.is-correct { border-left-color: #18a66f; }
 .student-review-question.is-wrong { border-left-color: #dc5c5c; }
 .student-review-question.is-skipped { border-left-color: #e1a445; }
+.student-review-question.is-written { border-left-color: #5275d4; }
 .student-review-question > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .student-review-number { color: #253653; font-size: .9rem; font-weight: 800; }
 .student-review-status { display: inline-flex; align-items: center; gap: 6px; color: #64748b; font-size: .76rem; font-weight: 750; }
 .is-correct .student-review-status { color: #087443; }
 .is-wrong .student-review-status { color: #bd3636; }
 .is-skipped .student-review-status { color: #a16613; }
+.is-written .student-review-status { color: #315bd6; }
 .student-review-question-text { margin: 16px 0; color: #1e2f4c; font-size: 1.05rem; font-weight: 650; line-height: 1.75; overflow-wrap: anywhere; }
 .student-review-options { display: grid; gap: 8px; }
 .student-review-option { display: grid; grid-template-columns: 31px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-width: 0; padding: 10px 12px; border: 1px solid #e5eaf1; border-radius: 10px; background: #fbfcfe; color: #394960; }
@@ -1214,6 +1216,12 @@ body:has(.student-dashboard) {
 .student-review-option.option-selected-wrong .student-review-option-letter { border-color: #e5a2a2; background: #ffe6e4; color: #b63838; }
 .student-review-question > footer { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 13px; padding-top: 12px; border-top: 1px solid #edf0f5; color: #5f6d82; font-size: .78rem; }
 .student-review-question > footer strong { color: #334155; }
+.student-written-review { display: grid; gap: 10px; margin-top: 15px; }
+.student-written-mark, .student-written-feedback { padding: 13px 15px; border: 1px solid #e2e9f4; border-radius: 10px; background: #f8faff; }
+.student-written-mark { display: flex; justify-content: space-between; gap: 12px; color: #34445f; }
+.student-written-mark span { color: #315bd6; font-weight: 750; }
+.student-written-feedback strong, .student-written-mark strong { color: #263752; font-size: .82rem; }
+.student-written-feedback p { margin: 6px 0 0; color: #5f6d82; font-size: .86rem; line-height: 1.6; white-space: pre-wrap; }
 .student-review-question .katex-display { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
 @media (max-width: 600px) {
   .student-review-hero { align-items: flex-start; flex-direction: column; }

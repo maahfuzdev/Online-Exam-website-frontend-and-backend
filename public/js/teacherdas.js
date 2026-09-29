@@ -832,6 +832,12 @@
           }
           const gradeRow = document.createElement('div');
           gradeRow.className = 'written-answer-grade-row';
+          const feedbackInput = document.createElement('textarea');
+          feedbackInput.maxLength = 2000;
+          feedbackInput.rows = 3;
+          feedbackInput.value = answer.teacherFeedback || '';
+          feedbackInput.placeholder = 'Explain the mistakes and how the student can improve.';
+          feedbackInput.setAttribute('aria-label', `Teacher feedback for question ${Number(answer.questionIndex) + 1}`);
           const markInput = document.createElement('input');
           markInput.type = 'number'; markInput.min = '0'; markInput.max = String(answer.maxMarks); markInput.step = '0.01';
           markInput.value = answer.marksAwarded ?? '';
@@ -841,10 +847,15 @@
           saveMark.type = 'button'; saveMark.className = 'btn btn-primary'; saveMark.textContent = 'Save marks';
           const gradeStatus = document.createElement('span'); gradeStatus.setAttribute('role', 'status');
           saveMark.onclick = async () => {
+            if (!feedbackInput.value.trim()) {
+              gradeStatus.textContent = 'Add feedback for this question before saving.';
+              feedbackInput.focus();
+              return;
+            }
             saveMark.disabled = true;
             try {
               const gradeResponse = await fetch(`/results/api/written-answers/${encodeURIComponent(examId)}/${encodeURIComponent(studentId)}/${encodeURIComponent(answer.questionID)}/grade?teacherID=${encodeURIComponent(teacherID)}`, {
-                method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ marks: markInput.value })
+                method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ marks: markInput.value, feedback: feedbackInput.value.trim() })
               });
               const gradePayload = await gradeResponse.json().catch(() => ({}));
               if (!gradeResponse.ok) throw new Error(gradePayload.error || 'Could not save marks.');
@@ -852,7 +863,7 @@
             } catch (error) { gradeStatus.textContent = error.message; }
             finally { saveMark.disabled = false; }
           };
-          gradeRow.append(markInput, document.createTextNode(` / ${answer.maxMarks} marks `), saveMark, gradeStatus);
+          gradeRow.append(feedbackInput, markInput, document.createTextNode(` / ${answer.maxMarks} marks `), saveMark, gradeStatus);
           card.appendChild(gradeRow);
           content.appendChild(card);
         });

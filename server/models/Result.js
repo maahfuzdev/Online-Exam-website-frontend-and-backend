@@ -48,8 +48,10 @@ const resultSchema = new mongoose.Schema({
     correctOption: Number,
     isCorrect: Boolean,
     answerType: { type: String, enum: ["mcq", "written"], default: "mcq" },
+    answerSubmitted: { type: Boolean, default: false },
     maxMarks: Number,
-    marksAwarded: Number
+    marksAwarded: Number,
+    teacherFeedback: { type: String, maxlength: 2000 }
   }],
 
   date: Date,

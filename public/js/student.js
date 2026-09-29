@@ -558,18 +558,20 @@ function openResultReview(examId) {
   const review = Array.isArray(result.answerReview) ? result.answerReview : [];
   const questionsHtml = review.length ? review.map((item, index) => {
     const options = Array.isArray(item.options) ? item.options : [];
+    const isWritten = item.answerType === 'written';
     const correct = Number(item.correctOption);
     const selected = item.selectedOption === null || item.selectedOption === undefined ? null : Number(item.selectedOption);
     const answerLabel = value => Number.isInteger(value) && value >= 0 && value < options.length ? String.fromCharCode(65 + value) : '';
-    return `<article class="student-review-question ${item.isCorrect ? 'is-correct' : selected === null ? 'is-skipped' : 'is-wrong'}">
-      <header><span class="student-review-number">Question ${index + 1}</span><span class="student-review-status"><i class="fas ${item.isCorrect ? 'fa-circle-check' : selected === null ? 'fa-circle-minus' : 'fa-circle-xmark'}"></i>${item.isCorrect ? 'Correct' : selected === null ? 'Skipped' : 'Incorrect'}</span></header>
+    const writtenReviewed = item.marksAwarded != null && Boolean(item.teacherFeedback?.trim());
+    return `<article class="student-review-question ${isWritten ? 'is-written' : item.isCorrect ? 'is-correct' : selected === null ? 'is-skipped' : 'is-wrong'}">
+      <header><span class="student-review-number">Question ${index + 1}</span><span class="student-review-status"><i class="fas ${isWritten ? writtenReviewed ? 'fa-circle-check' : 'fa-clock' : item.isCorrect ? 'fa-circle-check' : selected === null ? 'fa-circle-minus' : 'fa-circle-xmark'}"></i>${isWritten ? writtenReviewed ? 'Reviewed' : 'Awaiting teacher review' : item.isCorrect ? 'Correct' : selected === null ? 'Skipped' : 'Incorrect'}</span></header>
       <div class="student-review-question-text review-math"></div>
-      <div class="student-review-options">${options.map((option, optionIndex) => {
+      ${isWritten ? `<section class="student-written-review"><div class="student-written-mark"><strong>Your mark</strong><span>${item.marksAwarded == null ? 'Pending' : Number(item.marksAwarded).toFixed(2)} / ${Number(item.maxMarks || 0).toFixed(2)}</span></div><div class="student-written-feedback"><strong>Teacher feedback</strong><p>${escapeStudentHtml(item.teacherFeedback || 'Feedback will appear after your teacher reviews this answer.')}</p></div></section>` : `<div class="student-review-options">${options.map((option, optionIndex) => {
         const isCorrect = optionIndex === correct;
         const isSelectedWrong = optionIndex === selected && !isCorrect;
         return `<div class="student-review-option ${isCorrect ? 'option-correct' : ''} ${isSelectedWrong ? 'option-selected-wrong' : ''}"><span class="student-review-option-letter">${String.fromCharCode(65 + optionIndex)}</span><span class="student-review-option-text review-math"></span><span class="student-review-option-mark">${isCorrect ? '<i class="fas fa-check"></i> Correct answer' : isSelectedWrong ? '<i class="fas fa-user-check"></i> Your answer' : ''}</span></div>`;
-      }).join('')}</div>
-      <footer><span><strong>Your answer:</strong> ${selected === null ? 'Not answered' : `Option ${answerLabel(selected)}`}</span><span><strong>Correct answer:</strong> Option ${answerLabel(correct)}</span></footer>
+      }).join('')}</div>`}
+      ${isWritten ? '' : `<footer><span><strong>Your answer:</strong> ${selected === null ? 'Not answered' : `Option ${answerLabel(selected)}`}</span><span><strong>Correct answer:</strong> Option ${answerLabel(correct)}</span></footer>`}
     </article>`;
   }).join('') : `<div class="student-empty-state"><span><i class="fas fa-circle-info"></i></span><h3>Answer review unavailable</h3><p>This result was saved before question-by-question answer review became available.</p></div>`;
 

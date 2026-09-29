@@ -1212,5 +1212,6 @@
 .written-answer-review-file a { flex: 0 0 auto; color: #315bd6; font-weight: 700; text-decoration: none; }
 .written-answer-grade-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 14px; padding: 12px; border: 1px solid #dbe7f4; border-radius: 10px; background: #f4f8fc; color: #506177; font-size: 13px; }
 .written-answer-grade-row input { width: 118px; min-height: 40px; padding: 8px 10px; border: 1px solid #cad6e4; border-radius: 8px; background: white; color: #24344d; }
+.written-answer-grade-row textarea { flex: 1 1 100%; min-height: 76px; resize: vertical; padding: 10px 12px; border: 1px solid #cad6e4; border-radius: 8px; background: white; color: #24344d; font: inherit; font-size: 13px; line-height: 1.5; }
 .written-answer-grade-row [role="status"] { flex: 1 1 220px; color: #52647d; font-size: 12px; }
 .written-review-action { margin-left: 6px; background: #edf2ff; color: #315bd6; }

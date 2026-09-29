@@ -74,6 +74,7 @@ async function listWrittenAnswersForTeacher(req, res) {
       contentType: file?.contentType || '',
       uploadedAt: file?.uploadedAt || null,
       marksAwarded: item.marksAwarded ?? null,
+      teacherFeedback: item.teacherFeedback || '',
       maxMarks: item.maxMarks,
       url: file ? `/results/api/written-answers/${examID}/${studentID}/${item.questionID}/file?teacherID=${teacherID}` : null
     };
@@ -86,9 +87,11 @@ async function gradeWrittenAnswer(req, res) {
   const { teacherID } = req.query;
   const rawMarks = req.body?.marks;
   const marks = Number(rawMarks);
+  const teacherFeedback = typeof req.body?.feedback === 'string' ? req.body.feedback.trim() : '';
   if (![examID, studentID, questionID, teacherID].every(mongoose.isValidObjectId) || rawMarks === '' || rawMarks == null || !Number.isFinite(marks) || marks < 0) {
     return res.status(400).json({ error: 'Enter a valid mark of zero or more.' });
   }
+  if (!teacherFeedback || teacherFeedback.length > 2000) return res.status(400).json({ error: 'Add feedback for this question (up to 2,000 characters).' });
   const exam = await assignedExamRepository.findOne({ _id: examID, teacherID, studentIDs: studentID }).populate('questionIds');
   if (!exam) return res.status(404).json({ error: 'Exam not found in your exam list.' });
   const result = await resultRepository.findOne({ examID, studentID, teacherID });
@@ -98,9 +101,16 @@ async function gradeWrittenAnswer(req, res) {
   const maximum = Number(result.answerReview[index].maxMarks ?? exam.markPerQuestion) || 0;
   if (marks > maximum) return res.status(400).json({ error: `Marks cannot exceed ${maximum}.` });
   result.answerReview[index].marksAwarded = marks;
+  result.answerReview[index].teacherFeedback = teacherFeedback;
   const writtenItems = result.answerReview.filter(item => item.answerType === 'written');
+  const uploadedAnswers = await WrittenAnswer.find({ examID, studentID }).select('questionID');
+  const uploadedQuestionIds = new Set(uploadedAnswers.map(answer => String(answer.questionID)));
+  writtenItems.forEach(item => { item.answerSubmitted = uploadedQuestionIds.has(String(item.questionID)); });
   result.manualMarks = writtenItems.reduce((sum, item) => sum + (Number(item.marksAwarded) || 0), 0);
-  result.manualGradingPending = writtenItems.some(item => item.marksAwarded == null);
+  result.manualGradingPending = writtenItems.some(item => item.marksAwarded == null || !item.teacherFeedback?.trim());
+  result.skippedQuestion = result.answerReview.filter(item => item.answerType === 'written'
+    ? !item.answerSubmitted
+    : item.selectedOption == null || item.selectedOption === '').length;
   result.score = (Number(result.mcqScore) || 0) + result.manualMarks;
   result.percentage = result.totalMarks > 0 ? (result.score / result.totalMarks) * 100 : 0;
   await result.save();
@@ -168,7 +178,9 @@ async function submitStudentResult(req, res) {
     );
     if (invalidAnswer) return res.status(400).json({ success: false, message: "One or more submitted answers are invalid." });
 
-        const scoring = scoreExamAnswers(exam.questionIds, answers, exam);
+        const uploadedWrittenAnswers = await WrittenAnswer.find({ examID, studentID }).select('questionID');
+        const uploadedWrittenQuestionIds = new Set(uploadedWrittenAnswers.map(answer => String(answer.questionID)));
+        const scoring = scoreExamAnswers(exam.questionIds, answers, exam, uploadedWrittenQuestionIds);
     const { answerReview, correctCount, wrongCount, skippedCount, score, totalMarks, percentage } = scoring;
     const hasWrittenQuestions = exam.questionIds.some(question => question.answerType === 'written');
     const adjustedTotalMarks = (Number(exam.markPerQuestion) || 0) * exam.questionIds.length;

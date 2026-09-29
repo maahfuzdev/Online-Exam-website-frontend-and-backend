@@ -1,4 +1,4 @@
-function scoreExamAnswers(questions, answers, exam) {
+function scoreExamAnswers(questions, answers, exam, uploadedWrittenQuestionIds = new Set()) {
   let correctCount = 0;
   let wrongCount = 0;
   let skippedCount = 0;
@@ -6,8 +6,9 @@ function scoreExamAnswers(questions, answers, exam) {
   const questionMark = Number(exam.markPerQuestion) || 0;
   const answerReview = questions.map((question, index) => {
     if (question.answerType === "written") {
-      skippedCount++;
-      return { questionID: question._id, questionText: question.questionText, options: [], selectedOption: null, correctOption: null, isCorrect: false, answerType: "written", maxMarks: questionMark, marksAwarded: null };
+      const answerSubmitted = uploadedWrittenQuestionIds.has(String(question._id));
+      if (!answerSubmitted) skippedCount++;
+      return { questionID: question._id, questionText: question.questionText, options: [], selectedOption: null, correctOption: null, isCorrect: false, answerType: "written", answerSubmitted, maxMarks: questionMark, marksAwarded: null };
     }
     const rawAnswer = answers[index];
     const selectedOption = rawAnswer === undefined || rawAnswer === null || rawAnswer === "" ? null : Number(rawAnswer);
