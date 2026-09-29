@@ -298,9 +298,8 @@ async function getStudentExamResult(req, res) {
 async function listResultsByExam(req, res) {
   try {
     const { examID } = req.params;
-    const exam = await findAssignedExam(examID);
+    const exam = await assignedExamRepository.findOne({ _id: examID, teacherID: req.authUser._id });
     if (!exam) return res.status(404).json({ error: "Exam not found." });
-    if (!canStudentViewResult(exam)) return res.status(403).json({ error: "Results are not available yet." });
     const results = await resultRepository.find({ examID, manualGradingPending: { $ne: true } }).populate("studentID", "name");
     res.json(results);
   } catch (error) {

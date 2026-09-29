@@ -1036,18 +1036,29 @@
 
     function showLandingPage() {
       if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('userId');
-        localStorage.removeItem('role');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('teacherId');
-        localStorage.removeItem('showteacher');
-        window.location.href = '/'; // Redirect to login page
+        fetch('/authentication/logout', { method: 'POST' }).catch(() => {}).finally(() => {
+          ['userId', 'role', 'userName', 'teacherId', 'studentId', 'showteacher', 'showstudent'].forEach(key => localStorage.removeItem(key));
+          window.location.href = '/';
+        });
       }
     }
 
     // Initialize app
     window.addEventListener('load', function () {
-      init();
+      fetch('/authentication/me', { cache: 'no-store' })
+        .then(response => response.json().then(payload => ({ response, payload })))
+        .then(({ response, payload }) => {
+          if (!response.ok || !payload.authenticated || payload.user?.role !== 'teacher') throw new Error('Please sign in with your teacher account.');
+          localStorage.setItem('userId', payload.user.id);
+          localStorage.setItem('teacherId', payload.user.id);
+          localStorage.setItem('role', payload.user.role);
+          localStorage.setItem('userName', payload.user.name);
+          init();
+        })
+        .catch(() => {
+          ['userId', 'role', 'userName', 'teacherId', 'studentId', 'showteacher', 'showstudent'].forEach(key => localStorage.removeItem(key));
+          window.location.href = '/studentsLogReg';
+        });
     });
 
     // Add event listeners for closing modal with ESC

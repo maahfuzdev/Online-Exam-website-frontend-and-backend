@@ -1176,7 +1176,10 @@ function remainingTime(duration, savedEndTime = null) {
 
         // Show landing page
         function showLandingPage() {
-            window.location.href = "/html/index.html";
+            fetch('/authentication/logout', { method: 'POST' }).catch(() => {}).finally(() => {
+              ['userId', 'role', 'userName', 'teacherId', 'studentId', 'showteacher', 'showstudent'].forEach(key => localStorage.removeItem(key));
+              window.location.href = '/';
+            });
         }
 
         // Utility functions
@@ -1232,11 +1235,22 @@ async function restoreActiveExamAfterMobileReturn() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function () {
-          initStudentDashboard().then(restoreActiveExamAfterMobileReturn).catch(error => {
-            console.error('Could not initialize student dashboard:', error);
-          });
-          //student name display
-
-          let studentName = localStorage.getItem('userName');
-          document.getElementById('studentName').textContent = studentName;
+          (async () => {
+            try {
+              const response = await fetch('/authentication/me', { cache: 'no-store' });
+              const payload = await response.json().catch(() => ({}));
+              if (!response.ok || !payload.authenticated || payload.user?.role !== 'student') throw new Error('Please sign in with your student account.');
+              localStorage.setItem('userId', payload.user.id);
+              localStorage.setItem('studentId', payload.user.id);
+              localStorage.setItem('role', payload.user.role);
+              localStorage.setItem('userName', payload.user.name);
+              document.getElementById('studentName').textContent = payload.user.name;
+              await initStudentDashboard();
+              await restoreActiveExamAfterMobileReturn();
+            } catch (error) {
+              console.error('Could not initialize student dashboard:', error);
+              ['userId', 'role', 'userName', 'teacherId', 'studentId', 'showteacher', 'showstudent'].forEach(key => localStorage.removeItem(key));
+              window.location.href = '/studentsLogReg';
+            }
+          })();
         });

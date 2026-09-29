@@ -1,6 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const crypto = require("crypto");
+const session = require("express-session");
+const MongoStore = require("connect-mongo").default;
 const apiRoutes = require("./routes");
 
 const app = express();
@@ -8,9 +11,25 @@ const app = express();
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
+if (process.env.NODE_ENV === "production") app.set("trust proxy", 1);
+
 app.use(cors());
 app.use(express.json({ limit: "15mb" }));
 app.use(express.urlencoded({ extended: true }));
+const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/online_exam_database";
+app.use(session({
+  name: "quizmaster.sid",
+  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex"),
+  store: MongoStore.create({ mongoUrl: mongoUri, collectionName: "sessions", ttl: 60 * 60 * 8 }),
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 1000 * 60 * 60 * 8
+  }
+}));
 
 app.get("/", (req, res) => {
   res.render("pages/index");
