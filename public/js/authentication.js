@@ -76,11 +76,11 @@
     if (user.role === 'teacher') {
       localStorage.setItem('teacherId', user.id);
       localStorage.setItem('showteacher', 'true');
-      window.location.href = '/html/teacherdash.html';
+      window.location.href = '/teacher/dashboard';
     } else if (user.role === 'student') {
       localStorage.setItem('studentId', user.id);
       localStorage.setItem('showstudent', 'true');
-      window.location.href = '/html/studentdash.html';
+      window.location.href = '/student/dashboard';
     } else {
       throw new Error('This account type cannot sign in here.');
     }

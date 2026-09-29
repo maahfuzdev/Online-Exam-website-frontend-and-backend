@@ -1,7 +1,8 @@
     // Get examId from URL
     function getExamIdFromURL() {
       const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('examId');
+      const routeMatch = window.location.pathname.match(/^\/teacher\/exams\/([^/]+)\/results\/?$/);
+      return (routeMatch ? decodeURIComponent(routeMatch[1]) : null) || urlParams.get('examId');
     }
 
     // Navigate back to exams page

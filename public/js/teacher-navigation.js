@@ -2,7 +2,7 @@ function openTeacherWorkspace(step, mode) {
   localStorage.setItem('showteacher', 'true');
   localStorage.setItem('teacherWorkspaceStep', String(step));
   localStorage.setItem('teacherWorkspaceMode', mode || 'exam');
-  window.location.href = '/html/index.html';
+  window.location.href = '/';
 }
 
 function goToManualQuestionCreation() {
@@ -18,5 +18,5 @@ function openExamCreation() {
 }
 
 function showOCRSystem() {
-  window.location.href = '/html/ocrsystem.html';
+  window.location.href = '/teacher/questions/ocr';
 }

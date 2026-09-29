@@ -1,6 +1,8 @@
 # HTML views
 
-The browser still uses the existing `/` and `/html/*.html` URLs. Express renders the matching EJS page from `pages/`, so existing links keep working while the source templates live outside the static asset directory.
+Use clean, role-based URLs in the browser: `/` for the app, `/login` for sign-in and registration, `/teacher/dashboard` and `/student/dashboard` for the dashboards, `/teacher/questions/ocr` for OCR question creation, and `/teacher/exams/:examId/results` for an exam's results. Express renders the matching EJS page from `pages/`; the URL does not need to match the template filename.
+
+The older `/html/*.html` URLs and `/studentsLogReg` remain as compatibility routes for bookmarks and external links. New links in the app should use the clean routes above.
 
 Large pages are composed from focused partials:
 

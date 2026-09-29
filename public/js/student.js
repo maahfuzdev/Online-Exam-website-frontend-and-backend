@@ -1250,7 +1250,7 @@ document.addEventListener('DOMContentLoaded', function () {
             } catch (error) {
               console.error('Could not initialize student dashboard:', error);
               ['userId', 'role', 'userName', 'teacherId', 'studentId', 'showteacher', 'showstudent'].forEach(key => localStorage.removeItem(key));
-              window.location.href = '/studentsLogReg';
+              window.location.href = '/login';
             }
           })();
         });

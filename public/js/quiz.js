@@ -547,10 +547,10 @@ function autoWrapMath(text) {
 
 //login and registration page redirect function
 function goToStudentLogRegPage() {
-  window.location.href = "/html/authentication.html";
+  window.location.href = "/login";
   console.log("Redirecting to student login/registration page...");
 }
 
 function TeacherDash(){
-  window.location.href = "/html/teacherdash.html";
+  window.location.href = "/teacher/dashboard";
 }

@@ -1142,7 +1142,7 @@
         })
         .catch(() => {
           ['userId', 'role', 'userName', 'teacherId', 'studentId', 'showteacher', 'showstudent'].forEach(key => localStorage.removeItem(key));
-          window.location.href = '/studentsLogReg';
+          window.location.href = '/login';
         });
     });
 

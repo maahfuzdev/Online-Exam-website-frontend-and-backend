@@ -824,7 +824,7 @@ async function releaseExamResults(examId) {
 
 // View button er jonno function (EITA ADD KORUN)
 function viewExamDetails(examId) {
-    window.location.href = `examresult.html?examId=${encodeURIComponent(examId)}`;
+    window.location.href = `/teacher/exams/${encodeURIComponent(examId)}/results`;
 }
 window.viewExamDetails = viewExamDetails;
 

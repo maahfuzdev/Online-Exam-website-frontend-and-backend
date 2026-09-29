@@ -35,6 +35,28 @@ app.get("/", (req, res) => {
   res.render("pages/index");
 });
 
+// Clean, role-based page URLs. EJS templates remain under views/pages.
+app.get("/login", (req, res) => {
+  res.render("pages/authentication");
+});
+
+app.get("/teacher/dashboard", (req, res) => {
+  res.render("pages/teacherdash");
+});
+
+app.get("/student/dashboard", (req, res) => {
+  res.render("pages/studentdash");
+});
+
+app.get("/teacher/questions/ocr", (req, res) => {
+  res.render("pages/ocrsystem");
+});
+
+app.get("/teacher/exams/:examId/results", (req, res) => {
+  res.render("pages/examresult");
+});
+
+// Legacy login URL retained for older bookmarks and external links.
 app.get("/studentsLogReg", (req, res) => {
   res.render("pages/authentication");
 });

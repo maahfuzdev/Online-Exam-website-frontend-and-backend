@@ -230,7 +230,7 @@
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Exam could not be created.');
       $('examDialog').close();
-      $('reviewPanel').insertAdjacentHTML('beforeend', '<div class="success-banner"><i class="fa-solid fa-circle-check"></i><span><strong>Exam created and assigned.</strong> It is saved and ready for your students.</span><a href="/html/teacherdash.html">Go to dashboard <i class="fa-solid fa-arrow-right"></i></a></div>');
+      $('reviewPanel').insertAdjacentHTML('beforeend', '<div class="success-banner"><i class="fa-solid fa-circle-check"></i><span><strong>Exam created and assigned.</strong> It is saved and ready for your students.</span><a href="/teacher/dashboard">Go to dashboard <i class="fa-solid fa-arrow-right"></i></a></div>');
     } catch (error) {
       showStatus('examStatus', error.message, true);
     } finally {

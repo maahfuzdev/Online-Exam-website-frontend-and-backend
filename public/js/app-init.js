@@ -3,7 +3,7 @@ window.addEventListener('load', function () {
   const showstudent = localStorage.getItem('showstudent');
   const showteacher= localStorage.getItem('showteacher');
     if (showstudent === 'true') {
-      this.window.location.href = "/html/index.html"; // ✅ এই ফাংশন already hideAllSections() + remove('hidden') handle করে
+      this.window.location.href = "/"; // Open the EJS-backed application route.
         localStorage.removeItem('showstudent'); // reset
     } else if (showteacher === 'true') {
       showTeacherDashboard();
