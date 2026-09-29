@@ -220,6 +220,14 @@ async function loadStudents() {
     const data = await res.json();
       console.log("Fetched students:", data);
       students = data;
+        const classFilter = document.getElementById('studentClassFilter');
+        if (classFilter) {
+          const selectedClass = classFilter.value;
+          const classes = [...new Set(students.map(student => student.class).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+          classFilter.innerHTML = '<option value="">All classes</option>';
+          classes.forEach(className => classFilter.add(new Option(className, className)));
+          if (classes.includes(selectedClass)) classFilter.value = selectedClass;
+        }
         renderStudentsList();
         updateStudentsCount();
     } catch (error) {
@@ -291,7 +299,8 @@ function renderStudentsList() {
     }
     
     const search = document.getElementById('studentSearch')?.value.trim().toLocaleLowerCase() || '';
-    const visibleStudents = students.filter(student => `${student.name || ''} ${student.email || ''}`.toLocaleLowerCase().includes(search));
+    const selectedClass = document.getElementById('studentClassFilter')?.value || '';
+    const visibleStudents = students.filter(student => (!selectedClass || (student.class || '') === selectedClass) && `${student.name || ''} ${student.email || ''} ${student.class || ''}`.toLocaleLowerCase().includes(search));
     if (!visibleStudents.length) {
         container.innerHTML = '<div class="assignment-loading">No students match your search.</div>';
         return;
@@ -314,7 +323,7 @@ function renderStudentsList() {
                        onclick="event.stopPropagation(); toggleStudent('${student._id}')">
                 <div style="flex: 1;">
                     <div style="font-weight: 600; color: #374151; margin-bottom: 4px;">${student.name}</div>
-                    <div style="font-size: 13px; color: #6b7280;">${student.email}</div>
+                    <div style="font-size: 13px; color: #6b7280;">${student.email} · ${student.class || 'Class not set'}</div>
                 </div>
                 <div style="width: 32px; height: 32px; background: ${isSelected ? '#3b82f6' : '#9ca3af'}; 
                             color: white; border-radius: 50%; display: flex; align-items: center; 

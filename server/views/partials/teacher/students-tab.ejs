@@ -17,18 +17,13 @@
                 <input type="email" class="form-input" id="studentEmail" placeholder="student@example.com">
               </div>
               <div class="form-group">
-                <label class="form-label">Initial Password</label>
+                <label class="form-label">Initial Password <span style="font-weight:400;color:#64748b">(new accounts only)</span></label>
                 <input type="password" class="form-input" id="studentPassword" placeholder="At least 6 characters"
                   minlength="6">
               </div>
               <div class="form-group">
                 <label class="form-label">Class</label>
-                <select class="form-input" id="studentClass">
-                  <option value="">Select Class</option>
-                  <option value="10">Class 10</option>
-                  <option value="11">Class 11</option>
-                  <option value="12">Class 12</option>
-                </select>
+                <input type="text" class="form-input" id="studentClass" placeholder="e.g. Class 9 or HSC 2027" maxlength="40">
               </div>
             </div>
             <div class="action-buttons">
@@ -40,6 +35,7 @@
           <!-- Students List -->
           <div style="margin-top: 40px;">
             <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;"> All Students</h3>
+            <div style="max-width:320px;margin-bottom:16px"><label class="form-label" for="managedStudentClassFilter">Filter by class</label><select class="form-input" id="managedStudentClassFilter" onchange="loadStudentsList()"><option value="">All classes</option></select></div>
             <div style="overflow-x: auto;">
               <table class="results-table">
                 <thead>

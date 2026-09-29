@@ -4,6 +4,10 @@ const asyncHandler = require("../middleware/async-handler");
 
 async function register(req, res) {
   try {
+    const { name, role, email, password } = req.body || {};
+    if (!name?.trim() || !email?.trim() || !password || password.length < 6 || (role === "student" && !req.body.class?.trim())) {
+      return res.status(400).json({ message: "Name, email, password (at least 6 characters), and student class are required", success: false });
+    }
     const result = await registerUser(req.body);
     if (result.exists) {
       return res.status(400).json({ message: "User already exists", success: false });

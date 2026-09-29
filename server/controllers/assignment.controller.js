@@ -231,8 +231,8 @@ async function updateStudent(req, res) {
     if (!mongoose.isValidObjectId(studentId)) {
       return res.status(400).json({ error: "Invalid student ID" });
     }
-    if (!name?.trim() || !email?.trim() || !studentClass) {
-      return res.status(400).json({ error: "Name, email, and class are required" });
+    if (!email?.trim() || !studentClass?.trim()) {
+      return res.status(400).json({ error: "Student email and class are required" });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -246,7 +246,7 @@ async function updateStudent(req, res) {
 
     const student = await authRepository.findOneAndUpdate(
       { _id: studentId, role: "student" },
-      { name: name.trim(), email: normalizedEmail, class: studentClass },
+      { ...(name?.trim() ? { name: name.trim() } : {}), email: normalizedEmail, class: studentClass.trim() },
       { new: true, runValidators: true, projection: { _id: 1, name: 1, email: 1, class: 1 } }
     );
     if (!student) return res.status(404).json({ error: "Student not found" });

@@ -409,7 +409,8 @@
               <summary><span>Choose students</span><span class="picker-count" id="studentPickerCount">0 selected</span></summary>
               <div class="picker-content">
                 <div class="picker-tools"><span>Students</span><button type="button" class="picker-select-all" onclick="selectAllStudents()">Select all</button></div>
-                <input id="studentSearch" class="assignment-search" type="search" placeholder="Search by name or email" aria-label="Search students" oninput="renderStudentsList()">
+                <input id="studentSearch" class="assignment-search" type="search" placeholder="Search by name, email, or class" aria-label="Search students by name, email, or class" oninput="renderStudentsList()">
+                <select id="studentClassFilter" class="assignment-search" aria-label="Filter students by class" onchange="renderStudentsList()"><option value="">All classes</option></select>
                 <div id="studentsContainer" class="assignment-list"><div class="assignment-loading">Loading students...</div></div>
                 <div class="picker-total"><span id="selectedStudentsCount">0 selected</span><span id="totalStudentsCount">Total: 0</span></div>
               </div>

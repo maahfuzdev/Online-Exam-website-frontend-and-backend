@@ -916,19 +916,28 @@
 
     function loadStudentsList() {
       const studentsList = document.getElementById('studentsList');
+      const classFilter = document.getElementById('managedStudentClassFilter');
+      if (classFilter) {
+        const selectedClass = classFilter.value;
+        const classes = [...new Set(allStudents.map(student => student.class).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        classFilter.innerHTML = '<option value="">All classes</option>';
+        classes.forEach(className => classFilter.add(new Option(className, className)));
+        if (classes.includes(selectedClass)) classFilter.value = selectedClass;
+      }
+      const visibleStudents = classFilter?.value ? allStudents.filter(student => student.class === classFilter.value) : allStudents;
       
-      if (allStudents.length === 0) {
+      if (visibleStudents.length === 0) {
         studentsList.innerHTML = `
           <tr>
             <td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">
-              No students found. Add your first student above.
+              ${allStudents.length ? 'No students are registered in this class.' : 'No students found. Add your first student above.'}
             </td>
           </tr>
         `;
         return;
       }
 
-      const html = allStudents.map(student => {
+      const html = visibleStudents.map(student => {
         const studentResults = allResults.filter(r => r.studentId == student.id);
         const avgScore = studentResults.length > 0
           ? (studentResults.reduce((sum, r) => sum + r.percentage, 0) / studentResults.length).toFixed(1)
@@ -946,7 +955,7 @@
               </div>
             </td>
             <td>${student.email}</td>
-            <td>Class ${student.class}</td>
+            <td>${student.class || 'Not set'}</td>
             <td>${studentResults.length}</td>
             <td>
               <div style="font-weight: 600; color: ${avgScore === 'N/A' ? '#64748b' : (avgScore >= 70 ? '#10b981' : avgScore >= 50 ? '#f59e0b' : '#ef4444')}">
@@ -979,7 +988,7 @@
       const passwordInput = document.getElementById('studentPassword');
       passwordInput.value = '';
       passwordInput.required = false;
-      passwordInput.placeholder = 'Leave blank to keep current password';
+      passwordInput.placeholder = 'Not needed to update email or class';
 
       // Change button to update
       const addBtn = document.getElementById('studentSubmitButton');
@@ -992,12 +1001,11 @@
     }
 
     async function updateStudent(studentId) {
-      const name = document.getElementById('studentName').value.trim();
       const email = document.getElementById('studentEmail').value.trim();
       const studentClass = document.getElementById('studentClass').value;
 
-      if (!name || !email || !studentClass) {
-        alert('Please fill in all required fields');
+      if (!email || !studentClass) {
+        alert('Enter the student email and the new class.');
         return;
       }
 
@@ -1005,7 +1013,7 @@
         const response = await fetch(`/assignments/api/students/${encodeURIComponent(studentId)}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, class: studentClass })
+          body: JSON.stringify({ email, class: studentClass })
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Could not update student');

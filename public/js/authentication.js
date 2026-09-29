@@ -22,6 +22,8 @@
       button.classList.toggle('active', active);
       button.setAttribute('aria-pressed', String(active));
     });
+    $('registerClassField').classList.toggle('hidden', role !== 'student');
+    $('registerClass').required = role === 'student';
     clearMessage();
   }
 
@@ -89,13 +91,14 @@
     const email = $('registerEmail').value.trim();
     const password = $('registerPassword').value;
     const confirmPassword = $('confirmPassword').value;
-    if (!validateRegisterForm(name, email, password, confirmPassword)) return;
+    const studentClass = $('registerClass').value.trim();
+    if (!validateRegisterForm(name, email, password, confirmPassword, selectedRole === 'student' ? studentClass : '')) return;
     setBusy($('signUpBtn'), true, 'Creating account…');
     try {
       const response = await fetch('/authentication/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, role: selectedRole, email, password })
+        body: JSON.stringify({ name, role: selectedRole, email, password, class: studentClass })
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.success) throw new Error(data.message || 'We could not create your account. Please try again.');
@@ -119,10 +122,11 @@
     return true;
   }
 
-  function validateRegisterForm(name, email, password, confirmPassword) {
+  function validateRegisterForm(name, email, password, confirmPassword, studentClass) {
     if (!name) return showError('Enter your full name.');
     if (!email || !isValidEmail(email)) return showError('Enter a valid email address.');
     if (!password) return showError('Create a password.');
+    if (!studentClass && selectedRole === 'student') return showError('Enter your class.');
     if (password.length < 6) return showError('Your password must have at least 6 characters.');
     if (password !== confirmPassword) return showError('The passwords do not match.');
     return true;
@@ -175,7 +179,7 @@
   function clearMessage() { $('messageContainer').replaceChildren(); }
 
   function clearForms() {
-    ['loginEmail', 'loginPassword', 'registerName', 'registerEmail', 'registerPassword', 'confirmPassword'].forEach(id => { $(id).value = ''; });
+    ['loginEmail', 'loginPassword', 'registerName', 'registerEmail', 'registerPassword', 'confirmPassword', 'registerClass'].forEach(id => { $(id).value = ''; });
     $('passwordStrength').classList.remove('visible');
     $('passwordStrength').replaceChildren();
   }
