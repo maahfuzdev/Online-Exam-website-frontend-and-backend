@@ -81,6 +81,7 @@ async function listWrittenAnswersForTeacher(req, res) {
 }
 
 async function gradeWrittenAnswer(req, res) {
+  try {
   const { examID, studentID, questionID } = req.params;
   const { teacherID } = req.query;
   const rawMarks = req.body?.marks;
@@ -104,9 +105,14 @@ async function gradeWrittenAnswer(req, res) {
   result.percentage = result.totalMarks > 0 ? (result.score / result.totalMarks) * 100 : 0;
   await result.save();
   res.json({ success: true, score: result.score, totalMarks: result.totalMarks, percentage: result.percentage, manualGradingPending: result.manualGradingPending });
+  } catch (error) {
+    console.error('Could not save written answer marks:', error);
+    res.status(500).json({ error: 'Could not save marks. Please retry or check the server logs.' });
+  }
 }
 
 async function getWrittenAnswerFile(req, res) {
+  try {
   const { examID, studentID, questionID } = req.params;
   const { teacherID } = req.query;
   if (![examID, studentID, questionID, teacherID].every(mongoose.isValidObjectId)) return res.status(400).json({ error: 'A valid teacher, exam, student, and question are required.' });
@@ -114,14 +120,20 @@ async function getWrittenAnswerFile(req, res) {
   if (!exam || !await resultRepository.exists({ examID, studentID })) return res.status(404).json({ error: 'Written answer not found.' });
   const answer = await WrittenAnswer.findOne({ examID, studentID, questionID }).select('data contentType fileName');
   if (!answer) return res.status(404).json({ error: 'Written answer not found.' });
+  const fileData = Buffer.from(answer.data);
   res.set({
     'Content-Type': answer.contentType,
     'Content-Disposition': `inline; filename="${answer.fileName.replace(/["\\\r\n]/g, '_')}"`,
+    'Content-Length': String(fileData.length),
     'Cache-Control': 'private, no-store',
     'X-Content-Type-Options': 'nosniff',
-    'Content-Security-Policy': "sandbox; default-src 'none'; style-src 'unsafe-inline'"
   });
-  res.send(answer.data);
+  res.end(fileData);
+  } catch (error) {
+    console.error('Could not serve written answer file:', error);
+    if (!res.headersSent) res.status(500).json({ error: 'Could not open the written answer file.' });
+    else res.destroy(error);
+  }
 }
 
 async function submitStudentResult(req, res) {
