@@ -125,6 +125,36 @@ router.put("/api/assigned-questions/:examId", async (req, res) => {
   }
 });
 
+// Extend the closing window of an exam that is currently live.
+router.patch("/api/assigned-questions/:examId/extend", async (req, res) => {
+  try {
+    const { examId } = req.params;
+    const { teacherID, endTime } = req.body || {};
+    const newEndTime = new Date(endTime);
+    if (!mongoose.isValidObjectId(examId) || !mongoose.isValidObjectId(teacherID)) {
+      return res.status(400).json({ error: "A valid exam and teacher account are required." });
+    }
+    if (!Number.isFinite(newEndTime.getTime())) return res.status(400).json({ error: "Choose a valid new closing time." });
+
+    const exam = await AssignedQuestion.findOne({ _id: examId, teacherID });
+    if (!exam) return res.status(404).json({ error: "Exam not found in your exam list." });
+    const now = new Date();
+    if (now < exam.startTime || now > exam.endTime) {
+      return res.status(409).json({ error: "The exam is no longer live, so its closing time cannot be extended." });
+    }
+    if (newEndTime <= exam.endTime || newEndTime <= now) {
+      return res.status(400).json({ error: "Choose a closing time later than the current closing time." });
+    }
+
+    exam.endTime = newEndTime;
+    await exam.save();
+    res.json({ message: "Exam closing time extended successfully.", endTime: exam.endTime });
+  } catch (err) {
+    console.error("Error extending exam closing time:", err);
+    res.status(500).json({ error: "Could not extend this exam's closing time." });
+  }
+});
+
 router.delete("/api/assigned-questions/:examId", async (req, res) => {
   try {
     const { examId } = req.params;

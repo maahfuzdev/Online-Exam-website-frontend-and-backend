@@ -182,7 +182,7 @@ function toggleNegativeMarking() {
     const enabled = document.getElementById('negativeMarkingEnabled')?.checked;
     const value = document.getElementById('negativeMarkPerWrong');
     if (!value) return;
-    value.disabled = !enabled;
+    value.disabled = !enabled || extendingLiveExam;
     if (enabled && (!Number(value.value) || Number(value.value) <= 0)) value.value = '0.25';
 }
 
@@ -530,6 +530,30 @@ async function createAndAssignExam() {
     if (!subject) return showMessage("Please enter the exam subject", "error");
     if (!startTime || !endTime) return showMessage("Please select start and end time", "error");
     if (new Date(startTime) >= new Date(endTime)) return showMessage("End time must be after start time", "error");
+    if (editingExamId && extendingLiveExam) {
+        const selectedEndTime = new Date(endTime);
+        if (!Number.isFinite(selectedEndTime.getTime()) || selectedEndTime <= new Date()) return showMessage("Choose a new closing time in the future", "error");
+        const teacherID = localStorage.getItem('userId');
+        if (!teacherID) return showMessage("Please log in as a teacher first", "error");
+        const button = document.getElementById('saveExamButton');
+        button.disabled = true;
+        try {
+            const response = await fetch(`/assignments/api/assigned-questions/${encodeURIComponent(editingExamId)}/extend`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ teacherID, endTime: selectedEndTime.toISOString() })
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(payload.error || 'Could not extend the exam closing time.');
+            showMessage('Exam closing time extended successfully.', 'success');
+            resetExamForm();
+            await loadExistingExams();
+        } catch (error) {
+            showMessage(error.message || 'Could not extend the exam closing time.', 'error');
+        } finally {
+            button.disabled = false;
+        }
+        return;
+    }
     if (!Number(totalTime) || Number(totalTime) < 1) return showMessage("Exam duration must be at least 1 minute", "error");
     if (!marksPerQuestion || marksPerQuestion <= 0) return showMessage("Marks per question must be greater than zero", "error");
     if (negativeMarkingEnabled && (!negativeMarkPerWrong || negativeMarkPerWrong <= 0)) return showMessage("Set a deduction greater than zero", "error");
