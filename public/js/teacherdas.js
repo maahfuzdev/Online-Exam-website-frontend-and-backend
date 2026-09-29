@@ -505,7 +505,7 @@
     // Render analytics
     function renderAnalytics() {
       // Grade distribution
-      const gradeCounts = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+      const gradeCounts = { 'A+': 0, A: 0, B: 0, C: 0, D: 0, F: 0 };
       allResults.forEach(result => {
         if (gradeCounts[result.grade] !== undefined) {
           gradeCounts[result.grade]++;
@@ -518,10 +518,10 @@
         gradeChart = new Chart(gradeCtx, {
           type: 'doughnut',
           data: {
-            labels: ['A', 'B', 'C', 'D', 'F'],
+            labels: ['A+', 'A', 'B', 'C', 'D', 'F'],
             datasets: [{
-              data: [gradeCounts.A, gradeCounts.B, gradeCounts.C, gradeCounts.D, gradeCounts.F],
-              backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#7c3aed']
+              data: [gradeCounts['A+'], gradeCounts.A, gradeCounts.B, gradeCounts.C, gradeCounts.D, gradeCounts.F],
+              backgroundColor: ['#059669', '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#7c3aed']
             }]
           },
           options: {
@@ -696,10 +696,11 @@
 
     // Get grade from percentage
     function getGradeFromPercentage(percentage) {
-      if (percentage >= 90) return 'A';
-      if (percentage >= 80) return 'B';
-      if (percentage >= 70) return 'C';
-      if (percentage >= 60) return 'D';
+      if (percentage >= 80) return 'A+';
+      if (percentage >= 70) return 'A';
+      if (percentage >= 60) return 'B';
+      if (percentage >= 50) return 'C';
+      if (percentage >= 40) return 'D';
       return 'F';
     }
 

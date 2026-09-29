@@ -186,7 +186,7 @@ async function listTeacherResults(req, res) {
         score: result.score ?? 0,
         total: result.totalMarks ?? 0,
         percentage,
-        grade: percentage >= 90 ? "A" : percentage >= 80 ? "B" : percentage >= 70 ? "C" : percentage >= 60 ? "D" : "F",
+        grade: percentage >= 80 ? "A+" : percentage >= 70 ? "A" : percentage >= 60 ? "B" : percentage >= 50 ? "C" : percentage >= 40 ? "D" : "F",
         date: result.date || result.generatedAt
       };
     }));
