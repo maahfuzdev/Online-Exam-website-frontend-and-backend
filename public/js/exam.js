@@ -940,7 +940,7 @@ document.head.appendChild(style);
 // Initialize when page loads
 window.addEventListener('load', function() {
     // Initialize exam creator when in teacher dashboard
-    if (currentMode === 'teacher') {
+    if (typeof currentMode !== 'undefined' && currentMode === 'teacher') {
         setTimeout(initExamCreator, 100);
     }
 });

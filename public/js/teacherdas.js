@@ -33,7 +33,6 @@
 
     // Tab switching
     function switchTab(tabName) {
-      if (tabName === 'exams') return openExamCreation();
       currentTab = tabName;
       const sectionDetails = {
         dashboard: ['OVERVIEW', 'Teacher dashboard', 'Monitor student performance and manage exams.'],
@@ -71,7 +70,7 @@
           loadResults();
           break;
         case 'exams':
-          loadExams();
+          if (typeof initializeTeacherExamTab === 'function') initializeTeacherExamTab();
           break;
         case 'analytics':
           renderAnalytics();

@@ -14,7 +14,7 @@ function goToManualExamCreation() {
 }
 
 function openExamCreation() {
-  openTeacherWorkspace(2, 'exam');
+  switchTab('exams');
 }
 
 function showOCRSystem() {

@@ -1,0 +1,174 @@
+      <section class="exam-step-panel <%= standalone ? "" : "hidden" %>" id="examStep3">
+        <!-- Stylish Header -->
+        <div style="
+              background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+              padding: 30px;
+              border-radius: 22px;
+              margin-bottom: 35px;
+              color: white;
+              box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+          ">
+          <h2
+            style="font-size: 30px; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 12px;">
+             Create New Exam
+          </h2>
+          <p style="opacity: 0.95; font-size: 15px;">Assign questions & schedule exams with ease</p>
+        </div>
+
+
+        <!-- Main Exam Creation Card -->
+        <div style="
+              background: white;
+              padding: 35px;
+              border-radius: 20px;
+              box-shadow: 0 25px 70px rgba(0,0,0,0.07);
+              border: 1px solid #ececec;
+              margin-bottom: 45px;
+          ">
+
+          <!-- Step 1 -->
+          <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+            <span
+              class="w-9 h-9 bg-blue-500 text-white rounded-xl flex items-center justify-center text-lg font-semibold">1</span>
+            Basic Exam Information
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Exam Title -->
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-700" for="examTitle">Exam title</label>
+              <input id="examTitle" type="text" placeholder="e.g., Mid Term Exam - Math"
+                class="w-full px-4 py-3.5 border border-gray-300 rounded-xl text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md">
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-700" for="examSubject">Subject</label>
+              <input id="examSubject" type="text" placeholder="e.g., Mathematics"
+                class="w-full px-4 py-3.5 border border-gray-300 rounded-xl text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md">
+            </div>
+
+            <!-- Marks Per Question -->
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-700" for="marksPerQuestion">Marks per question</label>
+              <div class="relative">
+                <input id="marksPerQuestion" type="number" min="1" value="1"
+                  class="w-full px-4 py-3.5 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md appearance-none">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <span class="text-gray-500 text-sm">marks</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <!-- Total Duration -->
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-700" for="totalTime">Exam duration</label>
+              <div class="relative">
+                <input id="totalTime" type="number" min="1" value="60"
+                  class="w-full px-4 py-3.5 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md appearance-none">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <span class="text-gray-500 text-sm">minutes</span>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">Total time allowed for the exam</p>
+            </div>
+
+            <!-- Start Time -->
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-700" for="startTime">Start date &amp; time</label>
+              <div class="relative group">
+                <input id="startTime" type="datetime-local"
+                  class="w-full px-4 py-3.5 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md appearance-none [color-scheme:light]">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- End Time -->
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-700" for="endTime">End date &amp; time</label>
+              <div class="relative group">
+                <input id="endTime" type="datetime-local"
+                  class="w-full px-4 py-3.5 border border-gray-300 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm hover:shadow-md appearance-none [color-scheme:light]">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <section class="exam-policy-panel" aria-labelledby="examPolicyHeading">
+            <div class="exam-policy-heading"><span>EXAM SETTINGS</span><h3 id="examPolicyHeading">Answers, scoring &amp; result release</h3><p>Choose whether students can attach handwritten work, how wrong answers are scored, and when results are visible.</p></div>
+            <div class="exam-policy-grid">
+              <label class="exam-policy-toggle" for="negativeMarkingEnabled"><input id="negativeMarkingEnabled" type="checkbox" onchange="toggleNegativeMarking()"><span><strong>Use negative marking</strong><small>Deduct marks for incorrect answers.</small></span></label>
+              <label class="exam-policy-toggle" for="writtenAnswersEnabled"><input id="writtenAnswersEnabled" type="checkbox"><span><strong>Allow handwritten answer uploads</strong><small>Students can attach one image or PDF per question for teacher review.</small></span></label>
+              <label class="exam-policy-field" for="negativeMarkPerWrong"><span>Deduction per wrong answer</span><span class="exam-policy-number"><input id="negativeMarkPerWrong" type="number" min="0" step="0.25" value="0.25" disabled><small>marks</small></span></label>
+              <label class="exam-policy-field exam-result-policy" for="resultVisibility"><span>Students can see results</span><select id="resultVisibility"><option value="immediate">Immediately after submitting</option><option value="after_exam_end">After the exam closes</option><option value="teacher_release">When I release them</option></select></label>
+            </div>
+            <p class="exam-policy-help" id="resultVisibilityHelp">Students will see their score and answer review as soon as they submit.</p>
+          </section>
+
+          <!-- Step 2 -->
+          <h3
+            style="font-size:21px; font-weight:700; color:#374151; margin:35px 0 20px; display:flex; gap:12px; align-items:center;">
+            <span
+              style="background:#10b981; color:white; width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center;">2</span>
+            Select Students & Questions
+          </h3>
+
+          <div class="assignment-pickers">
+            <div class="form-group exam-type-selector"><label class="form-label" for="examType">Exam type</label><select id="examType" class="form-input" onchange="changeExamType()"><option value="mcq">MCQ exam</option><option value="written">Written exam</option></select><p class="creator-help" id="examTypeHelp">Only MCQ questions will appear in the question picker.</p></div>
+            <details class="assignment-picker">
+              <summary><span>Choose students</span><span class="picker-count" id="studentPickerCount">0 selected</span></summary>
+              <div class="picker-content">
+                <div class="picker-tools"><span>Students</span><button type="button" class="picker-select-all" onclick="selectAllStudents()">Select all</button></div>
+                <input id="studentSearch" class="assignment-search" type="search" placeholder="Search by name, email, or class" aria-label="Search students by name, email, or class" oninput="renderStudentsList()">
+                <select id="studentClassFilter" class="assignment-search" aria-label="Filter students by class" onchange="renderStudentsList()"><option value="">All classes</option></select>
+                <div id="studentsContainer" class="assignment-list"><div class="assignment-loading">Loading students...</div></div>
+                <div class="picker-total"><span id="selectedStudentsCount">0 selected</span><span id="totalStudentsCount">Total: 0</span></div>
+              </div>
+            </details>
+            <details class="assignment-picker">
+              <summary><span>Choose questions</span><span class="picker-count" id="questionPickerCount">0 selected</span></summary>
+              <div class="picker-content">
+                <div class="picker-tools"><span>Questions</span><button type="button" class="picker-select-all" onclick="selectAllQuestions()" title="Select only questions currently shown by the filters">Select all shown</button></div>
+                <div class="question-selection-filters">
+                  <select id="scheduleQuestionSubject" aria-label="Filter questions by subject" onchange="renderQuestionsList()"><option value="">All subjects</option></select>
+                  <select id="scheduleQuestionClass" aria-label="Filter questions by class" onchange="renderQuestionsList()"><option value="">All classes</option></select>
+                </div>
+                <input id="scheduleQuestionSearch" class="assignment-search" type="search" placeholder="Search question text" aria-label="Search questions" oninput="renderQuestionsList()">
+                <div id="questionsContainer" class="assignment-list"><div class="assignment-loading">Loading questions...</div></div>
+                <div class="picker-total"><span id="selectedQuestionsCount">0 selected</span><span id="totalQuestionsCount">Total: 0</span></div>
+              </div>
+            </details>
+          </div>
+          <div class="exam-form-actions">
+            <button id="saveExamButton" class="create-assignment-button" onclick="createAndAssignExam()">Create exam and assign</button>
+            <button id="cancelEditExamButton" class="cancel-exam-edit hidden" type="button" onclick="cancelExamEdit()">Cancel editing</button>
+          </div>
+
+          <p style="text-align:center; margin-top:12px; font-size:14px; color:#6b7280;">Assigned students can open the exam during the schedule you set.</p>
+        </div>
+
+
+        <details class="created-exams-panel">
+          <summary>Previously created exams <span>View list</span></summary>
+          <div id="examsList" style="min-height:90px;"><div style="text-align:center;padding:28px;color:#9ca3af;">No exams created yet.</div></div>
+        </details>
+
+        <div class="workflow-actions">
+          <% if (!standalone) { %>
+          <button type="button" class="workflow-back" onclick="showExamStep(2)"><span aria-hidden="true">←</span> Back
+            to review</button>
+          <% } %>
+          <span class="workflow-hint">Selected questions and students will be assigned together.</span>
+        </div>
+      </section>
