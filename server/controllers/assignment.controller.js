@@ -224,6 +224,25 @@ async function createStudent(req, res) {
 
 }
 
+async function updateStudentClassByEmail(req, res) {
+  try {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const studentClass = String(req.body?.class || "").trim();
+    if (!email || !studentClass) return res.status(400).json({ error: "Student email and class are required." });
+
+    const student = await authRepository.findOneAndUpdate(
+      { email, role: "student" },
+      { $set: { class: studentClass } },
+      { new: true, runValidators: true, projection: { _id: 1, name: 1, email: 1, class: 1 } }
+    );
+    if (!student) return res.status(404).json({ error: "No registered student was found with that email." });
+    res.json({ success: true, student });
+  } catch (err) {
+    console.error("Error updating student class by email:", err);
+    res.status(500).json({ error: "Could not update the student class." });
+  }
+}
+
 async function updateStudent(req, res) {
   try {
     const { studentId } = req.params;
@@ -370,6 +389,7 @@ module.exports = {
   releaseExamResults: asyncHandler(releaseExamResults),
   listStudents: asyncHandler(listStudents),
   createStudent: asyncHandler(createStudent),
+  updateStudentClassByEmail: asyncHandler(updateStudentClassByEmail),
   updateStudent: asyncHandler(updateStudent),
   getExamForStudent: asyncHandler(getExamForStudent),
   recordExamAttendance: asyncHandler(recordExamAttendance),

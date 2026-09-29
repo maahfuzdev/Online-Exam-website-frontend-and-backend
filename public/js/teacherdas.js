@@ -873,45 +873,39 @@
     }
 
     // Student management functions
-    async function addStudent() {
-      const name = document.getElementById('studentName').value.trim();
+    async function updateStudentClassByEmail() {
       const email = document.getElementById('studentEmail').value.trim();
-      const password = document.getElementById('studentPassword').value;
       const studentClass = document.getElementById('studentClass').value;
 
-      if (!name || !email || !studentClass || password.length < 6) {
-        alert('Enter the student name, email, class, and a password of at least 6 characters.');
+      if (!email || !studentClass.trim()) {
+        alert('Enter the registered student email and new class.');
         return;
       }
 
       try {
-        const response = await fetch('/assignments/api/students', {
-          method: 'POST',
+        const response = await fetch('/assignments/api/students/class', {
+          method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, class: studentClass })
+          body: JSON.stringify({ email, class: studentClass })
         });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Could not create student');
+        if (!response.ok) throw new Error(data.error || 'Could not update student class');
 
         clearStudentForm();
         await loadAllData();
         switchTab('students');
-        alert('Student account created. Share the initial password securely with the student.');
+        alert(`Updated ${data.student.name}'s class to ${data.student.class}.`);
       } catch (error) {
         alert(error.message);
       }
     }
 
     function clearStudentForm() {
-      document.getElementById('studentName').value = '';
       document.getElementById('studentEmail').value = '';
-      document.getElementById('studentPassword').value = '';
       document.getElementById('studentClass').value = '';
-      document.getElementById('studentPassword').required = true;
-      document.getElementById('studentPassword').placeholder = 'At least 6 characters';
       const submitButton = document.getElementById('studentSubmitButton');
-      submitButton.textContent = '👤 Add Student';
-      submitButton.onclick = addStudent;
+      submitButton.textContent = 'Update Class';
+      submitButton.onclick = updateStudentClassByEmail;
     }
 
     function loadStudentsList() {
@@ -982,17 +976,11 @@
       if (!student) return;
 
       // Fill form with student data
-      document.getElementById('studentName').value = student.name;
       document.getElementById('studentEmail').value = student.email;
       document.getElementById('studentClass').value = student.class || '';
-      const passwordInput = document.getElementById('studentPassword');
-      passwordInput.value = '';
-      passwordInput.required = false;
-      passwordInput.placeholder = 'Not needed to update email or class';
-
       // Change button to update
       const addBtn = document.getElementById('studentSubmitButton');
-      addBtn.textContent = '✏️ Update Student';
+      addBtn.textContent = 'Save Changes';
       addBtn.onclick = function() { updateStudent(studentId); };
 
       // Scroll to form

@@ -11,6 +11,7 @@ router.delete("/api/assigned-questions/:examId", bindActor("teacher", "body", "t
 router.patch("/api/assigned-questions/:examId/release-results", bindActor("teacher", "body", "teacherID"), controller.releaseExamResults);
 router.get("/api/students", protect("teacher"), controller.listStudents);
 router.post("/api/students", protect("teacher"), controller.createStudent);
+router.patch("/api/students/class", protect("teacher"), controller.updateStudentClassByEmail);
 router.put("/api/students/:studentId", protect("teacher"), controller.updateStudent);
 router.get("/api/exam/:examId/student/:studentId", bindActor("student", "params", "studentId"), controller.getExamForStudent);
 router.post("/api/exam/:examId/attend", bindActor("student", "body", "studentId"), controller.recordExamAttendance);

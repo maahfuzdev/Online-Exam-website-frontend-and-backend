@@ -4,30 +4,21 @@
              Student Management
           </div>
 
-          <!-- Add Student Form -->
+          <!-- Update Existing Student Class Form -->
           <div class="form-section">
-            <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">➕ Add New Student</h3>
+            <h3 style="font-weight: 600; margin-bottom: 20px; color: #1a202c;">Update Existing Student Class</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
               <div class="form-group">
-                <label class="form-label">Full Name</label>
-                <input type="text" class="form-input" id="studentName" placeholder="Enter student name">
+                <label class="form-label" for="studentEmail">Registered Student Email</label>
+                <input type="email" class="form-input" id="studentEmail" placeholder="student@example.com" autocomplete="email">
               </div>
               <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-input" id="studentEmail" placeholder="student@example.com">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Initial Password <span style="font-weight:400;color:#64748b">(new accounts only)</span></label>
-                <input type="password" class="form-input" id="studentPassword" placeholder="At least 6 characters"
-                  minlength="6">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Class</label>
+                <label class="form-label" for="studentClass">New Class</label>
                 <input type="text" class="form-input" id="studentClass" placeholder="e.g. Class 9 or HSC 2027" maxlength="40">
               </div>
             </div>
             <div class="action-buttons">
-              <button class="btn btn-teacher" id="studentSubmitButton" onclick="addStudent()"> Add Student</button>
+              <button class="btn btn-teacher" id="studentSubmitButton" onclick="updateStudentClassByEmail()"> Update Class</button>
               <button class="btn" onclick="clearStudentForm()"> Clear</button>
             </div>
           </div>
