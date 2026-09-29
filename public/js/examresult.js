@@ -124,17 +124,17 @@
           </td>
           <td>
             <span class="answer-stat stat-correct">
-              âœ“ ${result.correctAnswers}
+              ✓ ${result.correctAnswers}
             </span>
           </td>
           <td>
             <span class="answer-stat stat-wrong">
-              âœ— ${result.wrongAnswers}
+              ✗ ${result.wrongAnswers}
             </span>
           </td>
           <td>
             <span class="answer-stat stat-skipped">
-              âˆ’ ${result.skippedQuestion}
+              − ${result.skippedQuestion}
             </span>
           </td>
           <td>${result.timeTaken}s</td>

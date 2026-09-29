@@ -1,7 +1,7 @@
   <!-- Teacher Dashboard -->
   <div id="teacherDashboard" class="dashboard teacher-dashboard hidden">
     <div class="dashboard-header">
-      <button class="back-btn" onclick="TeacherDash()">â† Back</button>
+      <button class="back-btn" onclick="TeacherDash()">← Back</button>
       <h1 class="dashboard-title"> Teacher Dashboard</h1>
       <p class="dashboard-subtitle">Create amazing quizzes with mathematical equations</p>
     </div>
@@ -37,27 +37,27 @@
 
         <div class="question-creator-launcher">
           <button type="button" class="creator-launch-button" onclick="toggleQuestionTypeChooser()">
-            <span class="creator-launch-icon" aria-hidden="true">ï¼‹</span>
+            <span class="creator-launch-icon" aria-hidden="true">＋</span>
             <span><strong>Create a question</strong><small>Choose a question type to get started</small></span>
-            <span class="creator-launch-arrow" aria-hidden="true">âŒ„</span>
+            <span class="creator-launch-arrow" aria-hidden="true">⌄</span>
           </button>
         </div>
 
         <div id="questionTypeChooser" class="question-type-chooser hidden" aria-label="Choose question type">
           <button type="button" class="question-type-card" onclick="beginQuestionCreation('mathematical')">
-            <span class="question-type-icon">âˆ‘</span>
+            <span class="question-type-icon">∑</span>
             <span><strong>Mathematical</strong><small>Formula templates, LaTeX input, and live preview</small></span>
-            <span class="question-type-arrow">â†’</span>
+            <span class="question-type-arrow">→</span>
           </button>
           <button type="button" class="question-type-card" onclick="beginQuestionCreation('general')">
             <span class="question-type-icon general">Aa</span>
             <span><strong>General</strong><small>Text question, with formula tools available if needed</small></span>
-            <span class="question-type-arrow">â†’</span>
+            <span class="question-type-arrow">→</span>
           </button>
           <button type="button" class="question-type-card bulk-question-type-card" onclick="openBulkQuestionCreator()">
             <span class="question-type-icon bulk"> <i class="fas fa-paste"></i> </span>
             <span><strong>Paste many questions</strong><small>Paste MCQs with A-D choices and answer keys</small></span>
-            <span class="question-type-arrow">â†’</span>
+            <span class="question-type-arrow">→</span>
           </button>
         </div>
 
@@ -117,31 +117,31 @@
                 </div></div>
                 <div class="math-keyboard-section"><span>Operations</span><div class="math-buttons">
                   <button type="button" class="math-btn math-key math-key-accent" onclick="insertMathSymbol('+')" aria-label="Plus">+</button>
-                  <button type="button" class="math-btn math-key math-key-accent" onclick="insertMathSymbol('âˆ’')" aria-label="Minus">âˆ’</button>
+                  <button type="button" class="math-btn math-key math-key-accent" onclick="insertMathSymbol('−')" aria-label="Minus">−</button>
                   <button type="button" class="math-btn math-key math-key-accent" onclick="insertMathSymbol('x')" aria-label="Multiply">x</button>
                   <button type="button" class="math-btn math-key math-key-accent" onclick="insertMathSymbol('÷')" aria-label="Divide">÷</button>
                   <button type="button" class="math-btn math-key math-key-accent" onclick="insertMathSymbol('=')" aria-label="Equals">=</button>
                   <button type="button" class="math-btn math-key" onclick="insertMathSymbol('±')" aria-label="Plus or minus">±</button>
-                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('â‰¤')" aria-label="Less than or equal">â‰¤</button>
-                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('â‰¥')" aria-label="Greater than or equal">â‰¥</button>
-                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('â‰ ')" aria-label="Not equal">â‰ </button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('≤')" aria-label="Less than or equal">≤</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('≥')" aria-label="Greater than or equal">≥</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('≠')" aria-label="Not equal">≠</button>
                   <button type="button" class="math-btn math-key" onclick="insertMathSymbol('%')" aria-label="Percent">%</button>
                 </div></div>
                 <div class="math-keyboard-section"><span>Common math</span><div class="math-buttons">
-                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('âˆš()', 2)" aria-label="Square root">âˆš</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('√()', 2)" aria-label="Square root">√</button>
                   <button type="button" class="math-btn math-key" onclick="insertMathSymbol('x²')" aria-label="x squared">x²</button>
                   <button type="button" class="math-btn math-key" onclick="insertMathSymbol('x³')" aria-label="x cubed">x³</button>
                   <button type="button" class="math-btn math-key" onclick="insertMathSymbol('xⁿ')" aria-label="Power template">xⁿ</button>
                   <button type="button" class="math-btn math-key" onclick="insertMathSymbol('()/()', 1)" aria-label="Fraction">a/b</button>
                   <button type="button" class="math-btn math-key" onclick="insertMathSymbol('½')" aria-label="One half">½</button>
                   <button type="button" class="math-btn math-key" onclick="insertMathSymbol('¼')" aria-label="One quarter">¼</button>
-                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('Ï€')" aria-label="Pi">Ï€</button>
-                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('âˆž')" aria-label="Infinity">âˆž</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('π')" aria-label="Pi">π</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('∞')" aria-label="Infinity">∞</button>
                   <button type="button" class="math-btn math-key" onclick="insertMathSymbol('θ')" aria-label="Theta">θ</button>
                   <button type="button" class="math-btn math-key" onclick="insertMathSymbol('α')" aria-label="Alpha">α</button>
                   <button type="button" class="math-btn math-key" onclick="insertMathSymbol('β')" aria-label="Beta">β</button>
                   <button type="button" class="math-btn math-key" onclick="insertMathSymbol('Σ')" aria-label="Sum">Σ</button>
-                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('âˆ«')" aria-label="Integral">âˆ«</button>
+                  <button type="button" class="math-btn math-key" onclick="insertMathSymbol('∫')" aria-label="Integral">∫</button>
                 </div></div>
                 <div class="math-keyboard-section"><span>Superscript numbers</span><div class="math-buttons">
                   <button type="button" class="math-btn math-key" onclick="insertMathSymbol('⁰')" aria-label="Insert superscript 0">⁰</button>
@@ -211,17 +211,17 @@
                 <button type="button" class="correct-marker inactive" onclick="setCorrectAnswer(1)" aria-label="Mark choice B as correct" aria-pressed="false">B</button>
               </div>
               <div class="choice-input">
-                <input type="text" id="choice3" class="form-input" aria-label="Choice C" placeholder="Choice C (e.g., âˆšx)">
+                <input type="text" id="choice3" class="form-input" aria-label="Choice C" placeholder="Choice C (e.g., √x)">
                 <button type="button" class="correct-marker inactive" onclick="setCorrectAnswer(2)" aria-label="Mark choice C as correct" aria-pressed="false">C</button>
               </div>
               <div class="choice-input">
-                <input type="text" id="choice4" class="form-input" aria-label="Choice D" placeholder="Choice D (e.g., Ï€r²)">
+                <input type="text" id="choice4" class="form-input" aria-label="Choice D" placeholder="Choice D (e.g., πr²)">
                 <button type="button" class="correct-marker inactive" onclick="setCorrectAnswer(3)" aria-label="Mark choice D as correct" aria-pressed="false">D</button>
               </div>
             </div>
             <div style="text-align: center; margin-top: 15px;">
               <p style="color: #10b981; font-weight: 600; margin-bottom: 5px;">
-                âœ… Click on A, B, C, or D to mark the correct answer
+                ✅ Click on A, B, C, or D to mark the correct answer
               </p>
               <p id="correctIndicator" style="color: #667eea; font-weight: 700;">
                 No correct answer selected
@@ -237,7 +237,7 @@
         <div class="workflow-actions workflow-actions-end">
           <span class="workflow-hint">Add questions, then review the complete set.</span>
           <button type="button" class="workflow-next" onclick="showExamStep(2)">Review questions <span
-              aria-hidden="true">â†’</span></button>
+              aria-hidden="true">→</span></button>
         </div>
       </section>
 
@@ -268,10 +268,10 @@
           <div class="questions-list hidden" id="questionsList"><p style="text-align:center;color:#64748b;">No questions added yet.</p></div>
         </div>
         <div class="workflow-actions">
-          <button type="button" class="workflow-back" onclick="showExamStep(1)"><span aria-hidden="true">â†</span> Back
+          <button type="button" class="workflow-back" onclick="showExamStep(1)"><span aria-hidden="true">←</span> Back
             to builder</button>
           <button type="button" class="workflow-next" onclick="showExamStep(3)">Set up exam <span
-              aria-hidden="true">â†’</span></button>
+              aria-hidden="true">→</span></button>
         </div>
       </section>
 
@@ -440,7 +440,7 @@
         </details>
 
         <div class="workflow-actions">
-          <button type="button" class="workflow-back" onclick="showExamStep(2)"><span aria-hidden="true">â†</span> Back
+          <button type="button" class="workflow-back" onclick="showExamStep(2)"><span aria-hidden="true">←</span> Back
             to review</button>
           <span class="workflow-hint">Selected questions and students will be assigned together.</span>
         </div>
