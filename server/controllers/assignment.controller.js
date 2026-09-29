@@ -114,9 +114,13 @@ async function extendExamWindow(req, res) {
       return res.status(400).json({ error: "Choose a closing time later than the current closing time." });
     }
 
-    exam.endTime = newEndTime;
-    await exam.save();
-    res.json({ message: "Exam closing time extended successfully.", endTime: exam.endTime });
+    const updatedExam = await assignedExamRepository.findOneAndUpdate(
+      { _id: exam._id, teacherID, endTime: exam.endTime },
+      { $set: { endTime: newEndTime } },
+      { new: true, runValidators: true }
+    );
+    if (!updatedExam) return res.status(409).json({ error: "The exam schedule changed. Refresh the exam list and try again." });
+    res.json({ message: "Exam closing time extended successfully.", endTime: updatedExam.endTime });
   } catch (err) {
     console.error("Error extending exam closing time:", err);
     res.status(500).json({ error: "Could not extend this exam's closing time." });

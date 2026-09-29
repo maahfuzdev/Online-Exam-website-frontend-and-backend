@@ -544,6 +544,10 @@ async function createAndAssignExam() {
             });
             const payload = await response.json().catch(() => ({}));
             if (!response.ok) throw new Error(payload.error || 'Could not extend the exam closing time.');
+            const updatedExam = exams.find(exam => String(exam._id) === String(editingExamId));
+            if (updatedExam && payload.endTime) updatedExam.endTime = payload.endTime;
+            localStorage.setItem('exams', JSON.stringify(exams));
+            renderExamsList();
             showMessage('Exam closing time extended successfully.', 'success');
             resetExamForm();
             await loadExistingExams();
@@ -639,7 +643,7 @@ function saveExamToStorage(exam) {
         const teacherID = localStorage.getItem('userId') || 'your-teacher-id-here';
         
         // Fetch from API
-        const response = await fetch(`/assignments/api/assigned-questions/teacher/${teacherID}`);
+        const response = await fetch(`/assignments/api/assigned-questions/teacher/${teacherID}`, { cache: 'no-store' });
         
         if (!response.ok) throw new Error("Failed to load exams from server");
         
