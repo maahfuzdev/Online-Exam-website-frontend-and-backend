@@ -360,7 +360,7 @@
               <td>${formatDate(result.date)}</td>
               <td>
                 <button class="btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="viewStudentDetail(${JSON.stringify(String(result.studentId))})">View</button>
-                ${result.writtenAnswersEnabled ? `<button class="btn written-review-action" type="button" onclick="viewWrittenAnswers(${JSON.stringify(String(result.examId))}, ${JSON.stringify(String(result.studentId))})"><i class="fas fa-file-pen" aria-hidden="true"></i> Written</button>` : ''}
+                ${result.writtenAnswersEnabled ? `<button class="btn written-review-action" type="button" onclick="viewWrittenAnswers('${String(result.examId)}', '${String(result.studentId)}')"><i class="fas fa-file-pen" aria-hidden="true"></i> Written</button>` : ''}
               </td>
             </tr>
           `;
