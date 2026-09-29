@@ -31,9 +31,9 @@
 
     // Get rank display (medal or number)
     function getRankDisplay(rank) {
-      if (rank === 1) return '<span class="rank-medal">ðŸ¥‡</span>';
-      if (rank === 2) return '<span class="rank-medal">ðŸ¥ˆ</span>';
-      if (rank === 3) return '<span class="rank-medal">ðŸ¥‰</span>';
+      if (rank === 1) return '<span class="rank-medal"></span>';
+      if (rank === 2) return '<span class="rank-medal">ˆ</span>';
+      if (rank === 3) return '<span class="rank-medal"></span>';
       return `<span class="rank-cell">${rank}</span>`;
     }
 
