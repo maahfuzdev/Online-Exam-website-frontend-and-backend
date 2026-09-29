@@ -1,11 +1,12 @@
-function openTeacherWorkspace(step) {
+function openTeacherWorkspace(step, mode) {
   localStorage.setItem('showteacher', 'true');
   localStorage.setItem('teacherWorkspaceStep', String(step));
+  localStorage.setItem('teacherWorkspaceMode', mode || 'exam');
   window.location.href = '/html/index.html';
 }
 
 function goToManualQuestionCreation() {
-  openTeacherWorkspace(1);
+  openTeacherWorkspace(1, 'questions');
 }
 
 function goToManualExamCreation() {
@@ -13,7 +14,7 @@ function goToManualExamCreation() {
 }
 
 function openExamCreation() {
-  openTeacherWorkspace(2);
+  openTeacherWorkspace(2, 'exam');
 }
 
 function showOCRSystem() {

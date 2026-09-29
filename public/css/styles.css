@@ -1921,3 +1921,15 @@
   #examStep1 .latex-keyboard > summary { align-items: flex-start; flex-direction: column; gap: 3px; }
   #examStep1 .latex-keyboard > summary::after { position: absolute; right: 27px; }
 }
+
+#teacherDashboard.question-creation-mode .exam-stepper [data-exam-step="2"],
+#teacherDashboard.question-creation-mode .exam-stepper [data-exam-step="3"],
+#teacherDashboard.question-creation-mode .exam-stepper .exam-step-connector,
+#teacherDashboard.question-creation-mode #examStep1 .workflow-actions,
+#teacherDashboard.exam-creation-mode .exam-stepper [data-exam-step="1"],
+#teacherDashboard.exam-creation-mode #examStep1 { display: none !important; }
+#teacherDashboard.exam-creation-mode .exam-stepper .exam-step-connector:first-of-type { display: none !important; }
+#teacherDashboard.exam-creation-mode #examStep2 .workflow-back { display: none !important; }
+#teacherDashboard.question-creation-mode .exam-stepper { display: none; }
+#teacherDashboard.question-creation-mode .exam-workflow-heading,
+#teacherDashboard.exam-creation-mode .exam-workflow-heading { margin-bottom: 18px; }

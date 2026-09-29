@@ -2,3 +2,40 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+/* Question bank library */
+.teacher-bank-shell { overflow: hidden; border: 1px solid #e1ebe6; border-radius: 20px; background: #fff; box-shadow: 0 12px 32px rgba(31,65,53,.055); }
+.teacher-bank-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 26px 28px 22px; border-bottom: 1px solid #e7efeb; }
+.teacher-bank-eyebrow { color: #098574; font-size: 10px; font-weight: 900; letter-spacing: .14em; }
+.teacher-bank-header h2 { margin: 5px 0 3px; color: #243c34; font-size: clamp(22px, 3vw, 29px); font-weight: 850; }
+.teacher-bank-header p { margin: 0; color: #788981; font-size: 13px; }
+.teacher-bank-count { flex: 0 0 auto; padding: 8px 12px; border: 1px solid #dcece5; border-radius: 999px; background: #f4faf7; color: #347362; font-size: 11px; font-weight: 800; }
+.teacher-bank-filters { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 13px; padding: 18px 28px; border-bottom: 1px solid #edf2ef; background: #fbfdfc; }
+.teacher-bank-filters label { display: grid; gap: 6px; color: #586b63; font-size: 11px; font-weight: 800; }
+.teacher-bank-filters select,.teacher-bank-filters input { width: 100%; min-width: 0; min-height: 43px; padding: 9px 11px; border: 1px solid #dce7e1; border-radius: 10px; background: #fff; color: #30463d; font: inherit; font-size: 12px; }
+.teacher-bank-filters select:focus,.teacher-bank-filters input:focus { border-color: #72b9a3; outline: 3px solid rgba(19,139,112,.12); }
+.teacher-bank-list { display: grid; gap: 12px; padding: 20px 28px 28px; }
+.teacher-bank-card { min-width: 0; padding: 17px; border: 1px solid #deebe5; border-radius: 14px; background: #fff; transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+.teacher-bank-card:hover { transform: translateY(-1px); border-color: #c6ded3; box-shadow: 0 8px 22px rgba(31,65,53,.06); }
+.teacher-bank-card-top { display: grid; grid-template-columns: minmax(160px, 22%) minmax(0,1fr); align-items: start; gap: 16px; }
+.teacher-bank-badges { display: flex; flex-wrap: wrap; gap: 7px; }
+.teacher-bank-badge { display: inline-flex; align-items: center; min-height: 26px; padding: 5px 10px; border-radius: 999px; background: #e8f5ef; color: #087865; font-size: 10px; font-weight: 850; }
+.teacher-bank-badge.mcq { background: #eef2ff; color: #4f46a5; }
+.teacher-bank-badge.written { background: #fff4e6; color: #9a5b08; }
+.teacher-bank-question { color: #2b443a; font-size: 15px; font-weight: 750; line-height: 1.65; overflow-wrap: anywhere; }
+.teacher-bank-meta { margin: 10px 0 0; color: #82918a; font-size: 11px; }
+.teacher-bank-options { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 15px; }
+.teacher-bank-option { display: flex; min-width: 0; align-items: start; gap: 9px; padding: 10px; border-radius: 10px; background: #f5f9f7; color: #64766d; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.teacher-bank-option > span:first-child { flex: 0 0 20px; color: #82918a; font-weight: 900; }
+.teacher-bank-option.is-correct { background: #e8f5ef; color: #176350; }
+.teacher-bank-written-note { max-width: 620px; margin: 14px 0 0; padding: 12px; border-radius: 10px; background: #f5f9f7; color: #667970; font-size: 12px; line-height: 1.55; }
+.teacher-bank-actions { display: flex; justify-content: flex-end; margin-top: 14px; }
+.teacher-bank-delete { min-height: 38px; padding: 8px 13px; border: 1px solid #f0d1ce; border-radius: 9px; background: #fff8f7; color: #b64c45; font-size: 11px; font-weight: 850; }
+.teacher-bank-delete:hover { background: #fff0ee; }
+.teacher-bank-delete:disabled { opacity: .55; }
+.teacher-bank-empty { color: #83938b; text-align: center; }
+.teacher-bank-empty-card { display: grid; justify-items: center; padding: 54px 20px; }
+.teacher-bank-empty-card > span { margin-bottom: 11px; color: #98b3a6; font-size: 27px; }
+.teacher-bank-empty-card strong { color: #344e43; font-size: 15px; }
+.teacher-bank-empty-card p { margin: 6px 0 0; font-size: 12px; }
+@media (max-width: 900px) { .teacher-bank-filters { grid-template-columns: repeat(2,minmax(0,1fr)); } .teacher-bank-card-top { grid-template-columns: 1fr; gap: 10px; } }
+@media (max-width: 600px) { .teacher-bank-header { align-items: flex-start; flex-direction: column; padding: 20px 17px; } .teacher-bank-filters { grid-template-columns: 1fr; padding: 14px 17px; } .teacher-bank-list { padding: 15px 12px 18px; } .teacher-bank-card { padding: 14px; } .teacher-bank-options { grid-template-columns: 1fr; } }

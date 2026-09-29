@@ -152,61 +152,73 @@
       if (!container) return;
       const subjectSelect = document.getElementById('bankSubjectFilter');
       const classSelect = document.getElementById('bankClassFilter');
+      if (!subjectSelect || !classSelect) return;
       const selectedSubject = subjectSelect.value;
       const selectedClass = classSelect.value;
       const subjects = [...new Set(allQuestions.map(question => question.subject).filter(Boolean))].sort((a, b) => a.localeCompare(b));
       const classes = [...new Set(allQuestions.map(question => question.class).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-      subjectSelect.replaceChildren(new Option('All Subjects', ''), ...subjects.map(value => new Option(value, value)));
-      classSelect.replaceChildren(new Option('All Classes', ''), ...classes.map(value => new Option(value, value)));
+      subjectSelect.replaceChildren(new Option('All subjects', ''), ...subjects.map(value => new Option(value, value)));
+      classSelect.replaceChildren(new Option('All classes', ''), ...classes.map(value => new Option(value, value)));
       subjectSelect.value = subjects.includes(selectedSubject) ? selectedSubject : '';
       classSelect.value = classes.includes(selectedClass) ? selectedClass : '';
-
       const search = document.getElementById('bankSearch').value.trim().toLocaleLowerCase();
       const answerType = document.getElementById('bankTypeFilter').value;
       const questions = allQuestions.filter(question => {
         const type = question.answerType || 'mcq';
         const searchable = [question.questionText, question.subject, question.class, ...(question.options || [])].join(' ').toLocaleLowerCase();
-        return (!subjectSelect.value || question.subject === subjectSelect.value) &&
-          (!classSelect.value || question.class === classSelect.value) &&
-          (!answerType || type === answerType) && searchable.includes(search);
+        return (!subjectSelect.value || question.subject === subjectSelect.value) && (!classSelect.value || question.class === classSelect.value) && (!answerType || type === answerType) && searchable.includes(search);
       });
-
       container.replaceChildren();
+      const countLabel = document.getElementById('teacherQuestionBankCount');
+      if (countLabel) countLabel.textContent = `${questions.length} of ${allQuestions.length} questions`;
       if (!questions.length) {
         const empty = document.createElement('div');
-        empty.className = 'form-section';
-        empty.textContent = allQuestions.length ? 'No questions match these filters.' : 'Your question bank is empty. Create questions from Question Creation.';
-        container.appendChild(empty);
-        return;
+        empty.className = 'teacher-bank-empty teacher-bank-empty-card';
+        const icon = document.createElement('span'); icon.className = 'fas fa-book-open'; icon.setAttribute('aria-hidden', 'true');
+        const title = document.createElement('strong'); title.textContent = allQuestions.length ? 'No matching questions' : 'Your question bank is empty';
+        const message = document.createElement('p'); message.textContent = allQuestions.length ? 'Try changing the filters or search terms.' : 'Questions you create manually or with OCR will appear here.';
+        empty.append(icon, title, message); container.appendChild(empty); return;
       }
-
-      const count = document.createElement('p');
-      count.style.color = '#64748b';
-      count.textContent = `${questions.length} saved question${questions.length === 1 ? '' : 's'}`;
-      container.appendChild(count);
       questions.forEach(question => {
-        const card = document.createElement('article');
-        card.className = 'form-section';
-        card.style.margin = '0';
-        const details = document.createElement('p');
-        details.style.cssText = 'margin:0 0 10px;color:#64748b;font-size:.85rem';
-        details.textContent = `${question.subject || 'Subject not set'} · ${question.class || 'Class not set'} · ${(question.answerType || 'mcq') === 'written' ? 'Written' : 'MCQ'}`;
-        const text = document.createElement('div');
-        text.style.cssText = 'font-weight:600;color:#1a202c;line-height:1.6;white-space:pre-wrap';
-        text.textContent = question.questionText || 'Question text unavailable';
-        card.append(details, text);
+        const card = document.createElement('article'); card.className = 'teacher-bank-card';
+        const top = document.createElement('div'); top.className = 'teacher-bank-card-top';
+        const badges = document.createElement('div'); badges.className = 'teacher-bank-badges';
+        const subject = document.createElement('span'); subject.className = 'teacher-bank-badge'; subject.textContent = question.subject || 'General';
+        const type = document.createElement('span'); type.className = `teacher-bank-badge ${question.answerType === 'written' ? 'written' : 'mcq'}`; type.textContent = question.answerType === 'written' ? 'Written' : 'MCQ';
+        badges.append(subject, type);
+        const text = document.createElement('div'); text.className = 'teacher-bank-question'; text.textContent = question.questionText || 'Question text unavailable';
+        top.append(badges, text); card.append(top);
+        const meta = document.createElement('p'); meta.className = 'teacher-bank-meta';
+        meta.textContent = `${question.questionType === 'mathematical' ? 'Mathematical' : 'General'} · ${question.subject || 'Subject not set'} · ${question.class || 'Class not set'}`; card.append(meta);
         if ((question.answerType || 'mcq') === 'mcq' && Array.isArray(question.options)) {
-          const options = document.createElement('div');
-          options.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:14px;color:#475569';
+          const options = document.createElement('div'); options.className = 'teacher-bank-options';
           question.options.forEach((option, index) => {
-            const item = document.createElement('div');
-            item.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
+            const letterValue = String.fromCharCode(65 + index);
+            const item = document.createElement('div'); item.className = 'teacher-bank-option';
+            const letter = document.createElement('span'); letter.textContent = letterValue;
+            const value = document.createElement('span'); value.textContent = option; item.append(letter, value);
+            if (String(question.correctAnswer || '').toUpperCase() === letterValue) item.classList.add('is-correct');
             options.appendChild(item);
-          });
-          card.appendChild(options);
+          }); card.append(options);
+        } else {
+          const note = document.createElement('p'); note.className = 'teacher-bank-written-note'; note.textContent = 'This question is marked manually from the student’s uploaded answer.'; card.append(note);
         }
-        container.appendChild(card);
+        const actions = document.createElement('div'); actions.className = 'teacher-bank-actions';
+        const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'teacher-bank-delete'; remove.textContent = 'Delete question';
+        remove.addEventListener('click', () => deleteTeacherBankQuestion(question._id, remove)); actions.append(remove); card.append(actions); container.append(card);
+        if (window.renderMathInElement) window.renderMathInElement(card, { delimiters: [{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false},{left:'$',right:'$',display:false}], throwOnError: false });
       });
+    }
+
+    async function deleteTeacherBankQuestion(questionId, button) {
+      if (!questionId || !window.confirm('Delete this question from your bank? Questions already used in an exam cannot be deleted.')) return;
+      button.disabled = true;
+      try {
+        const response = await fetch(`/api/questions/${encodeURIComponent(questionId)}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ teacherId: localStorage.getItem('userId') }) });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || 'Question could not be deleted.');
+        allQuestions = allQuestions.filter(question => String(question._id) !== String(questionId)); renderTeacherQuestionBank();
+      } catch (error) { window.alert(error.message || 'Question could not be deleted.'); button.disabled = false; }
     }
 
     // Render statistics

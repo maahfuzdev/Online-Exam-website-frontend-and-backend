@@ -62,16 +62,39 @@ function init() {
 
     function showTeacherDashboard() {
       hideAllSections();
-      document.getElementById('teacherDashboard').classList.remove('hidden');
+      const dashboard = document.getElementById('teacherDashboard');
+      dashboard.classList.remove('hidden', 'question-creation-mode', 'exam-creation-mode');
       currentMode = 'teacher';
       updateTeacherStats();
+      const workspaceMode = localStorage.getItem('teacherWorkspaceMode') || 'all';
+      localStorage.removeItem('teacherWorkspaceMode');
+      if (workspaceMode === 'questions' || workspaceMode === 'exam') dashboard.classList.add(workspaceMode === 'questions' ? 'question-creation-mode' : 'exam-creation-mode');
+      const heading = dashboard.querySelector('.exam-workflow-heading');
+      if (heading && workspaceMode !== 'all') {
+        heading.querySelector('.workflow-eyebrow').textContent = workspaceMode === 'questions' ? 'QUESTION WORKSPACE' : 'EXAM WORKSPACE';
+        heading.querySelector('h2').textContent = workspaceMode === 'questions' ? 'Create questions' : 'Create an exam';
+        heading.querySelector('p').textContent = workspaceMode === 'questions'
+          ? 'Create and save reusable questions to your question bank.'
+          : 'Choose saved questions, set the schedule, and assign students.';
+        heading.querySelector('.workflow-summary')?.classList.toggle('hidden', workspaceMode === 'questions');
+      }
+      if (workspaceMode === 'exam') {
+        const bankIntro = dashboard.querySelector('#examStep2 .review-intro-card');
+        if (bankIntro) {
+          bankIntro.querySelector('.section-title').textContent = 'Exam question setup';
+          bankIntro.querySelector('.bank-section-description').textContent = 'Choose the saved questions to include in your exam in the next step.';
+          bankIntro.querySelector('.review-bank-launch')?.classList.add('hidden');
+          bankIntro.querySelector('#questionsList')?.classList.add('hidden');
+        }
+      }
       // The dashboard is shown after the page's load event, so exam.js's
       // load-time initializer cannot populate the exam creator here.
       if (typeof initExamCreator === 'function') {
         const requestedStep = Number(localStorage.getItem('teacherWorkspaceStep'));
         localStorage.removeItem('teacherWorkspaceStep');
         Promise.resolve(initExamCreator()).then(() => {
-          if ([1, 2, 3].includes(requestedStep) && typeof showExamStep === 'function') showExamStep(requestedStep);
+          const step = workspaceMode === 'questions' ? 1 : (workspaceMode === 'exam' ? ([2, 3].includes(requestedStep) ? requestedStep : 2) : requestedStep);
+          if ([1, 2, 3].includes(step) && typeof showExamStep === 'function') showExamStep(step);
         });
       }
     }

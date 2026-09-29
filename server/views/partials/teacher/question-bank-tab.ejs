@@ -1,13 +1,12 @@
 <div id="questionBankTab" class="tab-content hidden">
-  <div class="section-title">Question Bank</div>
-  <p style="color:#64748b;margin:0 0 20px">Browse your saved questions. Filter by subject, class, question type, or search text.</p>
-  <div class="filter-bar">
-    <div class="filter-group">
-      <select class="filter-select" id="bankSubjectFilter" aria-label="Filter questions by subject" onchange="renderTeacherQuestionBank()"><option value="">All Subjects</option></select>
-      <select class="filter-select" id="bankClassFilter" aria-label="Filter questions by class" onchange="renderTeacherQuestionBank()"><option value="">All Classes</option></select>
-      <select class="filter-select" id="bankTypeFilter" aria-label="Filter questions by answer type" onchange="renderTeacherQuestionBank()"><option value="">All Types</option><option value="mcq">MCQ</option><option value="written">Written</option></select>
-      <input class="filter-select" id="bankSearch" type="search" placeholder="Search questions..." aria-label="Search question bank" oninput="renderTeacherQuestionBank()">
+  <section class="teacher-bank-shell">
+    <header class="teacher-bank-header"><div><span class="teacher-bank-eyebrow">YOUR LIBRARY</span><h2>Question bank</h2><p>Find, review, and manage the questions you have saved.</p></div><span class="teacher-bank-count" id="teacherQuestionBankCount">Loading…</span></header>
+    <div class="teacher-bank-filters">
+      <label>Subject<select id="bankSubjectFilter" onchange="renderTeacherQuestionBank()" aria-label="Filter by subject"><option value="">All subjects</option></select></label>
+      <label>Class / Grade<select id="bankClassFilter" onchange="renderTeacherQuestionBank()" aria-label="Filter by class"><option value="">All classes</option></select></label>
+      <label>Question type<select id="bankTypeFilter" onchange="renderTeacherQuestionBank()" aria-label="Filter by question type"><option value="">All types</option><option value="mcq">MCQ</option><option value="written">Written</option></select></label>
+      <label class="teacher-bank-search">Search<input id="bankSearch" type="search" placeholder="Search questions…" oninput="renderTeacherQuestionBank()" aria-label="Search questions"></label>
     </div>
-  </div>
-  <div id="teacherQuestionBankList" style="display:grid;gap:14px;margin-top:18px"><p style="color:#64748b">Loading questions...</p></div>
+    <div id="teacherQuestionBankList" class="teacher-bank-list"><p class="teacher-bank-empty">Loading your saved questions…</p></div>
+  </section>
 </div>

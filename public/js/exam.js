@@ -200,6 +200,9 @@ function updateResultVisibilityHelp() {
 function showExamStep(step) {
     const targetStep = Number(step);
     if (![1, 2, 3].includes(targetStep)) return;
+    const dashboard = document.getElementById('teacherDashboard');
+    if (dashboard?.classList.contains('question-creation-mode') && targetStep !== 1) return;
+    if (dashboard?.classList.contains('exam-creation-mode') && targetStep === 1) return;
     document.querySelectorAll('.exam-step-panel').forEach(panel => {
         panel.classList.toggle('hidden', panel.id !== `examStep${targetStep}`);
     });
