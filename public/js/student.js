@@ -183,6 +183,12 @@ async function loadStudentExams() {
   pastExams = [];
   attendedExamIds = examdata.filter(exam => exam.attended).map(exam => String(exam.examId));
   submittedExamIds = examdata.filter(exam => exam.submitted).map(exam => String(exam.examId));
+  // The server is authoritative: clear resume flags left behind by older
+  // sessions or by a browser closing before the local submit callback ran.
+  submittedExamIds.forEach(examId => {
+    localStorage.removeItem(studentExamStorageKey('inProgress', examId));
+    localStorage.setItem(studentExamStorageKey('submitted', examId), 'true');
+  });
   examdata.forEach(exam => {
     if (exam.status === "active") activeExams.push(exam);
     else pastExams.push(exam);
@@ -1201,8 +1207,9 @@ function remainingTime(duration, savedEndTime = null) {
 async function restoreActiveExamAfterMobileReturn() {
   const examId = localStorage.getItem('currentExamId');
   if (!examId || localStorage.getItem(studentExamStorageKey('inProgress', examId)) !== 'true') return;
-  if (localStorage.getItem(studentExamStorageKey('submitted', examId)) === 'true') {
+  if (localStorage.getItem(studentExamStorageKey('submitted', examId)) === 'true' || submittedExamIds.includes(String(examId))) {
     localStorage.removeItem(studentExamStorageKey('inProgress', examId));
+    localStorage.setItem(studentExamStorageKey('submitted', examId), 'true');
     return;
   }
   const duration = Number(localStorage.getItem('duration'));
