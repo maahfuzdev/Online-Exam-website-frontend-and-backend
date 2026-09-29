@@ -1348,3 +1348,40 @@ body:has(.student-dashboard) { min-height: 100vh; padding: clamp(12px, 3vw, 34px
   .exams-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .exam-card { padding: 16px; }
 }
+
+.written-answer-panel { margin-top: 22px; padding: clamp(16px, 3vw, 22px); border: 1px solid #dbe5f3; border-radius: 16px; background: linear-gradient(145deg, #f8fbff, #f1f6ff); }
+.written-answer-panel-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.written-answer-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 auto; border-radius: 13px; background: #e0eaff; color: #315bd6; font-size: 17px; }
+.written-answer-panel-heading h4 { color: #172554; font-size: 15px; font-weight: 700; }
+.written-answer-panel-heading p { margin-top: 3px; color: #64748b; font-size: 13px; }
+.written-answer-dropzone { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 82px; padding: 15px; border: 1px dashed #9db3db; border-radius: 12px; background: rgba(255,255,255,.8); color: #315bd6; cursor: pointer; transition: border-color .18s ease, background .18s ease, transform .18s ease; }
+.written-answer-dropzone:hover { border-color: #5278dc; background: #fff; transform: translateY(-1px); }
+.written-answer-dropzone > i { font-size: 21px; }
+.written-answer-dropzone span { display: grid; gap: 4px; }
+.written-answer-dropzone strong { font-size: 13px; }
+.written-answer-dropzone small { color: #64748b; font-size: 11px; }
+.written-answer-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.written-answer-input:focus-visible + .written-answer-dropzone { outline: 3px solid #315bd6; outline-offset: 3px; }
+.written-answer-feedback { margin-top: 11px; color: #718096; font-size: 12px; }
+.written-answer-preview { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.written-answer-preview img { width: 48px; height: 48px; border: 1px solid #dbe5f3; border-radius: 9px; object-fit: cover; background: white; }
+.written-answer-file-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 9px; background: #fee2e2; color: #c2413a; font-size: 20px; }
+.written-answer-file-details { display: grid; gap: 4px; min-width: 0; }
+.written-answer-file-details strong { overflow: hidden; max-width: 100%; color: #334155; text-overflow: ellipsis; white-space: nowrap; }
+.written-answer-file-details small { color: #64748b; }
+.written-answers-overlay { position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center; padding: 20px; background: rgba(15,23,42,.58); backdrop-filter: blur(5px); }
+.written-answers-modal { width: min(760px, 100%); max-height: min(88vh, 900px); overflow: auto; padding: clamp(18px, 4vw, 30px); border: 1px solid rgba(255,255,255,.7); border-radius: 20px; background: #fff; box-shadow: 0 24px 70px rgba(15,23,42,.24); }
+.written-answers-modal-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; padding-bottom: 19px; border-bottom: 1px solid #e8edf5; }
+.written-answers-modal-header span { color: #5874cb; font-size: 10px; font-weight: 800; letter-spacing: .13em; }
+.written-answers-modal-header h2 { margin: 5px 0; color: #172033; font-size: 22px; }
+.written-answers-modal-header p { color: #718096; font-size: 13px; }
+.written-answers-close { display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 10px; background: #f1f5f9; color: #475569; font-size: 24px; cursor: pointer; }
+.written-answers-list { display: grid; gap: 14px; padding-top: 18px; color: #64748b; }
+.written-answer-review-card { padding: 16px; border: 1px solid #e5eaf2; border-radius: 14px; background: #fbfcfe; }
+.written-answer-review-card h3 { color: #26334b; font-size: 14px; }
+.written-answer-review-card p { margin: 7px 0 12px; color: #64748b; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+.written-answer-review-image { display: block; max-width: 100%; max-height: 520px; margin: 12px auto; border: 1px solid #e2e8f0; border-radius: 10px; object-fit: contain; background: white; }
+.written-answer-review-file { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; padding: 10px 12px; border-radius: 9px; background: white; color: #475569; font-size: 12px; }
+.written-answer-review-file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.written-answer-review-file a { flex: 0 0 auto; color: #315bd6; font-weight: 700; text-decoration: none; }
+.written-review-action { margin-left: 6px; background: #edf2ff; color: #315bd6; }

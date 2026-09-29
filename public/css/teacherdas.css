@@ -1194,3 +1194,20 @@
       #examsTab .form-section > div[style*="display: grid"] { grid-template-columns: 1fr !important; }
       #examsTab .form-section > div[style*="display: grid"] > div ul { grid-template-columns: 1fr 1fr; }
     }
+
+.written-answers-overlay { position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center; padding: 20px; background: rgba(15,23,42,.58); backdrop-filter: blur(5px); }
+.written-answers-modal { width: min(760px, 100%); max-height: min(88vh, 900px); overflow: auto; padding: clamp(18px, 4vw, 30px); border: 1px solid rgba(255,255,255,.7); border-radius: 20px; background: #fff; box-shadow: 0 24px 70px rgba(15,23,42,.24); }
+.written-answers-modal-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; padding-bottom: 19px; border-bottom: 1px solid #e8edf5; }
+.written-answers-modal-header span { color: #5874cb; font-size: 10px; font-weight: 800; letter-spacing: .13em; }
+.written-answers-modal-header h2 { margin: 5px 0; color: #172033; font-size: 22px; }
+.written-answers-modal-header p { color: #718096; font-size: 13px; }
+.written-answers-close { display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 10px; background: #f1f5f9; color: #475569; font-size: 24px; cursor: pointer; }
+.written-answers-list { display: grid; gap: 14px; padding-top: 18px; color: #64748b; }
+.written-answer-review-card { padding: 16px; border: 1px solid #e5eaf2; border-radius: 14px; background: #fbfcfe; }
+.written-answer-review-card h3 { color: #26334b; font-size: 14px; }
+.written-answer-review-card p { margin: 7px 0 12px; color: #64748b; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+.written-answer-review-image { display: block; max-width: 100%; max-height: 520px; margin: 12px auto; border: 1px solid #e2e8f0; border-radius: 10px; object-fit: contain; background: white; }
+.written-answer-review-file { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; padding: 10px 12px; border-radius: 9px; background: white; color: #475569; font-size: 12px; }
+.written-answer-review-file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.written-answer-review-file a { flex: 0 0 auto; color: #315bd6; font-weight: 700; text-decoration: none; }
+.written-review-action { margin-left: 6px; background: #edf2ff; color: #315bd6; }

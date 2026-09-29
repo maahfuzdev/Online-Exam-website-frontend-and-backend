@@ -524,6 +524,7 @@ async function createAndAssignExam() {
     const negativeMarkingEnabled = document.getElementById('negativeMarkingEnabled').checked;
     const negativeMarkPerWrong = negativeMarkingEnabled ? Number(document.getElementById('negativeMarkPerWrong').value) : 0;
     const resultVisibility = document.getElementById('resultVisibility').value;
+    const writtenAnswersEnabled = document.getElementById('writtenAnswersEnabled').checked;
 
     // Validation
     if (!examTitle) return showMessage("Please enter exam title", "error");
@@ -583,7 +584,8 @@ async function createAndAssignExam() {
         totalMarks: Number(selectedQuestions.size * marksPerQuestion).toFixed(2),
         negativeMarkingEnabled,
         negativeMarkPerWrong,
-        resultVisibility
+        resultVisibility,
+        writtenAnswersEnabled
     };
 
     try {
@@ -721,7 +723,8 @@ function editExam(examId, extendOnly = false) {
     document.getElementById('negativeMarkingEnabled').checked = Boolean(exam.negativeMarkingEnabled);
     document.getElementById('negativeMarkPerWrong').value = Number(exam.negativeMarkPerWrong || 0.25);
     document.getElementById('resultVisibility').value = exam.resultVisibility || 'immediate';
-    ['examTitle', 'examSubject', 'totalTime', 'marksPerQuestion', 'startTime', 'negativeMarkingEnabled', 'negativeMarkPerWrong', 'resultVisibility'].forEach(id => {
+    document.getElementById('writtenAnswersEnabled').checked = Boolean(exam.writtenAnswersEnabled);
+    ['examTitle', 'examSubject', 'totalTime', 'marksPerQuestion', 'startTime', 'negativeMarkingEnabled', 'negativeMarkPerWrong', 'resultVisibility', 'writtenAnswersEnabled'].forEach(id => {
         document.getElementById(id).disabled = extendOnly;
     });
     document.querySelectorAll('.assignment-picker, .exam-policy-panel').forEach(element => {
@@ -805,9 +808,10 @@ function resetExamForm() {
     document.getElementById('negativeMarkingEnabled').checked = false;
     document.getElementById('negativeMarkPerWrong').value = '0.25';
     document.getElementById('resultVisibility').value = 'immediate';
+    document.getElementById('writtenAnswersEnabled').checked = false;
     document.getElementById('saveExamButton').textContent = 'Create exam and assign';
     document.getElementById('cancelEditExamButton').classList.add('hidden');
-    ['examTitle', 'examSubject', 'totalTime', 'marksPerQuestion', 'startTime', 'negativeMarkingEnabled', 'negativeMarkPerWrong', 'resultVisibility'].forEach(id => {
+    ['examTitle', 'examSubject', 'totalTime', 'marksPerQuestion', 'startTime', 'negativeMarkingEnabled', 'negativeMarkPerWrong', 'resultVisibility', 'writtenAnswersEnabled'].forEach(id => {
         document.getElementById(id).disabled = false;
     });
     document.querySelectorAll('.assignment-picker, .exam-policy-panel').forEach(element => element.classList.remove('exam-extension-locked'));

@@ -6,12 +6,13 @@ const { assignedExamRepository } = require("../repositories/assigned-exam.reposi
 const { resultRepository } = require("../repositories/result.repository");
 const Auth = require("../models/Auth");
 const AssignedQuestion = require("../models/AssignedQuestion");
+const WrittenAnswer = require("../models/WrittenAnswer");
 const { validateExamInput } = require("../services/exam-validation.service");
 const asyncHandler = require("../middleware/async-handler");
 
 async function createAssignedExam(req, res) {
   try {
-    const { teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, totalMarks, negativeMarkingEnabled = false, negativeMarkPerWrong = 0, resultVisibility = "immediate" } = req.body;
+    const { teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, totalMarks, negativeMarkingEnabled = false, negativeMarkPerWrong = 0, resultVisibility = "immediate", writtenAnswersEnabled = false } = req.body;
 
     const validation = validateExamInput({ teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, negativeMarkingEnabled, negativeMarkPerWrong, resultVisibility });
     if (validation) return res.status(400).json({ error: validation });
@@ -26,7 +27,7 @@ async function createAssignedExam(req, res) {
 
     const newAssignment = new AssignedQuestion({
       teacherID, studentIDs, examTitle: examTitle.trim(), subject: subject.trim(), questionIds, startTime, endTime, examTime, markPerQuestion,
-      totalMarks: questionIds.length * Number(markPerQuestion), negativeMarkingEnabled, negativeMarkPerWrong: negativeMarkingEnabled ? Number(negativeMarkPerWrong) : 0, resultVisibility
+      totalMarks: questionIds.length * Number(markPerQuestion), negativeMarkingEnabled, negativeMarkPerWrong: negativeMarkingEnabled ? Number(negativeMarkPerWrong) : 0, resultVisibility, writtenAnswersEnabled: Boolean(writtenAnswersEnabled)
     });
     await newAssignment.save();
 
@@ -41,7 +42,7 @@ async function createAssignedExam(req, res) {
 async function updateAssignedExam(req, res) {
   try {
     const { examId } = req.params;
-    const { teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, negativeMarkingEnabled = false, negativeMarkPerWrong = 0, resultVisibility = "immediate" } = req.body;
+    const { teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, negativeMarkingEnabled = false, negativeMarkPerWrong = 0, resultVisibility = "immediate", writtenAnswersEnabled = false } = req.body;
     if (!mongoose.isValidObjectId(examId)) return res.status(400).json({ error: "Invalid exam ID." });
     const validation = validateExamInput({ teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, negativeMarkingEnabled, negativeMarkPerWrong, resultVisibility });
     if (validation) return res.status(400).json({ error: validation });
@@ -58,6 +59,7 @@ async function updateAssignedExam(req, res) {
         new Date(endTime).getTime() > now.getTime() &&
         Number(examTime) === Number(exam.examTime) && examTitle.trim() === exam.examTitle && subject.trim() === exam.subject &&
         sameQuestionIds && sameStudentIds && Number(markPerQuestion) === Number(exam.markPerQuestion) &&
+        Boolean(writtenAnswersEnabled) === Boolean(exam.writtenAnswersEnabled) &&
         Boolean(negativeMarkingEnabled) === Boolean(exam.negativeMarkingEnabled) &&
         (!negativeMarkingEnabled || Number(negativeMarkPerWrong) === Number(exam.negativeMarkPerWrong)) &&
         resultVisibility === (exam.resultVisibility || "immediate");
@@ -84,6 +86,7 @@ async function updateAssignedExam(req, res) {
       startTime: new Date(startTime), endTime: new Date(endTime), examTime: Number(examTime), markPerQuestion: Number(markPerQuestion),
       totalMarks: questionIds.length * Number(markPerQuestion), negativeMarkingEnabled: Boolean(negativeMarkingEnabled),
       negativeMarkPerWrong: negativeMarkingEnabled ? Number(negativeMarkPerWrong) : 0, resultVisibility,
+      writtenAnswersEnabled: Boolean(writtenAnswersEnabled),
       resultsReleased: resultVisibility === "teacher_release" ? exam.resultsReleased : false
     });
     await exam.save();
@@ -140,6 +143,7 @@ async function deleteAssignedExam(req, res) {
     if (now >= examToDelete.startTime && now <= examToDelete.endTime) return res.status(409).json({ error: "A live exam cannot be deleted. Wait until it closes." });
     const exam = await assignedExamRepository.findOneAndDelete({ _id: examId, teacherID });
     await resultRepository.deleteMany({ examID: exam._id });
+    await WrittenAnswer.deleteMany({ examID: exam._id });
     res.json({ message: "Exam and its saved results were deleted." });
   } catch (err) {
     console.error("Error deleting exam:", err);
@@ -298,7 +302,7 @@ async function listExamsForStudent(req, res) {
       studentIDs: studentId
     })
     .populate("questionIds", "_id")
-    .select("examTitle subject startTime endTime examTime markPerQuestion totalMarks teacherID negativeMarkingEnabled negativeMarkPerWrong resultVisibility resultsReleased attendedStudentIDs");
+    .select("examTitle subject startTime endTime examTime markPerQuestion totalMarks teacherID negativeMarkingEnabled negativeMarkPerWrong resultVisibility resultsReleased attendedStudentIDs writtenAnswersEnabled");
     const attendedResults = await resultRepository.find({ studentID: studentId, examID: { $in: exams.map(exam => exam._id) } }).select("examID");
     const attendedExamIds = new Set(attendedResults.map(result => String(result.examID)));
 
@@ -319,6 +323,7 @@ async function listExamsForStudent(req, res) {
       negativeMarkingEnabled: exam.negativeMarkingEnabled,
       negativeMarkPerWrong: exam.negativeMarkPerWrong,
       resultVisibility: exam.resultVisibility || "immediate",
+      writtenAnswersEnabled: Boolean(exam.writtenAnswersEnabled),
       resultsReleased: exam.resultsReleased,
 
       status: now < exam.endTime ? "active" : "completed"

@@ -68,6 +68,18 @@
                                 <span class="option-text" id="optionD">3.17</span>
                             </button>
                         </div>
+                        <section id="writtenAnswerSection" class="written-answer-panel hidden" aria-labelledby="writtenAnswerTitle">
+                            <div class="written-answer-panel-heading">
+                                <span class="written-answer-icon"><i class="fas fa-file-arrow-up" aria-hidden="true"></i></span>
+                                <div><h4 id="writtenAnswerTitle">Handwritten answer</h4><p>Attach a clear photo or PDF for this question.</p></div>
+                            </div>
+                            <input id="writtenAnswerFile" class="written-answer-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onchange="handleWrittenAnswerFile(event)">
+                            <label class="written-answer-dropzone" for="writtenAnswerFile">
+                                <i class="fas fa-cloud-arrow-up" aria-hidden="true"></i>
+                                <span><strong>Choose an image or PDF</strong><small>JPG, PNG, WebP or PDF · up to 8 MB</small></span>
+                            </label>
+                            <div id="writtenAnswerFeedback" class="written-answer-feedback" role="status" aria-live="polite"></div>
+                        </section>
                     </div>
                 </div>
 

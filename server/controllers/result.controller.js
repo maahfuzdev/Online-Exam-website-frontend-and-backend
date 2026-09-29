@@ -4,6 +4,90 @@ const Result = require("../models/Result");
 const { findAssignedExam, canStudentViewResult, visibleResultsForStudent } = require("../services/result-visibility.service");
 const { scoreExamAnswers } = require("../services/result-scoring.service");
 const asyncHandler = require("../middleware/async-handler");
+const mongoose = require("mongoose");
+const WrittenAnswer = require("../models/WrittenAnswer");
+
+const writtenAnswerTypes = {
+  'image/jpeg': { extension: 'jpg', magic: buffer => buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff },
+  'image/png': { extension: 'png', magic: buffer => buffer.length >= 8 && buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) },
+  'image/webp': { extension: 'webp', magic: buffer => buffer.length >= 12 && buffer.toString('ascii', 0, 4) === 'RIFF' && buffer.toString('ascii', 8, 12) === 'WEBP' },
+  'application/pdf': { extension: 'pdf', magic: buffer => buffer.length >= 5 && buffer.toString('ascii', 0, 5) === '%PDF-' }
+};
+
+async function saveWrittenAnswer(req, res) {
+  const { studentID, examID, questionID, questionIndex, fileName, contentType, data } = req.body || {};
+  if (![studentID, examID, questionID].every(mongoose.isValidObjectId) || !Number.isInteger(Number(questionIndex)) || Number(questionIndex) < 0) {
+    return res.status(400).json({ error: 'A valid student, exam, question, and question number are required.' });
+  }
+  const fileType = Object.prototype.hasOwnProperty.call(writtenAnswerTypes, contentType) ? writtenAnswerTypes[contentType] : null;
+  const dataUrlMatch = typeof data === 'string' && data.match(/^data:([^;]+);base64,([A-Za-z0-9+/]+={0,2})$/);
+  if (!fileType || !dataUrlMatch || dataUrlMatch[1] !== contentType) return res.status(400).json({ error: 'Upload a JPG, PNG, WebP image, or PDF file.' });
+  const encoded = dataUrlMatch[2];
+  if (encoded.length > 11 * 1024 * 1024) return res.status(413).json({ error: 'Each answer file must be 8 MB or smaller.' });
+  const buffer = Buffer.from(encoded, 'base64');
+  if (!buffer.length || buffer.length > 8 * 1024 * 1024 || !fileType.magic(buffer)) {
+    return res.status(400).json({ error: 'The file content does not match the selected image or PDF type.' });
+  }
+
+  const exam = await assignedExamRepository.findOne({ _id: examID, studentIDs: studentID }).populate('questionIds');
+  if (!exam) return res.status(403).json({ error: 'You are not assigned to this exam.' });
+  if (!exam.writtenAnswersEnabled) return res.status(403).json({ error: 'Handwritten uploads are not enabled for this exam.' });
+  if (!exam.attendedStudentIDs.some(id => String(id) === String(studentID))) return res.status(403).json({ error: 'Open the exam before uploading answers.' });
+  if (await resultRepository.exists({ examID, studentID })) return res.status(409).json({ error: 'This exam has already been submitted.' });
+  const now = new Date();
+  if (now < exam.startTime || now > exam.endTime) return res.status(403).json({ error: 'Answer uploads are only available while the exam is open.' });
+  const index = Number(questionIndex);
+  const question = exam.questionIds[index];
+  if (!question || String(question._id) !== String(questionID)) return res.status(400).json({ error: 'The question does not belong to this exam.' });
+
+  const cleanName = String(fileName || 'answer').split(/[\\/]/).pop().replace(/[^\p{L}\p{N}._ -]/gu, '').trim().slice(0, 120) || 'answer';
+  const writtenAnswer = await WrittenAnswer.findOneAndUpdate(
+    { examID, studentID, questionID },
+    { $set: {
+      examID, studentID, teacherID: exam.teacherID, questionID, questionIndex: index,
+      questionText: question.questionText, fileName: cleanName, contentType, data: buffer, uploadedAt: now
+    } },
+    { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
+  );
+  res.status(201).json({ success: true, questionIndex: index, fileName: writtenAnswer.fileName, contentType });
+}
+
+async function listWrittenAnswersForTeacher(req, res) {
+  const { examID, studentID } = req.params;
+  const { teacherID } = req.query;
+  if (![examID, studentID, teacherID].every(mongoose.isValidObjectId)) return res.status(400).json({ error: 'A valid teacher, exam, and student are required.' });
+  const exam = await assignedExamRepository.findOne({ _id: examID, teacherID, studentIDs: studentID }).select('_id');
+  if (!exam) return res.status(404).json({ error: 'Exam not found in your exam list.' });
+  if (!await resultRepository.exists({ examID, studentID })) return res.status(409).json({ error: 'Written answers are available after the student submits the exam.' });
+  const answers = await WrittenAnswer.find({ examID, studentID }).select('questionID questionIndex questionText fileName contentType uploadedAt').sort({ questionIndex: 1 });
+  res.json(answers.map(answer => ({
+    questionID: answer.questionID,
+    questionIndex: answer.questionIndex,
+    questionText: answer.questionText,
+    fileName: answer.fileName,
+    contentType: answer.contentType,
+    uploadedAt: answer.uploadedAt,
+    url: `/results/api/written-answers/${examID}/${studentID}/${answer.questionID}/file?teacherID=${teacherID}`
+  })));
+}
+
+async function getWrittenAnswerFile(req, res) {
+  const { examID, studentID, questionID } = req.params;
+  const { teacherID } = req.query;
+  if (![examID, studentID, questionID, teacherID].every(mongoose.isValidObjectId)) return res.status(400).json({ error: 'A valid teacher, exam, student, and question are required.' });
+  const exam = await assignedExamRepository.findOne({ _id: examID, teacherID, studentIDs: studentID }).select('_id');
+  if (!exam || !await resultRepository.exists({ examID, studentID })) return res.status(404).json({ error: 'Written answer not found.' });
+  const answer = await WrittenAnswer.findOne({ examID, studentID, questionID }).select('data contentType fileName');
+  if (!answer) return res.status(404).json({ error: 'Written answer not found.' });
+  res.set({
+    'Content-Type': answer.contentType,
+    'Content-Disposition': `inline; filename="${answer.fileName.replace(/["\\\r\n]/g, '_')}"`,
+    'Cache-Control': 'private, no-store',
+    'X-Content-Type-Options': 'nosniff',
+    'Content-Security-Policy': "sandbox; default-src 'none'; style-src 'unsafe-inline'"
+  });
+  res.send(answer.data);
+}
 
 async function submitStudentResult(req, res) {
   try {
@@ -167,7 +251,7 @@ async function listTeacherResults(req, res) {
   try {
     const results = await resultRepository.find({ teacherID: req.params.teacherID })
       .populate("studentID", "name class")
-      .populate("examID", "subject")
+      .populate("examID", "subject writtenAnswersEnabled")
       .sort({ generatedAt: -1 });
 
     res.json(results.map(result => {
@@ -181,6 +265,7 @@ async function listTeacherResults(req, res) {
         studentName: result.studentID?.name || "Unknown student",
         class: result.studentID?.class || "",
         examId: result.examID?._id || result.examID,
+        writtenAnswersEnabled: Boolean(result.examID?.writtenAnswersEnabled),
         examTitle: result.examTitle || "Exam",
         subject: result.examID?.subject || "",
         score: result.score ?? 0,
@@ -202,5 +287,8 @@ module.exports = {
   listStudentResults: asyncHandler(listStudentResults),
   getStudentExamResult: asyncHandler(getStudentExamResult),
   listResultsByExam: asyncHandler(listResultsByExam),
-  listTeacherResults: asyncHandler(listTeacherResults)
+  listTeacherResults: asyncHandler(listTeacherResults),
+  saveWrittenAnswer: asyncHandler(saveWrittenAnswer),
+  listWrittenAnswersForTeacher: asyncHandler(listWrittenAnswersForTeacher),
+  getWrittenAnswerFile: asyncHandler(getWrittenAnswerFile)
 };

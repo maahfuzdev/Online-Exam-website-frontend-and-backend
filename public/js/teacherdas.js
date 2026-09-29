@@ -359,9 +359,8 @@
               </td>
               <td>${formatDate(result.date)}</td>
               <td>
-                <button class="btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="viewStudentDetail(${JSON.stringify(String(result.studentId))})">
-                  👁️ View
-                </button>
+                <button class="btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="viewStudentDetail(${JSON.stringify(String(result.studentId))})">View</button>
+                ${result.writtenAnswersEnabled ? `<button class="btn written-review-action" type="button" onclick="viewWrittenAnswers(${JSON.stringify(String(result.examId))}, ${JSON.stringify(String(result.studentId))})"><i class="fas fa-file-pen" aria-hidden="true"></i> Written</button>` : ''}
               </td>
             </tr>
           `;
@@ -759,6 +758,77 @@
         document.getElementById('filterExam').value = examId;
         filterResults();
         switchTab('results');
+      }
+    }
+
+    async function viewWrittenAnswers(examId, studentId) {
+      const teacherID = localStorage.getItem('userId');
+      const overlay = document.createElement('div');
+      overlay.className = 'written-answers-overlay';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-label', 'Student written answers');
+      const panel = document.createElement('section');
+      panel.className = 'written-answers-modal';
+      const header = document.createElement('header');
+      header.className = 'written-answers-modal-header';
+      const heading = document.createElement('div');
+      heading.innerHTML = '<span>SUBMISSION REVIEW</span><h2>Handwritten answers</h2><p>Review the files attached to each exam question.</p>';
+      const closeButton = document.createElement('button');
+      closeButton.className = 'written-answers-close';
+      closeButton.type = 'button';
+      closeButton.setAttribute('aria-label', 'Close written answer review');
+      closeButton.innerHTML = '&times;';
+      closeButton.onclick = () => overlay.remove();
+      header.append(heading, closeButton);
+      const content = document.createElement('div');
+      content.className = 'written-answers-list';
+      content.textContent = 'Loading student files…';
+      panel.append(header, content);
+      overlay.appendChild(panel);
+      overlay.addEventListener('click', event => { if (event.target === overlay) overlay.remove(); });
+      document.body.appendChild(overlay);
+
+      try {
+        const params = new URLSearchParams({ teacherID });
+        const response = await fetch(`/results/api/written-answers/${encodeURIComponent(examId)}/${encodeURIComponent(studentId)}?${params}`, { cache: 'no-store' });
+        const payload = await response.json().catch(() => []);
+        if (!response.ok) throw new Error(payload.error || 'Could not load written answers.');
+        content.replaceChildren();
+        if (!payload.length) {
+          content.textContent = 'The student did not attach any files.';
+          return;
+        }
+        payload.forEach(answer => {
+          const card = document.createElement('article');
+          card.className = 'written-answer-review-card';
+          const title = document.createElement('h3');
+          title.textContent = `Question ${Number(answer.questionIndex) + 1}`;
+          const question = document.createElement('p');
+          question.textContent = answer.questionText;
+          const fileRow = document.createElement('div');
+          fileRow.className = 'written-answer-review-file';
+          const fileName = document.createElement('span');
+          fileName.textContent = answer.fileName;
+          const openLink = document.createElement('a');
+          openLink.href = answer.url;
+          openLink.target = '_blank';
+          openLink.rel = 'noopener noreferrer';
+          openLink.textContent = answer.contentType === 'application/pdf' ? 'Open PDF' : 'Open image';
+          fileRow.append(fileName, openLink);
+          card.append(title, question);
+          if (answer.contentType.startsWith('image/')) {
+            const image = document.createElement('img');
+            image.className = 'written-answer-review-image';
+            image.src = answer.url;
+            image.alt = `Student answer to question ${Number(answer.questionIndex) + 1}`;
+            card.appendChild(image);
+          }
+          card.appendChild(fileRow);
+          content.appendChild(card);
+        });
+      } catch (error) {
+        content.textContent = error.message || 'Could not load written answers.';
       }
     }
 

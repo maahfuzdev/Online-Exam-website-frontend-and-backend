@@ -10,6 +10,138 @@ let attendedExamIds = [];
 let submittedExamIds = [];
 let examTimerInterval = null;
 let pendingResultSave = Promise.resolve();
+let writtenAnswersEnabled = false;
+let writtenAnswerFiles = {};
+let pendingWrittenUploads = {};
+
+function hasStudentResponse(index) {
+  return studentAnswers[index] !== undefined || (writtenAnswersEnabled && writtenAnswerFiles[index]?.status === 'uploaded');
+}
+
+function saveWrittenAnswerMetadata() {
+  const examId = localStorage.getItem('currentExamId');
+  if (!examId) return;
+  const metadata = Object.fromEntries(Object.entries(writtenAnswerFiles).map(([index, answer]) => [index, {
+    questionID: answer.questionID,
+    fileName: answer.fileName,
+    contentType: answer.contentType,
+    size: answer.size,
+    status: answer.status
+  }]));
+  localStorage.setItem(studentExamStorageKey('writtenAnswers', examId), JSON.stringify(metadata));
+}
+
+function renderWrittenAnswerUpload(index) {
+  const section = document.getElementById('writtenAnswerSection');
+  const feedback = document.getElementById('writtenAnswerFeedback');
+  const input = document.getElementById('writtenAnswerFile');
+  if (!section || !feedback) return;
+  section.classList.toggle('hidden', !writtenAnswersEnabled);
+  if (!writtenAnswersEnabled) return;
+  const answer = writtenAnswerFiles[index];
+  feedback.replaceChildren();
+  if (!answer) {
+    feedback.textContent = 'No file attached yet.';
+    if (input) input.value = '';
+    return;
+  }
+  const preview = document.createElement('div');
+  preview.className = 'written-answer-preview';
+  if (answer.previewUrl && answer.contentType.startsWith('image/')) {
+    const image = document.createElement('img');
+    image.src = answer.previewUrl;
+    image.alt = `Preview of ${answer.fileName}`;
+    preview.appendChild(image);
+  } else {
+    const icon = document.createElement('span');
+    icon.className = 'written-answer-file-icon';
+    icon.innerHTML = `<i class="fas ${answer.contentType === 'application/pdf' ? 'fa-file-pdf' : 'fa-image'}" aria-hidden="true"></i>`;
+    preview.appendChild(icon);
+  }
+  const details = document.createElement('span');
+  details.className = 'written-answer-file-details';
+  const name = document.createElement('strong');
+  name.textContent = answer.fileName;
+  const status = document.createElement('small');
+  status.textContent = answer.status === 'uploading' ? 'Uploading…' : answer.status === 'error' ? 'Upload failed. Choose the file again.' : answer.size ? `Attached · ${(answer.size / 1024 / 1024).toFixed(1)} MB` : 'Uploaded';
+  details.append(name, status);
+  preview.appendChild(details);
+  feedback.appendChild(preview);
+  if (input) input.value = '';
+}
+
+function readWrittenAnswerFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('The selected file could not be read.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleWrittenAnswerFile(event) {
+  const file = event.target.files?.[0];
+  const index = currentQuestionIndex;
+  if (!file) return;
+  const supportedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+  if (!supportedTypes.includes(file.type)) {
+    alert('Choose a JPG, PNG, WebP, or PDF file.');
+    event.target.value = '';
+    return;
+  }
+  if (file.size > 8 * 1024 * 1024) {
+    alert('Each answer file must be 8 MB or smaller.');
+    event.target.value = '';
+    return;
+  }
+  const question = quizQuestions1[index];
+  const previous = writtenAnswerFiles[index];
+  const pending = {
+    questionID: question._id,
+    fileName: file.name,
+    contentType: file.type,
+    size: file.size,
+    status: 'uploading',
+    previewUrl: URL.createObjectURL(file)
+  };
+  writtenAnswerFiles[index] = pending;
+  renderWrittenAnswerUpload(index);
+  updateMCQUI();
+
+  const upload = (async () => {
+    try {
+      const data = await readWrittenAnswerFile(file);
+      const response = await fetch('/results/api/written-answers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentID: localStorage.getItem('userId'),
+          examID: localStorage.getItem('currentExamId'),
+          questionID: question._id,
+          questionIndex: index,
+          fileName: file.name,
+          contentType: file.type,
+          data
+        })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || 'Could not upload this answer.');
+      writtenAnswerFiles[index] = { ...pending, fileName: payload.fileName || file.name, status: 'uploaded' };
+      saveWrittenAnswerMetadata();
+      if (currentQuestionIndex === index) renderWrittenAnswerUpload(index);
+      updateMCQUI();
+    } catch (error) {
+      writtenAnswerFiles[index] = previous ? { ...previous, status: 'uploaded' } : { ...pending, status: 'error' };
+      if (currentQuestionIndex === index) renderWrittenAnswerUpload(index);
+      updateMCQUI();
+      alert(error.message || 'Could not upload this answer. Please try again.');
+      throw error;
+    }
+  })();
+  pendingWrittenUploads[index] = upload;
+  try { await upload; } catch (_) { /* The answer card keeps the retry state visible. */ }
+  delete pendingWrittenUploads[index];
+}
 
 function studentExamStorageKey(prefix, examId) {
   const studentId = localStorage.getItem("userId") || "guest";
@@ -75,6 +207,9 @@ async function loadStudentExams() {
   }));
 
   currentQuestionIndex = 0;
+  writtenAnswersEnabled = localStorage.getItem('writtenAnswersEnabled') === 'true';
+  writtenAnswerFiles = JSON.parse(localStorage.getItem(studentExamStorageKey('writtenAnswers', examId)) || '{}');
+  pendingWrittenUploads = {};
   const savedAnswers = JSON.parse(localStorage.getItem(studentExamStorageKey('examAnswers', examId)) || '{}');
   studentAnswers = Object.fromEntries(Object.entries(savedAnswers).filter(([index, answer]) =>
     Number(index) >= 0 && Number(index) < quizQuestions1.length && Number(answer) >= 0 && Number(answer) < 4
@@ -496,6 +631,7 @@ async function startExam(examId, mpq, duration, startTime, teacherID, examTitle,
           localStorage.setItem("resultVisibility", examSettings.resultVisibility || "immediate");
           localStorage.setItem("resultsReleased", String(Boolean(examSettings.resultsReleased)));
           localStorage.setItem("examEndTime", examSettings.endTime || "");
+          localStorage.setItem("writtenAnswersEnabled", String(Boolean(examSettings.writtenAnswersEnabled)));
    const now1 = new Date();
   const examStartTime = new Date(startTime);
 
@@ -562,7 +698,7 @@ async function startExam(examId, mpq, duration, startTime, teacherID, examTitle,
         function updateQuestionNavigation(currentIndex) {
             const allButtons = document.querySelectorAll('.question-nav-btn');
             allButtons.forEach((button, index) => {
-                const isAnswered = studentAnswers[index] !== undefined;
+                const isAnswered = hasStudentResponse(index);
                 const isCurrent = index === currentIndex;
                 button.classList.toggle('answered', isAnswered);
                 button.classList.toggle('current', isCurrent);
@@ -644,16 +780,18 @@ async function startExam(examId, mpq, duration, startTime, teacherID, examTitle,
             const questions = quizQuestions1.map(q => q.question);
 
             renderStudentQuestionText(document.getElementById('questionTextDisplay'), questions[index] || "Question not available");
+            renderWrittenAnswerUpload(index);
 
             // Update options
             const options = quizQuestions1.map(q => q.choices);
 
-            if (options[index]) {
+            if (options[index]?.length) {
+                document.getElementById('mcqOptions').classList.remove('hidden');
                 renderStudentQuestionText(document.getElementById('optionA'), options[index][0] || "Option A");
                 renderStudentQuestionText(document.getElementById('optionB'), options[index][1] || "Option B");
                 renderStudentQuestionText(document.getElementById('optionC'), options[index][2] || "Option C");
                 renderStudentQuestionText(document.getElementById('optionD'), options[index][3] || "Option D");
-            }
+            } else document.getElementById('mcqOptions').classList.add('hidden');
 
           updateQuestionNavigation(index);
            updateMCQUI();
@@ -675,12 +813,18 @@ function updateMCQUI() {
   if (savedAnswer !== undefined) {
     status.textContent = 'Answer saved';
     status.className = 'answer-status answered';
+  } else if (writtenAnswersEnabled && writtenAnswerFiles[currentQuestionIndex]?.status === 'uploaded') {
+    status.textContent = 'Written answer uploaded';
+    status.className = 'answer-status answered';
+  } else if (writtenAnswersEnabled && writtenAnswerFiles[currentQuestionIndex]?.status === 'uploading') {
+    status.textContent = 'Uploading written answer…';
+    status.className = 'answer-status';
   } else {
     status.textContent = 'Choose one answer';
     status.className = 'answer-status';
   }
 
-  const answeredCount = Object.keys(studentAnswers).length;
+  const answeredCount = quizQuestions1.filter((_, index) => hasStudentResponse(index)).length;
   const progressText = document.getElementById('examProgressText');
   if (progressText) progressText.textContent = `${answeredCount}/${quizQuestions1.length} answered`;
   const previousButton = document.getElementById('prevQuestionBtn');
@@ -739,7 +883,7 @@ function nextQuestionExam() {
 
 
         function confirmSubmitExam() {
-            const unanswered = quizQuestions1.length - Object.keys(studentAnswers).length;
+            const unanswered = quizQuestions1.filter((_, index) => !hasStudentResponse(index)).length;
             const message = unanswered > 0
               ? `You have ${unanswered} unanswered question${unanswered === 1 ? '' : 's'}. Submit your exam anyway?`
               : 'Submit your exam now? You cannot change your answers after submission.';
@@ -755,6 +899,12 @@ if (submitted) {
   alert("You have already submitted this exam!");
   return;
 }
+  const uploadsPending = Object.values(pendingWrittenUploads);
+  if (uploadsPending.length) await Promise.allSettled(uploadsPending);
+  if (Object.values(writtenAnswerFiles).some(answer => answer.status === 'error')) {
+    alert('One or more answer files did not upload. Please choose those files again before submitting.');
+    return;
+  }
   if (examTimerInterval) clearInterval(examTimerInterval);
   localStorage.setItem(studentExamStorageKey('examAnswers', examid), JSON.stringify(studentAnswers));
   const endexamTime = localStorage.getItem("endexamTime");

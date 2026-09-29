@@ -14,6 +14,7 @@ const AssignedSchema = new mongoose.Schema({
    negativeMarkingEnabled: { type: Boolean, default: false },
    negativeMarkPerWrong: { type: Number, default: 0 },
    resultVisibility: { type: String, enum: ["immediate", "after_exam_end", "teacher_release"], default: "immediate" },
+   writtenAnswersEnabled: { type: Boolean, default: false },
    resultsReleased: { type: Boolean, default: false },
    attendedStudentIDs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Auth' }],
    createdAt: { type: Date, default: Date.now }
