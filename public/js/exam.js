@@ -64,10 +64,12 @@ function parseBulkQuestionText(source) {
         const block = text.slice(blockStart, answerLine.index).trim();
         const answerLineEnd = text.indexOf('\n', answerLine.index + answerLine[0].length);
         blockStart = answerLineEnd < 0 ? text.length : answerLineEnd + 1;
-        const choicePattern = new RegExp(`^\\s*(?:\\((${labelToken.slice(1, -1)})\\)|(${labelToken.slice(1, -1)})\\s*[).:：\\-–—])\\s*`, 'gim');
+        const optionLabel = labelToken.slice(1, -1);
+        const choicePattern = new RegExp(`(^|[\\r\\n]|[ \\t]+)(?:\\((${optionLabel})\\)|(${optionLabel})\\s*[).:\\uFF1A\\-\\u2013\\u2014])\\s*`, 'gim');
         const markers = [...block.matchAll(choicePattern)].map(match => {
-            const label = match[1] || match[2];
-            return { label, normalized: normalizeBulkOptionLabel(label), start: match.index, contentStart: match.index + match[0].length };
+            const label = match[2] || match[3];
+            const start = match.index + match[1].length;
+            return { label, normalized: normalizeBulkOptionLabel(label), start, contentStart: match.index + match[0].length };
         });
         const family = markers[0]?.normalized?.family;
         const validSequence = markers.length === 4 && markers.every((marker, choiceIndex) =>
