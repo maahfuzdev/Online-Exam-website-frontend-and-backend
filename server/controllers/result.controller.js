@@ -336,6 +336,22 @@ async function listTeacherResults(req, res) {
         subject: result.examID?.subject || "",
         score: result.score ?? 0,
         total: result.totalMarks ?? 0,
+        correctAnswers: result.correctAnswers ?? 0,
+        wrongAnswers: result.wrongAnswers ?? 0,
+        skippedQuestion: result.skippedQuestion ?? 0,
+        answerReview: (result.answerReview || []).map(item => ({
+          questionID: item.questionID,
+          questionText: item.questionText || "",
+          options: item.options || [],
+          selectedOption: item.selectedOption ?? null,
+          correctOption: item.correctOption ?? null,
+          isCorrect: Boolean(item.isCorrect),
+          answerType: item.answerType || "mcq",
+          answerSubmitted: Boolean(item.answerSubmitted),
+          maxMarks: item.maxMarks ?? 0,
+          marksAwarded: item.marksAwarded ?? null,
+          teacherFeedback: item.teacherFeedback || ""
+        })),
         percentage,
         grade: percentage >= 80 ? "A+" : percentage >= 70 ? "A" : percentage >= 60 ? "B" : percentage >= 50 ? "C" : percentage >= 40 ? "D" : "F",
         date: result.date || result.generatedAt

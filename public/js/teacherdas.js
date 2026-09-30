@@ -466,7 +466,7 @@
               </td>
               <td>${formatDate(result.date)}</td>
               <td>
-                <button class="btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="viewStudentDetail(${JSON.stringify(String(result.studentId))})">View</button>
+                <button class="btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="viewResultDetail(${JSON.stringify(String(result.id))})">View</button>
                 ${result.writtenAnswersEnabled ? `<button class="btn written-review-action" type="button" onclick="viewWrittenAnswers('${String(result.examId)}', '${String(result.studentId)}')"><i class="fas fa-file-pen" aria-hidden="true"></i> Written</button>` : ''}
               </td>
             </tr>
@@ -697,6 +697,153 @@
       `).join('');
 
       document.getElementById('topPerformers').innerHTML = performersHtml;
+    }
+
+    function viewResultDetail(resultId) {
+      const result = allResults.find(item => String(item.id) === String(resultId));
+      if (!result) return;
+      document.getElementById('teacherResultDetailModal')?.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'teacherResultDetailModal';
+      overlay.className = 'teacher-result-detail-overlay';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-label', 'Student result details');
+      const panel = document.createElement('section');
+      panel.className = 'teacher-result-detail-panel';
+      const header = document.createElement('header');
+      header.className = 'teacher-result-detail-header';
+      const titleBlock = document.createElement('div');
+      const kicker = document.createElement('span');
+      kicker.textContent = 'STUDENT RESULT';
+      const title = document.createElement('h2');
+      title.textContent = result.examTitle || 'Exam result';
+      const subtitle = document.createElement('p');
+      subtitle.textContent = `${result.studentName || 'Student'}${result.class ? ` · Class ${result.class}` : ''} · ${formatDate(result.date)}`;
+      titleBlock.append(kicker, title, subtitle);
+      const close = document.createElement('button');
+      close.type = 'button';
+      close.className = 'teacher-result-detail-close';
+      close.setAttribute('aria-label', 'Close result details');
+      close.textContent = '×';
+      header.append(titleBlock, close);
+
+      const score = Number(result.score || 0);
+      const total = Number(result.total || 0);
+      const percentage = Number(result.percentage || 0);
+      const review = Array.isArray(result.answerReview) ? result.answerReview : [];
+      const hero = document.createElement('section');
+      hero.className = 'teacher-result-detail-hero';
+      const heroMain = document.createElement('div');
+      const heroLabel = document.createElement('span');
+      heroLabel.textContent = 'FINAL SCORE';
+      const heroScore = document.createElement('strong');
+      heroScore.textContent = `${score.toFixed(2)} / ${total.toFixed(2)}`;
+      const heroMeta = document.createElement('p');
+      heroMeta.textContent = `${result.subject || 'Subject not set'} · ${result.examTitle || 'Exam'}`;
+      heroMain.append(heroLabel, heroScore, heroMeta);
+      const heroPercent = document.createElement('div');
+      heroPercent.className = 'teacher-result-detail-percent';
+      const percentValue = document.createElement('strong');
+      percentValue.textContent = `${percentage.toFixed(1)}%`;
+      const grade = document.createElement('span');
+      grade.textContent = result.manualGradingPending ? 'Marking pending' : `Grade ${result.grade || getGradeFromPercentage(percentage)}`;
+      heroPercent.append(percentValue, grade);
+      hero.append(heroMain, heroPercent);
+
+      const counts = document.createElement('div');
+      counts.className = 'teacher-result-detail-counts';
+      [
+        ['Correct', Number(result.correctAnswers || 0), 'correct'],
+        ['Wrong', Number(result.wrongAnswers || 0), 'wrong'],
+        ['Skipped', Number(result.skippedQuestion || 0), 'skipped']
+      ].forEach(([label, value, tone]) => {
+        const item = document.createElement('div');
+        item.className = `teacher-result-detail-count ${tone}`;
+        const number = document.createElement('strong'); number.textContent = String(value);
+        const name = document.createElement('span'); name.textContent = label;
+        item.append(number, name); counts.append(item);
+      });
+
+      const sectionTitle = document.createElement('h3');
+      sectionTitle.className = 'teacher-result-review-title';
+      sectionTitle.textContent = `Question-by-question review (${review.length})`;
+      const list = document.createElement('div');
+      list.className = 'teacher-result-review-list';
+      if (!review.length) {
+        const empty = document.createElement('p');
+        empty.className = 'teacher-result-review-empty';
+        empty.textContent = 'Question-by-question review is unavailable for this saved result.';
+        list.append(empty);
+      }
+      review.forEach((item, index) => {
+        const written = item.answerType === 'written';
+        const selected = item.selectedOption == null || item.selectedOption === '' ? null : Number(item.selectedOption);
+        const correct = item.correctOption == null || item.correctOption === '' ? null : Number(item.correctOption);
+        const isCorrect = !written && (item.isCorrect || (selected !== null && selected === correct));
+        const writtenReviewed = item.marksAwarded != null && Boolean(String(item.teacherFeedback || '').trim());
+        const statusText = written
+          ? writtenReviewed ? 'Reviewed' : 'Awaiting review'
+          : isCorrect ? 'Correct' : selected === null ? 'Skipped' : 'Incorrect';
+        const card = document.createElement('article');
+        card.className = `teacher-result-review-card ${written ? 'is-written' : isCorrect ? 'is-correct' : selected === null ? 'is-skipped' : 'is-wrong'}`;
+        const cardHead = document.createElement('header');
+        const questionNumber = document.createElement('strong'); questionNumber.textContent = `Question ${index + 1}`;
+        const status = document.createElement('span'); status.textContent = statusText;
+        cardHead.append(questionNumber, status);
+        const questionText = document.createElement('div');
+        questionText.className = 'teacher-result-review-question review-math';
+        questionText.textContent = item.questionText || 'Question text unavailable';
+        card.append(cardHead, questionText);
+        if (written) {
+          const writtenInfo = document.createElement('div');
+          writtenInfo.className = 'teacher-result-written-review';
+          const mark = document.createElement('p');
+          const markTitle = document.createElement('strong'); markTitle.textContent = 'Student mark: ';
+          mark.append(markTitle, document.createTextNode(item.marksAwarded == null ? 'Pending' : `${Number(item.marksAwarded).toFixed(2)} / ${Number(item.maxMarks || 0).toFixed(2)}`));
+          const feedback = document.createElement('p');
+          const feedbackTitle = document.createElement('strong'); feedbackTitle.textContent = 'Teacher feedback';
+          const feedbackText = document.createElement('span'); feedbackText.textContent = item.teacherFeedback || (item.marksAwarded == null ? 'Feedback will appear after marking.' : 'No feedback added.');
+          feedback.append(feedbackTitle, feedbackText);
+          writtenInfo.append(mark, feedback); card.append(writtenInfo);
+        } else {
+          const options = Array.isArray(item.options) ? item.options : [];
+          const optionList = document.createElement('div'); optionList.className = 'teacher-result-review-options';
+          options.forEach((option, optionIndex) => {
+            const optionItem = document.createElement('div');
+            optionItem.className = `teacher-result-review-option${optionIndex === correct ? ' is-correct-option' : ''}${optionIndex === selected && optionIndex !== correct ? ' is-selected-wrong' : ''}`;
+            const letter = document.createElement('strong'); letter.textContent = String.fromCharCode(65 + optionIndex);
+            const optionText = document.createElement('span'); optionText.className = 'review-math'; optionText.textContent = option;
+            const marker = document.createElement('small');
+            marker.textContent = optionIndex === correct ? 'Correct answer' : optionIndex === selected ? 'Student answer' : '';
+            optionItem.append(letter, optionText, marker); optionList.append(optionItem);
+          });
+          card.append(optionList);
+          const answerSummary = document.createElement('footer');
+          const answerLabel = value => Number.isInteger(value) && value >= 0 && value < options.length ? String.fromCharCode(65 + value) : 'Not answered';
+          answerSummary.textContent = `Student answer: ${answerLabel(selected)}   ·   Correct answer: ${answerLabel(correct)}`;
+          card.append(answerSummary);
+        }
+        list.append(card);
+        if (window.renderMathInElement) window.renderMathInElement(card, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\(', right: '\\)', display: false }, { left: '$', right: '$', display: false }], throwOnError: false });
+      });
+
+      panel.append(header, hero, counts, sectionTitle, list);
+      overlay.append(panel);
+      const closeResultDetail = () => {
+        overlay.remove();
+        document.removeEventListener('keydown', closeOnEscape);
+      };
+      close.onclick = closeResultDetail;
+      overlay.addEventListener('click', event => { if (event.target === overlay) closeResultDetail(); });
+      const closeOnEscape = event => {
+        if (event.key === 'Escape' && document.getElementById('teacherResultDetailModal') === overlay) {
+          closeResultDetail();
+        }
+      };
+      document.addEventListener('keydown', closeOnEscape);
+      document.body.append(overlay);
     }
 
     // View student detail
