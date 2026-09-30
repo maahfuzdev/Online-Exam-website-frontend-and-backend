@@ -3,15 +3,15 @@ window.addEventListener('load', function () {
   const showstudent = localStorage.getItem('showstudent');
   const showteacher= localStorage.getItem('showteacher');
     if (showstudent === 'true') {
-      this.window.location.href = "/"; // Open the EJS-backed application route.
-        localStorage.removeItem('showstudent'); // reset
+      localStorage.removeItem('showstudent');
+      window.location.replace('/student/dashboard');
+      return;
     } else if (showteacher === 'true') {
-      showTeacherDashboard();
-
-        localStorage.removeItem('showteacher'); // reset
-    } else {
-        showLandingPage(); // landing page দেখানোর জন্য
+      localStorage.removeItem('showteacher');
+      window.location.replace('/teacher/dashboard');
+      return;
     }
 
-    init(); // app initialize
+    showLandingPage();
+    init();
 });
