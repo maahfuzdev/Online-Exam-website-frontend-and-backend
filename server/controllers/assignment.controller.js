@@ -12,7 +12,7 @@ const asyncHandler = require("../middleware/async-handler");
 
 async function createAssignedExam(req, res) {
   try {
-    const { teacherID, studentIDs, examTitle, subject, questionIds, examType, startTime, endTime, examTime, markPerQuestion, totalMarks, negativeMarkingEnabled = false, negativeMarkPerWrong = 0, resultVisibility = "immediate", writtenAnswersEnabled = false } = req.body;
+    const { teacherID, studentIDs, examTitle, subject, questionIds, examType, startTime, endTime, examTime, markPerQuestion, totalMarks, negativeMarkingEnabled = false, negativeMarkPerWrong = 0, resultVisibility = "immediate", writtenAnswersEnabled = false, allowRetakes = false } = req.body;
 
     const validation = validateExamInput({ teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, negativeMarkingEnabled, negativeMarkPerWrong, resultVisibility });
     if (validation) return res.status(400).json({ error: validation });
@@ -30,7 +30,7 @@ async function createAssignedExam(req, res) {
 
     const newAssignment = new AssignedQuestion({
       teacherID, studentIDs, examTitle: examTitle.trim(), subject: subject.trim(), questionIds, startTime, endTime, examTime, markPerQuestion,
-      totalMarks: questionIds.length * Number(markPerQuestion), examType: resolvedExamType, negativeMarkingEnabled, negativeMarkPerWrong: negativeMarkingEnabled ? Number(negativeMarkPerWrong) : 0, resultVisibility, writtenAnswersEnabled: Boolean(writtenAnswersEnabled) || resolvedExamType === "written"
+      totalMarks: questionIds.length * Number(markPerQuestion), examType: resolvedExamType, negativeMarkingEnabled, negativeMarkPerWrong: negativeMarkingEnabled ? Number(negativeMarkPerWrong) : 0, resultVisibility, writtenAnswersEnabled: Boolean(writtenAnswersEnabled) || resolvedExamType === "written", allowRetakes: Boolean(allowRetakes)
     });
     await newAssignment.save();
 
@@ -45,7 +45,7 @@ async function createAssignedExam(req, res) {
 async function updateAssignedExam(req, res) {
   try {
     const { examId } = req.params;
-    const { teacherID, studentIDs, examTitle, subject, questionIds, examType, startTime, endTime, examTime, markPerQuestion, negativeMarkingEnabled = false, negativeMarkPerWrong = 0, resultVisibility = "immediate", writtenAnswersEnabled = false } = req.body;
+    const { teacherID, studentIDs, examTitle, subject, questionIds, examType, startTime, endTime, examTime, markPerQuestion, negativeMarkingEnabled = false, negativeMarkPerWrong = 0, resultVisibility = "immediate", writtenAnswersEnabled = false, allowRetakes = false } = req.body;
     if (!mongoose.isValidObjectId(examId)) return res.status(400).json({ error: "Invalid exam ID." });
     const validation = validateExamInput({ teacherID, studentIDs, examTitle, subject, questionIds, startTime, endTime, examTime, markPerQuestion, negativeMarkingEnabled, negativeMarkPerWrong, resultVisibility });
     if (validation) return res.status(400).json({ error: validation });
@@ -63,6 +63,7 @@ async function updateAssignedExam(req, res) {
         Number(examTime) === Number(exam.examTime) && examTitle.trim() === exam.examTitle && subject.trim() === exam.subject &&
         sameQuestionIds && sameStudentIds && Number(markPerQuestion) === Number(exam.markPerQuestion) &&
         Boolean(writtenAnswersEnabled) === Boolean(exam.writtenAnswersEnabled) &&
+        Boolean(allowRetakes) === Boolean(exam.allowRetakes) &&
         Boolean(negativeMarkingEnabled) === Boolean(exam.negativeMarkingEnabled) &&
         (!negativeMarkingEnabled || Number(negativeMarkPerWrong) === Number(exam.negativeMarkPerWrong)) &&
         resultVisibility === (exam.resultVisibility || "immediate");
@@ -94,6 +95,7 @@ async function updateAssignedExam(req, res) {
       negativeMarkPerWrong: negativeMarkingEnabled ? Number(negativeMarkPerWrong) : 0, resultVisibility,
       examType: resolvedExamType,
       writtenAnswersEnabled: Boolean(writtenAnswersEnabled) || resolvedExamType === "written",
+      allowRetakes: Boolean(allowRetakes),
       resultsReleased: resultVisibility === "teacher_release" ? exam.resultsReleased : false
     });
     await exam.save();
@@ -307,6 +309,11 @@ async function recordExamAttendance(req, res) {
     const { studentId } = req.body || {};
     if (!mongoose.isValidObjectId(examId) || !mongoose.isValidObjectId(studentId)) return res.status(400).json({ error: "A valid exam and student are required." });
     const now = new Date();
+    const existingExam = await assignedExamRepository.findOne({ _id: examId, studentIDs: studentId }).select("allowRetakes");
+    if (!existingExam) return res.status(403).json({ error: "This exam is not available to you right now." });
+    if (!existingExam.allowRetakes && await resultRepository.exists({ examID: examId, studentID: studentId })) {
+      return res.status(409).json({ error: "This exam only allows one attempt." });
+    }
     const exam = await assignedExamRepository.findOneAndUpdate(
       { _id: examId, studentIDs: studentId, startTime: { $lte: now }, endTime: { $gte: now } },
       { $addToSet: { attendedStudentIDs: studentId } }, { new: true, projection: { _id: 1 } }
@@ -329,15 +336,20 @@ async function listExamsForStudent(req, res) {
       studentIDs: studentId
     })
     .populate("questionIds", "_id")
-    .select("examTitle subject startTime endTime examTime markPerQuestion totalMarks teacherID negativeMarkingEnabled negativeMarkPerWrong resultVisibility resultsReleased attendedStudentIDs writtenAnswersEnabled");
-    const attendedResults = await resultRepository.find({ studentID: studentId, examID: { $in: exams.map(exam => exam._id) } }).select("examID");
-    const attendedExamIds = new Set(attendedResults.map(result => String(result.examID)));
+    .select("examTitle subject startTime endTime examTime markPerQuestion totalMarks teacherID negativeMarkingEnabled negativeMarkPerWrong resultVisibility resultsReleased attendedStudentIDs writtenAnswersEnabled allowRetakes");
+    const attendedResults = await resultRepository.find({ studentID: studentId, examID: { $in: exams.map(exam => exam._id) } }).select("examID attemptNumber");
+    const attemptCounts = new Map();
+    attendedResults.forEach(result => attemptCounts.set(String(result.examID), (attemptCounts.get(String(result.examID)) || 0) + 1));
+    const attendedExamIds = new Set(attemptCounts.keys());
 
     // frontend friendly format
     const formatted = exams.map(exam => ({
       examId: exam._id,
       attended: attendedExamIds.has(String(exam._id)) || exam.attendedStudentIDs.some(id => String(id) === String(studentId)),
       submitted: attendedExamIds.has(String(exam._id)),
+      attemptCount: attemptCounts.get(String(exam._id)) || 0,
+      attemptNumber: (attemptCounts.get(String(exam._id)) || 0) + 1,
+      allowRetakes: Boolean(exam.allowRetakes),
       teacherID:exam.teacherID,
       examTitle: exam.examTitle,
       subject: exam.subject || "",

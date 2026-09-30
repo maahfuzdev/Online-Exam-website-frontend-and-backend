@@ -118,6 +118,7 @@ async function handleWrittenAnswerFile(event) {
         body: JSON.stringify({
           studentID: localStorage.getItem('userId'),
           examID: localStorage.getItem('currentExamId'),
+          attemptNumber: Number(localStorage.getItem('currentExamAttemptNumber') || 1),
           questionID: question._id,
           questionIndex: index,
           fileName: file.name,
@@ -144,9 +145,11 @@ async function handleWrittenAnswerFile(event) {
   delete pendingWrittenUploads[index];
 }
 
-function studentExamStorageKey(prefix, examId) {
+function studentExamStorageKey(prefix, examId, attemptNumber = null) {
   const studentId = localStorage.getItem("userId") || "guest";
-  return `${prefix}_${studentId}_${examId}`;
+  const currentExamId = localStorage.getItem('currentExamId');
+  const currentAttempt = Number(attemptNumber || (String(currentExamId) === String(examId) ? localStorage.getItem('currentExamAttemptNumber') : 1)) || 1;
+  return currentAttempt > 1 ? `${prefix}_${studentId}_${examId}_attempt_${currentAttempt}` : `${prefix}_${studentId}_${examId}`;
 }
 
 
@@ -185,9 +188,10 @@ async function loadStudentExams() {
   submittedExamIds = examdata.filter(exam => exam.submitted).map(exam => String(exam.examId));
   // The server is authoritative: clear resume flags left behind by older
   // sessions or by a browser closing before the local submit callback ran.
-  submittedExamIds.forEach(examId => {
-    localStorage.removeItem(studentExamStorageKey('inProgress', examId));
-    localStorage.setItem(studentExamStorageKey('submitted', examId), 'true');
+  examdata.filter(exam => exam.submitted).forEach(exam => {
+    const lastAttempt = Math.max(1, Number(exam.attemptCount || 1));
+    localStorage.removeItem(studentExamStorageKey('inProgress', exam.examId, lastAttempt));
+    localStorage.setItem(studentExamStorageKey('submitted', exam.examId, lastAttempt), 'true');
   });
   examdata.forEach(exam => {
     if (exam.status === "active") activeExams.push(exam);
@@ -334,6 +338,7 @@ function renderActiveExams() {
                             <span><i class="fas fa-star"></i> ${exam.totalMarks} Marks</span>
 
                             <span><i class="fas fa-clock"></i> ${exam.examTime}</span>
+                            ${exam.submitted ? `<span>${exam.allowRetakes ? `Retake available · ${exam.attemptCount} attempt${exam.attemptCount === 1 ? '' : 's'} completed` : 'Submitted'}</span>` : ''}
                             ${exam.negativeMarkingEnabled ? `<span>−${exam.negativeMarkPerWrong} wrong</span>` : ''}
 
                         </div>
@@ -346,9 +351,9 @@ function renderActiveExams() {
 
                         </div>
 
-                        <button type="button" class="btn btn-primary" style="margin-top: 15px; width: 100%;" onclick="event.stopPropagation(); startExamById('${exam.examId}')">
+                        <button type="button" class="btn btn-primary" style="margin-top: 15px; width: 100%;" ${exam.submitted && !exam.allowRetakes ? 'disabled' : ''} onclick="event.stopPropagation(); startExamById('${exam.examId}')">
 
-                            <i class="fas fa-play-circle"></i> Start Exam
+                            <i class="fas fa-play-circle"></i> ${exam.submitted && exam.allowRetakes ? 'Retake exam' : exam.submitted ? 'Already submitted' : 'Start Exam'}
 
                         </button>
 
@@ -392,7 +397,9 @@ async function renderPastExams() {
 
   for (const exam of pastExams) {
     const examId = String(exam.examId);
-    const studentResult = studentResults.find(result => String(result.examID?._id || result.examID) === examId);
+    const studentResult = studentResults
+      .filter(result => String(result.examID?._id || result.examID) === examId)
+      .sort((a, b) => Number(b.attemptNumber || 1) - Number(a.attemptNumber || 1))[0];
     if (studentResult) {
         const result = studentResult;
 
@@ -416,6 +423,7 @@ async function renderPastExams() {
             <div class="flex justify-between items-start mb-4">
               <div class="flex-1">
                 <h3 class="text-lg font-bold text-blue-800 mb-2 group-hover:text-indigo-600 transition-colors">${result.examTitle}</h3>
+                ${Number(result.attemptNumber || 1) > 1 ? `<span class="text-xs text-blue-600">Attempt ${Number(result.attemptNumber)}</span>` : ''}
                 <div class="flex items-center gap-4 text-sm text-blue-600">
                   <span class="flex items-center gap-1.5">
                     <i class="fas fa-question-circle text-blue-500"></i>
@@ -454,7 +462,7 @@ async function renderPastExams() {
                 </span>
               </div>
 
-              <button class="student-review-button past-result-review" type="button" onclick="event.stopPropagation(); switchTab('results'); openResultReview('${examId}')"><i class="fas fa-list-check"></i> Review answers</button>
+              <button class="student-review-button past-result-review" type="button" onclick="event.stopPropagation(); switchTab('results'); openResultReview('${escapeStudentHtml(result._id || examId)}')"><i class="fas fa-list-check"></i> Review answers</button>
 
             </div>
 
@@ -545,10 +553,11 @@ function renderStudentResults() {
     const total = Number(result.totalMarks || 0);
     const percentage = Number(result.percentage || 0);
     const tone = percentage >= 80 ? 'excellent' : percentage >= 50 ? 'steady' : 'practice';
-    const id = escapeStudentHtml(result.examID?._id || result.examID || `result-${index}`);
+    const id = escapeStudentHtml(result._id || result.examID?._id || result.examID || `result-${index}`);
     return `<article class="student-result-card ${tone}">
       <div class="student-result-card-head"><span class="student-result-icon"><i class="fas fa-file-circle-check"></i></span><span class="student-result-percent">${percentage.toFixed(1)}%</span></div>
       <h3>${escapeStudentHtml(result.examTitle || 'Exam result')}</h3>
+      ${Number(result.attemptNumber || 1) > 1 ? `<p class="student-result-date">Attempt ${Number(result.attemptNumber)}</p>` : ''}
       <p class="student-result-date"><i class="far fa-calendar"></i> ${escapeStudentHtml(formatDate(new Date(result.date || result.generatedAt || Date.now())))}</p>
       <div class="student-result-score"><span>Score</span><strong>${score.toFixed(2)} <small>/ ${total.toFixed(2)}</small></strong></div>
       <div class="student-result-counts"><span><b>${Number(result.correctAnswers || 0)}</b> Correct</span><span><b>${Number(result.wrongAnswers || 0)}</b> Wrong</span><span><b>${Number(result.skippedQuestion || 0)}</b> Skipped</span></div>
@@ -557,8 +566,8 @@ function renderStudentResults() {
   }).join('')}</div>`;
 }
 
-function openResultReview(examId) {
-  const result = studentResults.find(item => String(item.examID?._id || item.examID) === String(examId));
+function openResultReview(resultId) {
+  const result = studentResults.find(item => String(item._id || item.examID?._id || item.examID) === String(resultId));
   const container = document.getElementById('detailedResultsList');
   if (!result || !container) return;
   const review = Array.isArray(result.answerReview) ? result.answerReview : [];
@@ -631,6 +640,8 @@ async function startExam(examId, mpq, duration, startTime, teacherID, examTitle,
 {
           let now = new Date();
           localStorage.setItem("currentExamId", examId);
+          const currentAttemptNumber = Math.max(1, Number(examSettings.attemptNumber || 1));
+          localStorage.setItem("currentExamAttemptNumber", String(currentAttemptNumber));
           localStorage.setItem("markPerquestion", mpq);
           localStorage.setItem("duration", duration);
           localStorage.setItem("startTime", startTime);
@@ -654,7 +665,7 @@ async function startExam(examId, mpq, duration, startTime, teacherID, examTitle,
     return;
   }
 
-  else if (submittedExamIds.includes(String(examId))) {
+  else if (submittedExamIds.includes(String(examId)) && !examSettings.allowRetakes) {
     alert("You have already attempted this exam.");
     return;
   }
@@ -956,7 +967,7 @@ if (submitted) {
       payload.result.answerReview?.forEach((review, index) => {
         if (quizQuestions1[index]) quizQuestions1[index].correct = review.correctOption;
       });
-      if (!studentResults.some(result => String(result.examID?._id || result.examID) === normalizedExamId)) studentResults.push(payload.result);
+      if (!studentResults.some(result => String(result._id) === String(payload.result._id))) studentResults.push(payload.result);
       localStorage.setItem("totalMarks", payload.result.score);
       localStorage.setItem("totalCorrect", payload.result.correctAnswers);
       localStorage.setItem("totalWrong", payload.result.wrongAnswers);
@@ -1088,6 +1099,7 @@ const stuResult = {
   studentID: stId,
   teacherID: teacherID,
   examID: examID,
+  attemptNumber: Number(localStorage.getItem('currentExamAttemptNumber') || 1),
   examTitle: examTitle,
   totalQuestions: quizQuestions1.length,
   score: totalMarks,
@@ -1109,7 +1121,7 @@ const stuResult = {
       body: JSON.stringify(stuResult)
     });
     const payload = await res.json().catch(() => ({}));
-    if (!res.ok || !payload.success || !payload.result) {
+    if (!res.ok || !payload.success) {
       throw new Error(payload.message || "Result could not be saved.");
     }
     return payload;
@@ -1210,7 +1222,8 @@ function remainingTime(duration, savedEndTime = null) {
 async function restoreActiveExamAfterMobileReturn() {
   const examId = localStorage.getItem('currentExamId');
   if (!examId || localStorage.getItem(studentExamStorageKey('inProgress', examId)) !== 'true') return;
-  if (localStorage.getItem(studentExamStorageKey('submitted', examId)) === 'true' || submittedExamIds.includes(String(examId))) {
+  const currentExam = activeExams.find(exam => String(exam.examId) === String(examId));
+  if (localStorage.getItem(studentExamStorageKey('submitted', examId)) === 'true' || (submittedExamIds.includes(String(examId)) && !currentExam?.allowRetakes)) {
     localStorage.removeItem(studentExamStorageKey('inProgress', examId));
     localStorage.setItem(studentExamStorageKey('submitted', examId), 'true');
     return;

@@ -562,6 +562,7 @@ async function createAndAssignExam() {
     const negativeMarkPerWrong = negativeMarkingEnabled ? Number(document.getElementById('negativeMarkPerWrong').value) : 0;
     const resultVisibility = document.getElementById('resultVisibility').value;
     const writtenAnswersEnabled = document.getElementById('writtenAnswersEnabled').checked;
+    const allowRetakes = Boolean(document.getElementById('allowRetakes')?.checked);
     const examType = document.getElementById('examType').value;
 
     // Validation
@@ -625,7 +626,8 @@ async function createAndAssignExam() {
         negativeMarkingEnabled,
         negativeMarkPerWrong,
         resultVisibility,
-        writtenAnswersEnabled
+        writtenAnswersEnabled,
+        allowRetakes
     };
 
     try {
@@ -725,6 +727,7 @@ function renderExamsList() {
         const statusClass = status === 'Live' ? 'exam-status-live' : status === 'Upcoming' ? 'exam-status-upcoming' : 'exam-status-completed';
         const liveLock = status === 'Live' ? 'disabled title="A live exam cannot be deleted."' : '';
         const negativeSummary = exam.negativeMarkingEnabled ? `−${Number(exam.negativeMarkPerWrong)} per wrong answer` : 'No negative marking';
+        const attemptSummary = exam.allowRetakes ? 'Multiple attempts allowed' : 'One attempt only';
         const releaseAction = exam.resultVisibility === 'teacher_release' && !exam.resultsReleased
             ? `<button class="exam-release-action" type="button" ${liveLock} onclick="releaseExamResults('${exam._id}')">Release results</button>`
             : exam.resultVisibility === 'teacher_release' ? '<span class="exam-policy-badge">Results released</span>' : '';
@@ -735,7 +738,7 @@ function renderExamsList() {
         return `<article class="exam-management-card">
           <div class="exam-management-top"><div><span class="exam-management-subject">${escapeHtml(exam.subject || 'Subject not set')}</span><h4>${escapeHtml(exam.examTitle || 'Untitled exam')}</h4></div><span class="exam-status-pill ${statusClass}">${status}</span></div>
           <div class="exam-management-meta"><span><strong>Schedule</strong>${formatDate(startDate)} – ${formatDate(endDate)}</span><span><strong>Students</strong>${exam.studentIDs?.length || 0} assigned</span><span><strong>Questions</strong>${exam.questionIds?.length || 0} · ${Number(exam.totalMarks || 0)} marks</span></div>
-          <div class="exam-management-policies"><span class="exam-policy-badge">${negativeSummary}</span><span class="exam-policy-badge">${policyLabels[exam.resultVisibility || 'immediate']}</span></div>
+          <div class="exam-management-policies"><span class="exam-policy-badge">${negativeSummary}</span><span class="exam-policy-badge">${attemptSummary}</span><span class="exam-policy-badge">${policyLabels[exam.resultVisibility || 'immediate']}</span></div>
           <div class="exam-management-actions">${releaseAction}<button class="exam-edit-action" type="button" onclick="editExam('${exam._id}', ${status === 'Live'})">${status === 'Live' ? 'Change closing time' : 'Edit / reschedule'}</button>${resultButton}<button class="exam-delete-action" type="button" ${liveLock} onclick="deleteExam('${exam._id}')">Delete</button></div>
         </article>`;
     }).join('');
@@ -767,8 +770,10 @@ function editExam(examId, extendOnly = false) {
     document.getElementById('examType').value = savedExamType;
     document.getElementById('examType').disabled = extendOnly;
     document.getElementById('writtenAnswersEnabled').checked = Boolean(exam.writtenAnswersEnabled);
-    ['examTitle', 'examSubject', 'totalTime', 'marksPerQuestion', 'startTime', 'negativeMarkingEnabled', 'negativeMarkPerWrong', 'resultVisibility', 'writtenAnswersEnabled'].forEach(id => {
-        document.getElementById(id).disabled = extendOnly;
+    if (document.getElementById('allowRetakes')) document.getElementById('allowRetakes').checked = Boolean(exam.allowRetakes);
+    ['examTitle', 'examSubject', 'totalTime', 'marksPerQuestion', 'startTime', 'negativeMarkingEnabled', 'negativeMarkPerWrong', 'resultVisibility', 'writtenAnswersEnabled', 'allowRetakes'].forEach(id => {
+        const field = document.getElementById(id);
+        if (field) field.disabled = extendOnly;
     });
     document.querySelectorAll('.assignment-picker, .exam-policy-panel').forEach(element => {
         element.classList.toggle('exam-extension-locked', extendOnly);
@@ -855,10 +860,12 @@ function resetExamForm() {
     document.getElementById('examType').value = 'mcq';
     document.getElementById('examType').disabled = false;
     document.getElementById('writtenAnswersEnabled').checked = false;
+    if (document.getElementById('allowRetakes')) document.getElementById('allowRetakes').checked = false;
     document.getElementById('saveExamButton').textContent = 'Create exam and assign';
     document.getElementById('cancelEditExamButton').classList.add('hidden');
-    ['examTitle', 'examSubject', 'totalTime', 'marksPerQuestion', 'startTime', 'negativeMarkingEnabled', 'negativeMarkPerWrong', 'resultVisibility', 'writtenAnswersEnabled'].forEach(id => {
-        document.getElementById(id).disabled = false;
+    ['examTitle', 'examSubject', 'totalTime', 'marksPerQuestion', 'startTime', 'negativeMarkingEnabled', 'negativeMarkPerWrong', 'resultVisibility', 'writtenAnswersEnabled', 'allowRetakes'].forEach(id => {
+        const field = document.getElementById(id);
+        if (field) field.disabled = false;
     });
     document.querySelectorAll('.assignment-picker, .exam-policy-panel').forEach(element => element.classList.remove('exam-extension-locked'));
     toggleNegativeMarking();

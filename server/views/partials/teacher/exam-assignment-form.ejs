@@ -110,6 +110,7 @@
             <div class="exam-policy-grid">
               <label class="exam-policy-toggle" for="negativeMarkingEnabled"><input id="negativeMarkingEnabled" type="checkbox" onchange="toggleNegativeMarking()"><span><strong>Use negative marking</strong><small>Deduct marks for incorrect answers.</small></span></label>
               <label class="exam-policy-toggle" for="writtenAnswersEnabled"><input id="writtenAnswersEnabled" type="checkbox"><span><strong>Allow handwritten answer uploads</strong><small>Students can attach one image or PDF per question for teacher review.</small></span></label>
+              <label class="exam-policy-toggle" for="allowRetakes"><input id="allowRetakes" type="checkbox"><span><strong>Allow multiple attempts</strong><small>Off: one attempt. On: students may retry while the exam is open; each attempt is saved separately.</small></span></label>
               <label class="exam-policy-field" for="negativeMarkPerWrong"><span>Deduction per wrong answer</span><span class="exam-policy-number"><input id="negativeMarkPerWrong" type="number" min="0" step="0.25" value="0.25" disabled><small>marks</small></span></label>
               <label class="exam-policy-field exam-result-policy" for="resultVisibility"><span>Students can see results</span><select id="resultVisibility"><option value="immediate">Immediately after submitting</option><option value="after_exam_end">After the exam closes</option><option value="teacher_release">When I release them</option></select></label>
             </div>

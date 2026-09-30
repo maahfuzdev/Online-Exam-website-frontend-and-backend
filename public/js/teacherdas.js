@@ -454,7 +454,7 @@
                 </div>
               </td>
               <td>${result.subject || '—'}</td>
-              <td>${result.examTitle}</td>
+              <td>${result.examTitle}${Number(result.attemptNumber || 1) > 1 ? `<small class="teacher-result-attempt-label">Attempt ${Number(result.attemptNumber)}</small>` : ''}</td>
               <td>
                 <div style="font-weight: 600; color: #1a202c;">${result.score}/${result.total}</div>${result.manualGradingPending ? '<small>Written marking pending</small>' : ''}
               </td>
@@ -467,7 +467,7 @@
               <td>${formatDate(result.date)}</td>
               <td>
                 <button class="btn teacher-result-view-button" type="button" data-result-detail-id="${String(result.id || result._id || '')}" style="padding: 6px 12px; font-size: 0.85rem;">View</button>
-                ${result.writtenAnswersEnabled ? `<button class="btn written-review-action" type="button" onclick="viewWrittenAnswers('${String(result.examId)}', '${String(result.studentId)}')"><i class="fas fa-file-pen" aria-hidden="true"></i> Written</button>` : ''}
+                ${result.writtenAnswersEnabled ? `<button class="btn written-review-action" type="button" onclick="viewWrittenAnswers('${String(result.examId)}', '${String(result.studentId)}', ${Number(result.attemptNumber || 1)})"><i class="fas fa-file-pen" aria-hidden="true"></i> Written${Number(result.attemptNumber || 1) > 1 ? ` · #${Number(result.attemptNumber)}` : ''}</button>` : ''}
               </td>
             </tr>
           `;
@@ -744,7 +744,7 @@
       const heroScore = document.createElement('strong');
       heroScore.textContent = `${score.toFixed(2)} / ${total.toFixed(2)}`;
       const heroMeta = document.createElement('p');
-      heroMeta.textContent = `${result.subject || 'Subject not set'} · ${result.examTitle || 'Exam'}`;
+      heroMeta.textContent = `${result.subject || 'Subject not set'} · ${result.examTitle || 'Exam'}${Number(result.attemptNumber || 1) > 1 ? ` · Attempt ${Number(result.attemptNumber)}` : ''}`;
       heroMain.append(heroLabel, heroScore, heroMeta);
       const heroPercent = document.createElement('div');
       heroPercent.className = 'teacher-result-detail-percent';
@@ -1018,7 +1018,7 @@
       }
     }
 
-    async function viewWrittenAnswers(examId, studentId) {
+    async function viewWrittenAnswers(examId, studentId, attemptNumber = 1) {
       const teacherID = localStorage.getItem('userId');
       const overlay = document.createElement('div');
       overlay.className = 'written-answers-overlay';
@@ -1047,7 +1047,7 @@
       document.body.appendChild(overlay);
 
       try {
-        const params = new URLSearchParams({ teacherID });
+        const params = new URLSearchParams({ teacherID, attemptNumber: String(attemptNumber) });
         const response = await fetch(`/results/api/written-answers/${encodeURIComponent(examId)}/${encodeURIComponent(studentId)}?${params}`, { cache: 'no-store' });
         const payload = await response.json().catch(() => []);
         if (!response.ok) throw new Error(payload.error || 'Could not load written answers.');
@@ -1111,7 +1111,7 @@
             }
             saveMark.disabled = true;
             try {
-              const gradeResponse = await fetch(`/results/api/written-answers/${encodeURIComponent(examId)}/${encodeURIComponent(studentId)}/${encodeURIComponent(answer.questionID)}/grade?teacherID=${encodeURIComponent(teacherID)}`, {
+              const gradeResponse = await fetch(`/results/api/written-answers/${encodeURIComponent(examId)}/${encodeURIComponent(studentId)}/${encodeURIComponent(answer.questionID)}/grade?teacherID=${encodeURIComponent(teacherID)}&attemptNumber=${encodeURIComponent(attemptNumber)}`, {
                 method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ marks: markInput.value, feedback: feedbackInput.value.trim() })
               });
               const gradePayload = await gradeResponse.json().catch(() => ({}));

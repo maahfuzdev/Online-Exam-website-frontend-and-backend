@@ -22,6 +22,8 @@ const resultSchema = new mongoose.Schema({
     type: String
   },
 
+  attemptNumber: { type: Number, default: 1, min: 1 },
+
   totalQuestions: Number,
 
   score: Number,
@@ -61,6 +63,8 @@ const resultSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+resultSchema.index({ examID: 1, studentID: 1, attemptNumber: 1 }, { unique: true });
 
 
 const Result = mongoose.model('Result', resultSchema);
