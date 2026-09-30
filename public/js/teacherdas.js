@@ -466,7 +466,7 @@
               </td>
               <td>${formatDate(result.date)}</td>
               <td>
-                <button class="btn" style="padding: 6px 12px; font-size: 0.85rem;" onclick="viewResultDetail(${JSON.stringify(String(result.id))})">View</button>
+                <button class="btn teacher-result-view-button" type="button" data-result-detail-id="${String(result.id || result._id || '')}" style="padding: 6px 12px; font-size: 0.85rem;">View</button>
                 ${result.writtenAnswersEnabled ? `<button class="btn written-review-action" type="button" onclick="viewWrittenAnswers('${String(result.examId)}', '${String(result.studentId)}')"><i class="fas fa-file-pen" aria-hidden="true"></i> Written</button>` : ''}
               </td>
             </tr>
@@ -475,6 +475,9 @@
       }
 
       document.getElementById('resultsBody').innerHTML = html;
+      document.querySelectorAll('.teacher-result-view-button').forEach(button => {
+        button.addEventListener('click', () => viewResultDetail(button.dataset.resultDetailId));
+      });
     }
 
     // Sort table
@@ -700,7 +703,7 @@
     }
 
     function viewResultDetail(resultId) {
-      const result = allResults.find(item => String(item.id) === String(resultId));
+      const result = allResults.find(item => String(item.id || item._id) === String(resultId));
       if (!result) return;
       document.getElementById('teacherResultDetailModal')?.remove();
 
