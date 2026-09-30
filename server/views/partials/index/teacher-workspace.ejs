@@ -71,8 +71,8 @@
             <div><label class="form-label" for="bulkQuestionClass">Class / Grade</label><input id="bulkQuestionClass" class="form-input" type="text" placeholder="e.g., Class 11" required></div>
           </div>
           <label class="form-label" for="bulkQuestionInput">Paste your MCQs</label>
-          <p class="creator-help">Use four ordered choices such as <strong>a)-d), (a)-(d), A.-D., or à¦•)-à¦˜)</strong>, then add an answer key such as <strong>à¦‰à¦¤à§à¦¤à¦°: à¦–</strong>, <strong>Answer: B</strong>, or <strong>Correct answer: B</strong>. Questions may be numbered or unnumbered. Supports Bangla, English and LaTeX.</p>
-          <textarea id="bulkQuestionInput" class="form-input bulk-question-input" rows="12" placeholder="Paste each question, its a)-d) choices, then an answer line such as à¦‰à¦¤à§à¦¤à¦°: b) Correct choice"></textarea>
+          <p class="creator-help">Use four choices labeled A–D, then add the correct answer on a separate line, for example <strong>Answer: B</strong> or <strong>Correct answer: B</strong>. Questions may be numbered or unnumbered. Bangla, English, and LaTeX are supported.</p>
+          <textarea id="bulkQuestionInput" class="form-input bulk-question-input" rows="12" placeholder="Paste each question with its A–D choices, then add an answer line such as Answer: B."></textarea>
           <div class="bulk-question-actions">
             <span id="bulkQuestionStatus" class="bulk-question-status" role="status">Paste questions to get started. Supports up to 100 per batch.</span>
             <button type="button" class="btn btn-primary" onclick="parseBulkQuestions()"><i class="fas fa-wand-magic-sparkles"></i> Parse and review</button>
