@@ -1,25 +1,27 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: #fff; color: #202a25; }
-body { padding: 0; font-family: Georgia, "Noto Serif Bengali", "Times New Roman", serif; }
-.question-paper-preview { width: 100%; min-height: 100vh; padding: 15mm; background: #fff; color: #202a25; font-size: var(--paper-font-size,12pt); line-height: 1.5; }
-.paper-heading { padding-bottom: 12px; border-bottom: 1.5px solid #4a554f; text-align: center; }
-.paper-institution { margin: 0 0 4px; font-size: 1.2em; font-weight: 800; }
-.paper-title { margin: 0; font-size: 1.35em; font-weight: 800; }
-.paper-exam-type { margin: 3px 0 0; font-size: .92em; font-weight: 700; }
-.paper-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 5px 15px; padding: 9px 0; border-bottom: 1px solid #778179; font-size: .88em; font-weight: 650; }
-.paper-student-fields { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 18px; padding: 10px 0; font-size: .88em; }
-.paper-instructions { margin: 4px 0 10px; font-size: .86em; font-style: italic; }
-.paper-questions { column-count: var(--paper-columns,2); column-gap: 26px; column-rule: .5px solid #e3e7e4; }
-.paper-question { break-inside: avoid; margin: 0 0 14px; }
+body { padding: 0; font-family: "Noto Serif Bengali", "Times New Roman", serif; }
+.question-paper-preview { width: 100%; min-height: 100vh; margin: 0 auto; padding: 15mm; background: #fff; color: #171717; font-size: var(--paper-font-size,12pt); line-height: 1.55; }
+.paper-heading { padding: 0 0 10px; border-bottom: 1.5px solid #222; text-align: center; }
+.paper-institution { margin: 0 0 5px; font-size: 1.35em; font-weight: 800; line-height: 1.3; }
+.paper-title { margin: 0; font-size: 1.3em; font-weight: 800; line-height: 1.35; text-transform: uppercase; }
+.paper-exam-type { display: table; margin: 5px auto 0; padding: 2px 16px; border-top: 1px solid #555; border-bottom: 1px solid #555; font-size: .98em; font-weight: 700; }
+.paper-meta { padding: 7px 0 5px; border-bottom: 1px solid #555; font-size: .9em; font-weight: 650; }
+.paper-meta-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 18px; min-height: 1.6em; }
+.paper-student-fields { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 18px; padding: 8px 0; border-bottom: 1px solid #777; font-size: .9em; }
+.paper-instructions { margin: 7px 0 10px; padding: 5px 8px; border: 1px solid #aaa; font-size: .86em; }
+.paper-questions { column-count: var(--paper-columns,2); column-gap: 24px; column-rule: .5px solid #bbb; }
+.paper-question { break-inside: avoid; margin: 0 0 13px; }
 .paper-question-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .paper-question-number { flex: 0 0 auto; }
 .paper-question-marks { flex: 0 0 auto; font-size: .78em; }
 .paper-question-text { margin: 2px 0 5px; overflow-wrap: anywhere; }
-.paper-options { margin: 4px 0 0; padding-left: 24px; }
-.paper-options li { margin: 2px 0; padding-left: 2px; }
+.paper-options { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 3px 12px; margin: 5px 0 0; }
+.paper-option { display: flex; align-items: baseline; gap: 5px; break-inside: avoid; }
+.paper-option-label { flex: 0 0 auto; }
 @page { size: A4; margin: 0; }
 @media print {
   html, body { width: 210mm; min-height: 297mm; }
   .question-paper-preview { width: 210mm; min-height: 297mm; padding: 15mm; }
-  .paper-question, .paper-question-head, .paper-options { break-inside: avoid; }
+  .paper-question, .paper-question-head, .paper-options, .paper-option { break-inside: avoid; }
 }

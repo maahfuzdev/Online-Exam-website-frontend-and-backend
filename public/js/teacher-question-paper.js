@@ -97,8 +97,16 @@ function renderQuestionPaperPreview() {
   const dateValue = document.getElementById('paperDate').value;
   const dateText = dateValue ? new Date(`${dateValue}T00:00:00`).toLocaleDateString() : '';
   const totalMarks = Number((questions.length * marksPerQuestion).toFixed(2));
-  [subject && `Subject: ${subject}`, className && `Class: ${className}`, `Time: ${document.getElementById('paperDuration').value.trim() || '—'}`, `Full marks: ${totalMarks}`, dateText && `Date: ${dateText}`]
-    .filter(Boolean).forEach(item => meta.append(createPaperText('span', '', item)));
+  const firstMetaRow = document.createElement('div');
+  firstMetaRow.className = 'paper-meta-row';
+  [subject && `Subject: ${subject}`, className && `Class: ${className}`]
+    .filter(Boolean).forEach(item => firstMetaRow.append(createPaperText('span', '', item)));
+  if (firstMetaRow.childElementCount) meta.append(firstMetaRow);
+  const secondMetaRow = document.createElement('div');
+  secondMetaRow.className = 'paper-meta-row';
+  [`Time: ${document.getElementById('paperDuration').value.trim() || '--'}`, `Full marks: ${totalMarks}`, dateText && `Date: ${dateText}`]
+    .filter(Boolean).forEach(item => secondMetaRow.append(createPaperText('span', '', item)));
+  meta.append(secondMetaRow);
   preview.append(meta);
 
   if (document.getElementById('paperShowStudentFields').checked) {
@@ -122,10 +130,16 @@ function renderQuestionPaperPreview() {
     const prompt = createPaperText('div', 'paper-question-text', question.questionText || 'Question text unavailable');
     item.append(questionHead, prompt);
     if (question.answerType !== 'written' && Array.isArray(question.options) && question.options.length) {
-      const options = document.createElement('ol');
+      const options = document.createElement('div');
       options.className = 'paper-options';
-      options.type = 'A';
-      question.options.forEach(option => options.append(createPaperText('li', '', option)));
+      const bengaliOptionLabels = ['ক', 'খ', 'গ', 'ঘ'];
+      question.options.forEach((option, optionIndex) => {
+        const optionItem = document.createElement('div');
+        optionItem.className = 'paper-option';
+        optionItem.append(createPaperText('strong', 'paper-option-label', `${bengaliOptionLabels[optionIndex] || `${optionIndex + 1}`}.`));
+        optionItem.append(createPaperText('span', '', option));
+        options.append(optionItem);
+      });
       item.append(options);
     }
     questionList.append(item);
