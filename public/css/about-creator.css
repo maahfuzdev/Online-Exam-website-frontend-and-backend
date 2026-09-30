@@ -3,6 +3,7 @@
 .about-intro h1 { margin: 0; color: #202942; font-size: clamp(2rem, 4.5vw, 3.2rem); font-weight: 800; line-height: 1.1; letter-spacing: -.045em; }
 .about-role { display: inline-block; margin: 15px 0 8px; padding: 5px 11px; border-radius: 999px; background: #eef0ff; color: #4d5ed0; font-size: .88rem; font-weight: 750; }
 .about-bio { max-width: 600px; margin: 8px 0 20px; color: #59647d; font-size: 1.02rem; }
+.about-profile-links { display: flex; flex-wrap: wrap; gap: 10px; }
 .about-github { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid #dfe3f1; border-radius: 10px; color: #34415f; font-weight: 700; text-decoration: none; }
 .about-github:hover { border-color: #5969df; color: #4d5ed0; }
 .about-project-link { display: inline-block; margin-top: 14px; font-weight: 700; text-underline-offset: 4px; }
