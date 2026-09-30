@@ -7,6 +7,23 @@ const { inferQuestionType, normalizeQuestionType } = require("../services/questi
 const { generateQuestionsFromDocument: generateQuestionsFromDocumentService } = require("../services/document-question.service");
 const asyncHandler = require("../middleware/async-handler");
 
+function getOptionLabelInfo(label) {
+    const value = String(label || "").trim();
+    const lower = value.toLowerCase();
+    if (/^[a-d]$/.test(lower)) return { family: "latin", index: lower.charCodeAt(0) - 97 };
+    const roman = { i: 0, ii: 1, iii: 2, iv: 3 };
+    if (Object.prototype.hasOwnProperty.call(roman, lower)) return { family: "roman", index: roman[lower] };
+    const bangla = { "\u0995": 0, "\u0996": 1, "\u0997": 2, "\u0998": 3 };
+    if (Object.prototype.hasOwnProperty.call(bangla, value)) return { family: "bangla", index: bangla[value] };
+    return null;
+}
+
+function isValidOptionLabels(labels) {
+    if (!Array.isArray(labels) || labels.length !== 4) return false;
+    const normalized = labels.map(getOptionLabelInfo);
+    return normalized[0] && normalized.every((item, index) => item?.family === normalized[0].family && item.index === index);
+}
+
 async function generateQuestionsFromDocument(req, res) {
   const result = await generateQuestionsFromDocumentService(req.body);
   res.status(result.status).json(result.body);
@@ -20,12 +37,19 @@ async function saveQuestionsBulk(req, res) {
         if (!subject?.trim() || !questionClass?.trim() || !Array.isArray(questions) || !questions.length || questions.length > 100) {
             return res.status(400).json({ error: "Subject, class, and 1 to 100 questions are required." });
         }
-        const valid = questions.every(q => typeof q.questionText === "string" && q.questionText.trim() && (!q.answerType || q.answerType === "mcq") && Array.isArray(q.options) && q.options.length === 4 && q.options.every(option => typeof option === "string" && option.trim()) && /^[A-D]$/.test(q.correctAnswer));
+        const valid = questions.every(q => {
+            const optionLabels = q.optionLabels || ["A", "B", "C", "D"];
+            return typeof q.questionText === "string" && q.questionText.trim() &&
+                (!q.answerType || q.answerType === "mcq") &&
+                Array.isArray(q.options) && q.options.length === 4 && q.options.every(option => typeof option === "string" && option.trim()) &&
+                isValidOptionLabels(optionLabels) && /^[A-D]$/.test(q.correctAnswer);
+        });
         if (!valid) return res.status(400).json({ error: "Each MCQ needs text, four options, and a correct answer." });
         const saved = await questionRepository.insertMany(questions.map(q => ({
             teacher: teacherId,
             questionText: q.questionText.trim(),
             options: q.options.map(option => option.trim()),
+            optionLabels: q.optionLabels || ["A", "B", "C", "D"],
             correctAnswer: q.correctAnswer,
             answerType: "mcq",
             subject: subject.trim(),

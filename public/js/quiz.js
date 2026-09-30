@@ -64,7 +64,7 @@ async function exportQuizPDF() {
       });
 
       // Choices
-      const choices = ["A", "B", "C", "D"];
+      const choices = q.optionLabels || ["A", "B", "C", "D"];
       for (let j = 0; j < q.choices.length; j++) {
         const choiceP = document.createElement('p');
         choiceP.style.marginLeft = '20px';
@@ -275,7 +275,7 @@ function autoWrapMath(text) {
       question.choices.forEach((choice, index) => {
         const choiceButton = document.createElement('button');
         choiceButton.className = 'choice-option';
-        choiceButton.innerHTML = `${String.fromCharCode(65 + index)}. ${autoWrapMath(choice)}`;
+        choiceButton.innerHTML = `${question.optionLabels?.[index] || String.fromCharCode(65 + index)}. ${autoWrapMath(choice)}`;
         choiceButton.style.whiteSpace = 'pre-wrap';
         choiceButton.onclick = () => selectAnswer(index);
         choicesContainer.appendChild(choiceButton);

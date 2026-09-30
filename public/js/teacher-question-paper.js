@@ -132,11 +132,13 @@ function renderQuestionPaperPreview() {
     if (question.answerType !== 'written' && Array.isArray(question.options) && question.options.length) {
       const options = document.createElement('div');
       options.className = 'paper-options';
-      const bengaliOptionLabels = ['ক', 'খ', 'গ', 'ঘ'];
+      const optionLabels = Array.isArray(question.optionLabels) && question.optionLabels.length === question.options.length
+        ? question.optionLabels
+        : ['A', 'B', 'C', 'D'];
       question.options.forEach((option, optionIndex) => {
         const optionItem = document.createElement('div');
         optionItem.className = 'paper-option';
-        optionItem.append(createPaperText('strong', 'paper-option-label', `${bengaliOptionLabels[optionIndex] || `${optionIndex + 1}`}.`));
+        optionItem.append(createPaperText('strong', 'paper-option-label', `${optionLabels[optionIndex] || `${optionIndex + 1}`}.`));
         optionItem.append(createPaperText('span', '', option));
         options.append(optionItem);
       });

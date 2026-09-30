@@ -46,6 +46,7 @@ const resultSchema = new mongoose.Schema({
     questionID: { type: mongoose.Schema.Types.ObjectId, ref: "Question" },
     questionText: String,
     options: [String],
+    optionLabels: [String],
     selectedOption: Number,
     correctOption: Number,
     isCorrect: Boolean,

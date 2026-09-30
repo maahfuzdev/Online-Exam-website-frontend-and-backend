@@ -8,7 +8,7 @@ function scoreExamAnswers(questions, answers, exam, uploadedWrittenQuestionIds =
     if (question.answerType === "written") {
       const answerSubmitted = uploadedWrittenQuestionIds.has(String(question._id));
       if (!answerSubmitted) skippedCount++;
-      return { questionID: question._id, questionText: question.questionText, options: [], selectedOption: null, correctOption: null, isCorrect: false, answerType: "written", answerSubmitted, maxMarks: questionMark, marksAwarded: null };
+      return { questionID: question._id, questionText: question.questionText, options: [], optionLabels: [], selectedOption: null, correctOption: null, isCorrect: false, answerType: "written", answerSubmitted, maxMarks: questionMark, marksAwarded: null };
     }
     const rawAnswer = answers[index];
     const selectedOption = rawAnswer === undefined || rawAnswer === null || rawAnswer === "" ? null : Number(rawAnswer);
@@ -23,6 +23,7 @@ function scoreExamAnswers(questions, answers, exam, uploadedWrittenQuestionIds =
       questionID: question._id,
       questionText: question.questionText,
       options: question.options,
+      optionLabels: question.optionLabels?.length === question.options?.length ? question.optionLabels : ["A", "B", "C", "D"],
       selectedOption,
       correctOption,
       isCorrect,

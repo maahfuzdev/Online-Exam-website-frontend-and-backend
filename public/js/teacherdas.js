@@ -199,11 +199,11 @@
         if ((question.answerType || 'mcq') === 'mcq' && Array.isArray(question.options)) {
           const options = document.createElement('div'); options.className = 'teacher-bank-options';
           question.options.forEach((option, index) => {
-            const letterValue = String.fromCharCode(65 + index);
+            const letterValue = question.optionLabels?.[index] || String.fromCharCode(65 + index);
             const item = document.createElement('div'); item.className = 'teacher-bank-option';
             const letter = document.createElement('span'); letter.textContent = letterValue;
             const value = document.createElement('span'); value.textContent = option; item.append(letter, value);
-            if (String(question.correctAnswer || '').toUpperCase() === letterValue) item.classList.add('is-correct');
+            if (String(question.correctAnswer || 'A').toUpperCase().charCodeAt(0) - 65 === index) item.classList.add('is-correct');
             options.appendChild(item);
           }); card.append(options);
         } else {
@@ -812,11 +812,12 @@
           writtenInfo.append(mark, feedback); card.append(writtenInfo);
         } else {
           const options = Array.isArray(item.options) ? item.options : [];
+          const optionLabels = Array.isArray(item.optionLabels) && item.optionLabels.length === options.length ? item.optionLabels : ['A', 'B', 'C', 'D'];
           const optionList = document.createElement('div'); optionList.className = 'teacher-result-review-options';
           options.forEach((option, optionIndex) => {
             const optionItem = document.createElement('div');
             optionItem.className = `teacher-result-review-option${optionIndex === correct ? ' is-correct-option' : ''}${optionIndex === selected && optionIndex !== correct ? ' is-selected-wrong' : ''}`;
-            const letter = document.createElement('strong'); letter.textContent = String.fromCharCode(65 + optionIndex);
+            const letter = document.createElement('strong'); letter.textContent = optionLabels[optionIndex] || String.fromCharCode(65 + optionIndex);
             const optionText = document.createElement('span'); optionText.className = 'review-math'; optionText.textContent = option;
             const marker = document.createElement('small');
             marker.textContent = optionIndex === correct ? 'Correct answer' : optionIndex === selected ? 'Student answer' : '';
@@ -824,7 +825,7 @@
           });
           card.append(optionList);
           const answerSummary = document.createElement('footer');
-          const answerLabel = value => Number.isInteger(value) && value >= 0 && value < options.length ? String.fromCharCode(65 + value) : 'Not answered';
+          const answerLabel = value => Number.isInteger(value) && value >= 0 && value < options.length ? optionLabels[value] : 'Not answered';
           answerSummary.textContent = `Student answer: ${answerLabel(selected)}   ·   Correct answer: ${answerLabel(correct)}`;
           card.append(answerSummary);
         }

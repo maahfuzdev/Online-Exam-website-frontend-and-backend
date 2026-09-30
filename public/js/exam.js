@@ -34,6 +34,17 @@ function closeBulkQuestionCreator() {
     }
 }
 
+function normalizeBulkOptionLabel(label) {
+    const value = String(label || '').trim();
+    const lower = value.toLowerCase();
+    if (/^[a-d]$/.test(lower)) return { family: 'latin', index: lower.charCodeAt(0) - 97 };
+    const roman = { i: 0, ii: 1, iii: 2, iv: 3 };
+    if (Object.prototype.hasOwnProperty.call(roman, lower)) return { family: 'roman', index: roman[lower] };
+    const bangla = { '\u0995': 0, '\u0996': 1, '\u0997': 2, '\u0998': 3 };
+    if (Object.prototype.hasOwnProperty.call(bangla, value)) return { family: 'bangla', index: bangla[value] };
+    return null;
+}
+
 function parseBulkQuestionText(source) {
     const text = String(source || '')
         .replace(/\r\n?/g, '\n')
@@ -41,31 +52,29 @@ function parseBulkQuestionText(source) {
         .replace(/[\u00a0\u2000-\u200b]/g, ' ')
         .replace(/[\u200c\u200d\ufeff]/g, '')
         .replace(/\*\*/g, '');
-    const answerPattern = /(?:correct(?:\s*answer)?|answer|ans\.?|সঠিক\s*উত্তর|উত্তর)\s*[:：=–—.-]?\s*(?:option\s*)?[\[(]?\s*([a-dকখগঘ])\s*[\])]?/gim;
+    const labelToken = '(IV|III|II|I|[A-D]|[\u0995-\u0998])';
+    const answerPattern = new RegExp(`(?:correct(?:\\s*answer)?|answer|ans\\.?|\\u09b8\\u09a0\\u09bf\\u0995\\s*\\u0989\\u09a4\\u09cd\\u09a4\\u09b0|\\u0989\\u09a4\\u09cd\\u09a4\\u09b0)\\s*[:：=–—.-]?\\s*(?:option\\s*)?[\\[(]?\\s*${labelToken}\\s*[\\])]?`, 'gim');
     const answerLines = [...text.matchAll(answerPattern)];
-    if (!answerLines.length) return { questions: [], errors: ['No answer lines found. Add an answer line such as “উত্তর: b) Correct choice” after each question.'] };
+    if (!answerLines.length) return { questions: [], errors: ['No answer lines found. Add an answer line such as “Answer: iii” or “উত্তর: গ” after each question.'] };
 
     const questions = [];
     const errors = [];
     let blockStart = 0;
     answerLines.forEach((answerLine, index) => {
-        const block = text.slice(blockStart, answerLine.index).replace(/\*\*/g, '').trim();
+        const block = text.slice(blockStart, answerLine.index).trim();
         const answerLineEnd = text.indexOf('\n', answerLine.index + answerLine[0].length);
         blockStart = answerLineEnd < 0 ? text.length : answerLineEnd + 1;
-        if (!block) {
-            errors.push(`Question ${index + 1}: question text or choices are missing.`);
-            return;
-        }
-        const optionPattern = /(^|[\s\u2000-\u200b—–?!।,:;])(?:\(([a-dকখগঘ])\)|([a-dকখগঘ])\s*[).:：\-–])\s*/gi;
-        const labelMap = { a: 'A', b: 'B', c: 'C', d: 'D', 'ক': 'A', 'খ': 'B', 'গ': 'C', 'ঘ': 'D' };
-        const markers = [...block.matchAll(optionPattern)].map(match => ({
-            label: labelMap[(match[2] || match[3]).toLowerCase()],
-            start: match.index + match[1].length,
-            contentStart: match.index + match[0].length
-        }));
-        const labels = markers.map(marker => marker.label).join('');
-        if (labels !== 'ABCD') {
-            errors.push(`Question ${index + 1}: choices were not recognized. Use four labels in order, such as a)–d), (a)–(d), A.–D., A:–D:, or ক)–ঘ).`);
+        const choicePattern = new RegExp(`^\\s*(?:\\((${labelToken.slice(1, -1)})\\)|(${labelToken.slice(1, -1)})\\s*[).:：\\-–—])\\s*`, 'gim');
+        const markers = [...block.matchAll(choicePattern)].map(match => {
+            const label = match[1] || match[2];
+            return { label, normalized: normalizeBulkOptionLabel(label), start: match.index, contentStart: match.index + match[0].length };
+        });
+        const family = markers[0]?.normalized?.family;
+        const validSequence = markers.length === 4 && markers.every((marker, choiceIndex) =>
+            marker.normalized && marker.normalized.family === family && marker.normalized.index === choiceIndex
+        );
+        if (!block || !validSequence) {
+            errors.push(`Question ${index + 1}: use exactly four choices in order with one label style: A–D, a–d, I–IV, i–iv, or ক–ঘ. Put each choice on its own line.`);
             return;
         }
         const questionText = block.slice(0, markers[0].start).trim().replace(/^(?:(?:question|প্রশ্ন)\s*)?\(?\d+\)?\s*[.)।:\-]\s*/i, '');
@@ -74,8 +83,17 @@ function parseBulkQuestionText(source) {
             errors.push(`Question ${index + 1}: question text and all four choices must have content.`);
             return;
         }
-        const answerMap = { a: 'A', b: 'B', c: 'C', d: 'D', 'ক': 'A', 'খ': 'B', 'গ': 'C', 'ঘ': 'D' };
-        questions.push({ questionText, options, correctAnswer: answerMap[answerLine[1].toLowerCase()] });
+        const answer = normalizeBulkOptionLabel(answerLine[1]);
+        if (!answer || answer.family !== family) {
+            errors.push(`Question ${index + 1}: the answer label must use the same style as the choices.`);
+            return;
+        }
+        questions.push({
+            questionText,
+            options,
+            optionLabels: markers.map(marker => marker.label),
+            correctAnswer: String.fromCharCode(65 + answer.index)
+        });
     });
     if (questions.length > 100) errors.push(`This batch has ${questions.length} valid questions. The maximum is 100 at a time.`);
     return { questions, errors };
@@ -107,8 +125,8 @@ function renderBulkQuestionPreview(errors = []) {
       <article class="bulk-preview-card" data-bulk-index="${index}">
         <header><strong>Question ${index + 1}</strong><button type="button" class="bulk-remove-question" onclick="removeBulkQuestion(${index})" aria-label="Remove question ${index + 1}"><i class="fas fa-trash-can"></i></button></header>
         <label>Question text<textarea class="form-input" data-bulk-field="question" rows="2">${escapeHtml(question.questionText)}</textarea></label>
-        <div class="bulk-preview-options">${question.options.map((option, optionIndex) => `<label><span>${String.fromCharCode(65 + optionIndex)}</span><input class="form-input" data-bulk-field="option" data-option-index="${optionIndex}" value="${escapeHtml(option)}"></label>`).join('')}</div>
-        <label class="bulk-correct-answer">Correct answer<select class="form-input" data-bulk-field="answer">${['A', 'B', 'C', 'D'].map(letter => `<option value="${letter}" ${letter === question.correctAnswer ? 'selected' : ''}>${letter}${letter === question.correctAnswer ? ' — Correct' : ''}</option>`).join('')}</select></label>
+        <div class="bulk-preview-options">${question.options.map((option, optionIndex) => `<label><span>${escapeHtml(question.optionLabels?.[optionIndex] || String.fromCharCode(65 + optionIndex))}</span><input class="form-input" data-bulk-field="option" data-option-index="${optionIndex}" value="${escapeHtml(option)}"></label>`).join('')}</div>
+        <label class="bulk-correct-answer">Correct answer<select class="form-input" data-bulk-field="answer">${['A', 'B', 'C', 'D'].map((letter, optionIndex) => `<option value="${letter}" ${letter === question.correctAnswer ? 'selected' : ''}>${escapeHtml(question.optionLabels?.[optionIndex] || letter)}${letter === question.correctAnswer ? ' — Correct' : ''}</option>`).join('')}</select></label>
       </article>`).join('');
     preview.innerHTML = `${errorMarkup}${questionMarkup}`;
 }

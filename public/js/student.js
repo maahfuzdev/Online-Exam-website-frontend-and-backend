@@ -214,6 +214,7 @@ async function loadStudentExams() {
     _id: q._id,
     question: q.questionText,
     choices: q.options,
+    optionLabels: q.optionLabels || ['A', 'B', 'C', 'D'],
     correct: null,
     answerType: q.answerType || 'mcq'
   }));
@@ -576,7 +577,8 @@ function openResultReview(resultId) {
     const isWritten = item.answerType === 'written';
     const correct = Number(item.correctOption);
     const selected = item.selectedOption === null || item.selectedOption === undefined ? null : Number(item.selectedOption);
-    const answerLabel = value => Number.isInteger(value) && value >= 0 && value < options.length ? String.fromCharCode(65 + value) : '';
+    const optionLabels = Array.isArray(item.optionLabels) && item.optionLabels.length === options.length ? item.optionLabels : ['A', 'B', 'C', 'D'];
+    const answerLabel = value => Number.isInteger(value) && value >= 0 && value < options.length ? optionLabels[value] : '';
     const writtenReviewed = item.marksAwarded != null && Boolean(item.teacherFeedback?.trim());
     return `<article class="student-review-question ${isWritten ? 'is-written' : item.isCorrect ? 'is-correct' : selected === null ? 'is-skipped' : 'is-wrong'}">
       <header><span class="student-review-number">Question ${index + 1}</span><span class="student-review-status"><i class="fas ${isWritten ? writtenReviewed ? 'fa-circle-check' : 'fa-clock' : item.isCorrect ? 'fa-circle-check' : selected === null ? 'fa-circle-minus' : 'fa-circle-xmark'}"></i>${isWritten ? writtenReviewed ? 'Reviewed' : 'Awaiting teacher review' : item.isCorrect ? 'Correct' : selected === null ? 'Skipped' : 'Incorrect'}</span></header>
@@ -584,7 +586,7 @@ function openResultReview(resultId) {
       ${isWritten ? `<section class="student-written-review"><div class="student-written-mark"><strong>Your mark</strong><span>${item.marksAwarded == null ? 'Pending' : Number(item.marksAwarded).toFixed(2)} / ${Number(item.maxMarks || 0).toFixed(2)}</span></div><div class="student-written-feedback"><strong>Teacher feedback</strong><p>${escapeStudentHtml(item.teacherFeedback || 'Feedback will appear after your teacher reviews this answer.')}</p></div></section>` : `<div class="student-review-options">${options.map((option, optionIndex) => {
         const isCorrect = optionIndex === correct;
         const isSelectedWrong = optionIndex === selected && !isCorrect;
-        return `<div class="student-review-option ${isCorrect ? 'option-correct' : ''} ${isSelectedWrong ? 'option-selected-wrong' : ''}"><span class="student-review-option-letter">${String.fromCharCode(65 + optionIndex)}</span><span class="student-review-option-text review-math"></span><span class="student-review-option-mark">${isCorrect ? '<i class="fas fa-check"></i> Correct answer' : isSelectedWrong ? '<i class="fas fa-user-check"></i> Your answer' : ''}</span></div>`;
+        return `<div class="student-review-option ${isCorrect ? 'option-correct' : ''} ${isSelectedWrong ? 'option-selected-wrong' : ''}"><span class="student-review-option-letter">${escapeStudentHtml(optionLabels[optionIndex] || String.fromCharCode(65 + optionIndex))}</span><span class="student-review-option-text review-math"></span><span class="student-review-option-mark">${isCorrect ? '<i class="fas fa-check"></i> Correct answer' : isSelectedWrong ? '<i class="fas fa-user-check"></i> Your answer' : ''}</span></div>`;
       }).join('')}</div>`}
       ${isWritten ? '' : `<footer><span><strong>Your answer:</strong> ${selected === null ? 'Not answered' : `Option ${answerLabel(selected)}`}</span><span><strong>Correct answer:</strong> Option ${answerLabel(correct)}</span></footer>`}
     </article>`;
@@ -820,6 +822,10 @@ async function startExam(examId, mpq, duration, startTime, teacherID, examTitle,
 
             if (options[index]?.length) {
                 document.getElementById('mcqOptions').classList.remove('hidden');
+                const optionLabels = quizQuestions1[index].optionLabels || ['A', 'B', 'C', 'D'];
+                document.querySelectorAll('#mcqOptions .option-label').forEach((label, optionIndex) => {
+                    label.textContent = optionLabels[optionIndex] || String.fromCharCode(65 + optionIndex);
+                });
                 renderStudentQuestionText(document.getElementById('optionA'), options[index][0] || "Option A");
                 renderStudentQuestionText(document.getElementById('optionB'), options[index][1] || "Option B");
                 renderStudentQuestionText(document.getElementById('optionC'), options[index][2] || "Option C");
@@ -1050,8 +1056,8 @@ function displayQuestionAnalysis() {
         </div>
         <p class="result-question-text result-math">${escapeStudentHtml(q.question || '')}</p>
         <div class="analysis-answer-list">
-          <p><strong>Your answer</strong><span class="result-math">${studentAnswer !== undefined ? `Option ${String.fromCharCode(65 + studentAnswer)}: ${escapeStudentHtml(q.choices[studentAnswer] || '')}` : 'Not answered'}</span></p>
-          <p><strong>Correct answer</strong><span class="result-math">Option ${String.fromCharCode(65 + q.correct)}: ${escapeStudentHtml(q.choices[q.correct] || '')}</span></p>
+          <p><strong>Your answer</strong><span class="result-math">${studentAnswer !== undefined ? `Option ${escapeStudentHtml(q.optionLabels?.[studentAnswer] || String.fromCharCode(65 + studentAnswer))}: ${escapeStudentHtml(q.choices[studentAnswer] || '')}` : 'Not answered'}</span></p>
+          <p><strong>Correct answer</strong><span class="result-math">Option ${escapeStudentHtml(q.optionLabels?.[q.correct] || String.fromCharCode(65 + q.correct))}: ${escapeStudentHtml(q.choices[q.correct] || '')}</span></p>
         </div>
       </div>
     `;

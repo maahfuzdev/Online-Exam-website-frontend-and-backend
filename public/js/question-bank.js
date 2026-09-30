@@ -175,6 +175,7 @@ async function loadQuestionsFromDB() {
             _id: q._id,
             question: q.questionText,
             choices: q.options || [],
+            optionLabels: q.optionLabels || ['A', 'B', 'C', 'D'],
             correct: q.answerType === 'written' ? null : String(q.correctAnswer || 'A').charCodeAt(0) - 65,
             answerType: q.answerType || 'mcq',
             subject: q.subject || '',
@@ -280,7 +281,7 @@ async function loadQuestionsFromDB() {
 
       let html = '';
       quizQuestions.forEach((q, index) => {
-        const choices = ['A', 'B', 'C', 'D'];
+        const choices = q.optionLabels || ['A', 'B', 'C', 'D'];
         const questionText = q.question || q.questionText || '';
         const questionIsMath = q.questionType === 'mathematical' || q.hasMath || hasMathContent(questionText);
         const answerLabel = q.answerType === 'written' ? 'Written; manually marked' : `Correct answer: ${choices[typeof q.correct === 'number' ? q.correct : String(q.correctAnswer || 'A').charCodeAt(0) - 65]}`;

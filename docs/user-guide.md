@@ -25,7 +25,7 @@ There are no shared demo credentials. Create separate teacher and student accoun
 
 ### Add questions in a batch
 
-Use **Paste many questions** to import a block of MCQs. Follow the format shown in the form, review the parsed questions and answers, correct anything that needs editing, then save the questions.
+Use **Paste many questions** to import up to 100 MCQs in one batch. Put each of the four choices on its own line and use one consistent label style per question: `A–D`, `a–d`, `I–IV`, `i–iv`, or `ক–ঘ`. Add a matching answer line after each question (for example, `Answer: iii` or `উত্তর: গ`). The app keeps the labels you typed when it saves and displays the question. Review the parsed questions and answers before saving.
 
 ### Generate draft MCQs from a document (optional)
 

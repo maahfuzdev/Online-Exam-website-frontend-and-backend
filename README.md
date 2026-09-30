@@ -28,7 +28,7 @@ The application is built with Node.js, Express, MongoDB/Mongoose, EJS-rendered p
 ### Teacher workspace
 
 - Create mathematical and general questions, including MCQ and written-answer formats.
-- Paste and review batches of MCQs before saving them to the question bank.
+- Paste and review batches of MCQs before saving them to the question bank. Four-choice labels can use `A–D`, `a–d`, `I–IV`, `i–iv`, or Bangla `ক–ঘ`; the selected style is kept with the question.
 - Optionally generate draft MCQs from PDF or image study material using the Gemini API.
 - Create and assign exams to selected students with scheduled windows, duration, marks, optional negative marking, retake settings, and result visibility policies.
 - Review exam results, manually grade written answers with feedback, release results, and export result lists to PDF or Excel.

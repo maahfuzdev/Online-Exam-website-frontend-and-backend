@@ -296,6 +296,7 @@ async function getExamForStudent(req, res) {
     _id: question._id,
     questionText: question.questionText,
     options: question.options,
+    optionLabels: question.optionLabels,
     questionType: question.questionType,
     answerType: question.answerType || "mcq",
     subject: question.subject

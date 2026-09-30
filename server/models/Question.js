@@ -8,6 +8,7 @@ const questionSchema = new mongoose.Schema({
     questionType: { type: String, enum: ["mathematical", "general"], default: "general" },
     answerType: { type: String, enum: ["mcq", "written"], default: "mcq" },
     options: [String],
+    optionLabels: { type: [String], default: ['A', 'B', 'C', 'D'] },
     correctAnswer: String,
     createdAt: { type: Date, default: Date.now }
 });
