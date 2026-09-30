@@ -1,0 +1,25 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #fff; color: #202a25; }
+body { padding: 0; font-family: Georgia, "Noto Serif Bengali", "Times New Roman", serif; }
+.question-paper-preview { width: 100%; min-height: 100vh; padding: 15mm; background: #fff; color: #202a25; font-size: var(--paper-font-size,12pt); line-height: 1.5; }
+.paper-heading { padding-bottom: 12px; border-bottom: 1.5px solid #4a554f; text-align: center; }
+.paper-institution { margin: 0 0 4px; font-size: 1.2em; font-weight: 800; }
+.paper-title { margin: 0; font-size: 1.35em; font-weight: 800; }
+.paper-exam-type { margin: 3px 0 0; font-size: .92em; font-weight: 700; }
+.paper-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 5px 15px; padding: 9px 0; border-bottom: 1px solid #778179; font-size: .88em; font-weight: 650; }
+.paper-student-fields { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 18px; padding: 10px 0; font-size: .88em; }
+.paper-instructions { margin: 4px 0 10px; font-size: .86em; font-style: italic; }
+.paper-questions { column-count: var(--paper-columns,2); column-gap: 26px; column-rule: .5px solid #e3e7e4; }
+.paper-question { break-inside: avoid; margin: 0 0 14px; }
+.paper-question-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.paper-question-number { flex: 0 0 auto; }
+.paper-question-marks { flex: 0 0 auto; font-size: .78em; }
+.paper-question-text { margin: 2px 0 5px; overflow-wrap: anywhere; }
+.paper-options { margin: 4px 0 0; padding-left: 24px; }
+.paper-options li { margin: 2px 0; padding-left: 2px; }
+@page { size: A4; margin: 0; }
+@media print {
+  html, body { width: 210mm; min-height: 297mm; }
+  .question-paper-preview { width: 210mm; min-height: 297mm; padding: 15mm; }
+  .paper-question, .paper-question-head, .paper-options { break-inside: avoid; }
+}

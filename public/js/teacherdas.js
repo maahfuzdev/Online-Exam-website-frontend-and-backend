@@ -180,6 +180,13 @@
       }
       questions.forEach(question => {
         const card = document.createElement('article'); card.className = 'teacher-bank-card';
+        const selectLabel = document.createElement('label'); selectLabel.className = 'teacher-bank-select-label';
+        const selectQuestion = document.createElement('input'); selectQuestion.type = 'checkbox'; selectQuestion.className = 'teacher-bank-select'; selectQuestion.value = String(question._id || '');
+        selectQuestion.checked = typeof selectedQuestionPaperIds !== 'undefined' && selectedQuestionPaperIds.has(String(question._id));
+        selectQuestion.setAttribute('aria-label', `Select question ${question.questionText || ''} for a question paper`);
+        selectQuestion.addEventListener('change', () => toggleQuestionPaperSelection(question._id, selectQuestion.checked));
+        selectLabel.append(selectQuestion, document.createTextNode('Add to paper'));
+        card.append(selectLabel);
         const top = document.createElement('div'); top.className = 'teacher-bank-card-top';
         const badges = document.createElement('div'); badges.className = 'teacher-bank-badges';
         const subject = document.createElement('span'); subject.className = 'teacher-bank-badge'; subject.textContent = question.subject || 'General';
@@ -207,6 +214,7 @@
         remove.addEventListener('click', () => deleteTeacherBankQuestion(question._id, remove)); actions.append(remove); card.append(actions); container.append(card);
         if (window.renderMathInElement) window.renderMathInElement(card, { delimiters: [{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false},{left:'$',right:'$',display:false}], throwOnError: false });
       });
+      if (typeof updateQuestionPaperSelectionSummary === 'function') updateQuestionPaperSelectionSummary();
     }
 
     async function deleteTeacherBankQuestion(questionId, button) {
@@ -216,7 +224,9 @@
         const response = await fetch(`/api/questions/${encodeURIComponent(questionId)}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ teacherId: localStorage.getItem('userId') }) });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || 'Question could not be deleted.');
-        allQuestions = allQuestions.filter(question => String(question._id) !== String(questionId)); renderTeacherQuestionBank();
+        allQuestions = allQuestions.filter(question => String(question._id) !== String(questionId));
+        if (typeof selectedQuestionPaperIds !== 'undefined') selectedQuestionPaperIds.delete(String(questionId));
+        renderTeacherQuestionBank();
       } catch (error) { window.alert(error.message || 'Question could not be deleted.'); button.disabled = false; }
     }
 

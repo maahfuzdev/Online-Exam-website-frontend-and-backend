@@ -7,6 +7,51 @@
       <label>Question type<select id="bankTypeFilter" onchange="renderTeacherQuestionBank()" aria-label="Filter by question type"><option value="">All types</option><option value="mcq">MCQ</option><option value="written">Written</option></select></label>
       <label class="teacher-bank-search">Search<input id="bankSearch" type="search" placeholder="Search questions…" oninput="renderTeacherQuestionBank()" aria-label="Search questions"></label>
     </div>
+    <div class="teacher-bank-toolbar">
+      <div><strong id="paperSelectionCount">0 selected</strong><span>Select questions to build a printable exam paper.</span></div>
+      <div class="teacher-bank-toolbar-actions">
+        <button type="button" class="teacher-bank-secondary" onclick="selectVisibleBankQuestions()">Select visible</button>
+        <button type="button" class="teacher-bank-secondary" onclick="clearBankQuestionSelection()">Clear selection</button>
+        <button type="button" class="teacher-paper-open" id="openPaperBuilderButton" onclick="openQuestionPaperBuilder()" disabled>Create question paper</button>
+      </div>
+    </div>
     <div id="teacherQuestionBankList" class="teacher-bank-list"><p class="teacher-bank-empty">Loading your saved questions…</p></div>
   </section>
 </div>
+
+  <dialog id="questionPaperDialog" class="question-paper-dialog" aria-labelledby="questionPaperDialogTitle">
+    <header class="question-paper-dialog-header">
+      <div><span class="teacher-bank-eyebrow">PRINT DESIGNER</span><h2 id="questionPaperDialogTitle">Build an exam paper</h2><p>Set the paper details and layout, then print or save it as a PDF.</p></div>
+      <button type="button" class="question-paper-close" onclick="closeQuestionPaperBuilder()" aria-label="Close paper designer">×</button>
+    </header>
+    <div class="question-paper-workspace">
+      <form class="question-paper-settings" id="questionPaperSettings" oninput="scheduleQuestionPaperPreview()" onchange="scheduleQuestionPaperPreview()">
+        <label>School / college / institution<input id="paperInstitution" type="text" placeholder="Institution name"></label>
+        <label>Question paper heading<input id="paperHeading" type="text" value="Examination" placeholder="Annual Examination"></label>
+        <div class="question-paper-field-row">
+          <label>Exam type<input id="paperExamType" type="text" placeholder="e.g. Half-Yearly Exam"></label>
+          <label>Subject<input id="paperSubject" type="text" placeholder="e.g. Mathematics"></label>
+        </div>
+        <div class="question-paper-field-row">
+          <label>Class / grade<input id="paperClass" type="text" placeholder="e.g. Class 10"></label>
+          <label>Exam date<input id="paperDate" type="date"></label>
+        </div>
+        <div class="question-paper-field-row">
+          <label>Time allowed<input id="paperDuration" type="text" placeholder="e.g. 2 hours"></label>
+          <label>Marks per question<input id="paperMarksPerQuestion" type="number" min="0" step="0.25" value="1"></label>
+        </div>
+        <label class="question-paper-range">Question font size <span><input id="paperFontSize" type="range" min="10" max="18" value="12"><output id="paperFontSizeValue">12 pt</output></span></label>
+        <label>Question columns<select id="paperColumns"><option value="1">1 column</option><option value="2" selected>2 columns</option><option value="3">3 columns</option></select></label>
+        <label class="question-paper-check"><input id="paperShowStudentFields" type="checkbox" checked><span>Include student name and roll fields</span></label>
+        <label>Instructions<input id="paperInstructions" type="text" placeholder="Answer all questions."></label>
+      </form>
+      <section class="question-paper-preview-wrap" aria-label="Exam paper preview">
+        <div class="question-paper-preview-label"><strong>Paper preview</strong><span id="paperPreviewQuestionCount">0 questions</span></div>
+        <article id="questionPaperPreview" class="question-paper-preview"></article>
+      </section>
+    </div>
+    <footer class="question-paper-dialog-footer">
+      <span>Use your browser’s print dialog to print or choose “Save as PDF”.</span>
+      <div><button type="button" class="teacher-bank-secondary" onclick="closeQuestionPaperBuilder()">Cancel</button><button type="button" class="teacher-paper-open" onclick="printQuestionPaper()">Print / Save PDF</button></div>
+    </footer>
+  </dialog>
