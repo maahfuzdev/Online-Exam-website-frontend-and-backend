@@ -39,6 +39,10 @@ app.get("/how-it-works", (req, res) => {
   res.render("pages/how-it-works");
 });
 
+app.get("/about", (req, res) => {
+  res.render("pages/about-creator");
+});
+
 // Clean, role-based page URLs. EJS templates remain under views/pages.
 app.get("/login", (req, res) => {
   res.render("pages/authentication");

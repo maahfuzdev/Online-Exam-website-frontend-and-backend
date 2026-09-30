@@ -363,6 +363,8 @@
     .landing-cta:hover { transform: translateY(-2px); background: #4859d0; box-shadow: 0 14px 26px rgba(89, 105, 223, .3); }
     .landing-cta span { font-size: 1.35rem; line-height: 1; }
     .landing-guide-link { display: inline-block; margin-left: 16px; color: #4d5ed0; font-size: .95rem; font-weight: 700; text-underline-offset: 4px; }
+    .landing-footer { display: flex; width: 100%; justify-content: space-between; gap: 16px; padding: 18px 6px 0; color: #798198; font-size: .9rem; }
+    .landing-footer a { color: #4d5ed0; font-weight: 700; text-decoration: none; }
     .landing-trust { display: flex; align-items: center; gap: 9px; margin-top: 22px; color: #798198; font-size: .9rem; }
     .trust-check { display: grid; width: 21px; height: 21px; place-items: center; border-radius: 50%; background: #e4f6ef; color: #218865; font-size: .78rem; font-weight: 800; }
     .landing-art { position: relative; display: grid; min-width: 0; min-height: 430px; place-items: center; }
@@ -389,6 +391,7 @@
       .landing-title { max-width: 560px; font-size: clamp(2.55rem, 11vw, 4rem); }
       .landing-subtitle { max-width: 560px; font-size: 1rem; line-height: 1.65; }
       .landing-guide-link { margin-left: 12px; }
+      .landing-footer { padding: 14px 8px 0; font-size: .82rem; }
       .landing-cta { width: 100%; justify-content: center; }
       .landing-trust { justify-content: center; font-size: .82rem; }
       .landing-art { min-height: 290px; margin: -3px -12px -16px; }
