@@ -31,33 +31,35 @@
       </nav>
 
       <section class="exam-step-panel" id="examStep1">
-        <div class="section-title">
-           Question Creator
+        <div class="creator-section-heading">
+          <span class="creator-eyebrow">QUESTION WORKSPACE</span>
+          <h2 class="section-title">Question Creator</h2>
+          <p>Create a reusable question, choose its answer format, and save it to your question bank.</p>
         </div>
 
         <div class="question-creator-launcher">
           <button type="button" class="creator-launch-button" onclick="toggleQuestionTypeChooser()">
-            <span class="creator-launch-icon" aria-hidden="true">＋</span>
-            <span><strong>Create a question</strong><small>Choose a question type to get started</small></span>
-            <span class="creator-launch-arrow" aria-hidden="true">⌄</span>
+            <span class="creator-launch-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+            <span><strong>Create a question</strong><small>Start with a question type that fits your content</small></span>
+            <span class="creator-launch-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
           </button>
         </div>
 
         <div id="questionTypeChooser" class="question-type-chooser hidden" aria-label="Choose question type">
           <button type="button" class="question-type-card" onclick="beginQuestionCreation('mathematical')">
-            <span class="question-type-icon">∑</span>
-            <span><strong>Mathematical</strong><small>Formula templates, LaTeX input, and live preview</small></span>
-            <span class="question-type-arrow">→</span>
+            <span class="question-type-icon mathematical" aria-hidden="true">&#8721;</span>
+            <span class="question-type-copy"><strong>Mathematical</strong><small>Use formula tools, LaTeX, and a live preview</small></span>
+            <span class="question-type-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
           </button>
           <button type="button" class="question-type-card" onclick="beginQuestionCreation('general')">
-            <span class="question-type-icon general">Aa</span>
-            <span><strong>General</strong><small>Text question, with formula tools available if needed</small></span>
-            <span class="question-type-arrow">→</span>
+            <span class="question-type-icon general" aria-hidden="true">Aa</span>
+            <span class="question-type-copy"><strong>General</strong><small>Write a text question with optional formula support</small></span>
+            <span class="question-type-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
           </button>
           <button type="button" class="question-type-card bulk-question-type-card" onclick="openBulkQuestionCreator()">
-            <span class="question-type-icon bulk"> <i class="fas fa-paste"></i> </span>
-            <span><strong>Paste many questions</strong><small>Paste MCQs with A-D choices and answer keys</small></span>
-            <span class="question-type-arrow">→</span>
+            <span class="question-type-icon bulk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5h6a1.5 1.5 0 0 0-1.5-1.5h-3A1.5 1.5 0 0 0 9 4.5ZM9 10h6M9 14h6M9 18h3"/></svg></span>
+            <span class="question-type-copy"><strong>Paste many questions</strong><small>Import a full MCQ set and review it before saving</small></span>
+            <span class="question-type-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
           </button>
         </div>
 
@@ -185,16 +187,15 @@
             </details>
             <textarea id="questionInput" class="form-input" rows="3"
               placeholder="Type your question, or add LaTeX such as \\(x^2\\)."></textarea>
-            <div
-              style="margin-top: 10px; padding: 15px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
-              <div class="question-preview-heading">Live preview</div>
-              <div id="questionPreview" style="font-size: 1.1rem; line-height: 1.6;">Type your question to see
+            <div class="question-live-preview">
+              <div class="question-preview-heading"><span>Live preview</span><small>How students will see your question</small></div>
+              <div id="questionPreview" class="question-preview-prompt">Type your question to see
                 preview...
               </div>
-              <div id="choice1Preview" style="font-size: 1.1rem; line-height: 1.6; margin-top: 5px;"></div>
-              <div id="choice2Preview" style="font-size: 1.1rem; line-height: 1.6; margin-top: 5px;"></div>
-              <div id="choice3Preview" style="font-size: 1.1rem; line-height: 1.6; margin-top: 5px;"></div>
-              <div id="choice4Preview" style="font-size: 1.1rem; line-height: 1.6; margin-top: 5px;"></div>
+              <div id="choice1Preview" class="question-preview-choice"></div>
+              <div id="choice2Preview" class="question-preview-choice"></div>
+              <div id="choice3Preview" class="question-preview-choice"></div>
+              <div id="choice4Preview" class="question-preview-choice"></div>
             </div>
           </div>
 
@@ -231,7 +232,7 @@
           </div>
 
           <div class="action-buttons">
-            <button class="btn btn-success" onclick="addQuestion(event)">Add question</button>
+            <button class="btn btn-success" onclick="addQuestion(event)">Save question to bank</button>
           </div>
         </div>
 
